@@ -1,0 +1,25 @@
+{
+  "name": "new-sdlc",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": "./src/pipeline.ts",
+  "workspaces": [
+    "site"
+  ],
+  "scripts": {
+    "test": "bun test ./src/*.test.ts",
+    "hello": "bun run examples/hello-world/run.ts",
+    "typecheck": "tsc --noEmit",
+    "site:dev": "bun run --cwd site dev",
+    "site:build": "bun run --cwd site build",
+    "site:preview": "bun run --cwd site preview",
+    "site:check": "bun run --cwd site check",
+    "check": "bun run typecheck && bun run site:check && bun run test",
+    "deploy": "bun run --cwd site deploy"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.9.2"
+  }
+}

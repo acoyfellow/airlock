@@ -1,0 +1,56 @@
+/* Shared layout + section primitives. One source of truth for both pages. */
+.shell {
+  width: min(100% - 32px, 1180px);
+  margin: 0 auto;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-5);
+  font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-orange);
+}
+.eyebrow::before { content: '['; color: var(--color-border-strong); }
+.eyebrow::after { content: ']'; color: var(--color-border-strong); }
+.lead {
+  max-width: 690px;
+  margin-top: var(--space-6);
+  color: var(--color-muted);
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+.section {
+  padding: var(--space-20) 0;
+  border-top: 1px solid var(--color-border);
+}
+.section p {
+  max-width: 640px;
+  margin-top: var(--space-4);
+  color: var(--color-muted);
+  line-height: 1.65;
+}
+.section-heading {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-10);
+}
+.command-rail { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.command-rail li {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-layer);
+}
+.command-rail code {
+  font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+.command-rail span { color: var(--color-muted); font-size: 0.85rem; }

@@ -1,0 +1,16 @@
+node_modules/
+.DS_Store
+*.log
+
+# build + tooling artifacts
+site/.svelte-kit/
+site/build/
+site/dist/
+site/.wrangler/
+site/.alchemy/
+.alchemy/
+
+# local env / secrets — never commit
+.env
+.env.*
+.dev.vars

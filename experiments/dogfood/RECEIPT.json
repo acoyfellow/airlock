@@ -1,6 +1,6 @@
 {
-  "candidate": "sha256:9bafecdf5344f3dc308e572940ad8cceaabd096fec7d09348f0995559e342958",
-  "darkUrl": "https://new-sdlc-dark-9bafecdf5344f3dc308e5729.cloudflare-support-chat.workers.dev",
+  "candidate": "sha256:60cdf3ce5c3a0a6ba480500cbf4608ab4a2e78fe436f3f5c778088eef17c08ba",
+  "darkUrl": "https://new-sdlc-dark-60cdf3ce5c3a0a6ba480500c.cloudflare-support-chat.workers.dev",
   "admitted": true,
   "promotedToProd": false,
   "promotion": {
@@ -8,7 +8,7 @@
     "target": "new-sdlc.coey.dev",
     "note": "Promotion is the owner-held, keel-gated step. Not performed by this loop."
   },
-  "evidence": "home-200=pass,docs-200=pass,digest-embedded=pass",
+  "evidence": "home-200=pass,docs-200=pass",
   "results": [
     {
       "name": "home-200",
@@ -19,27 +19,27 @@
       "name": "docs-200",
       "ok": true,
       "detail": "child:PASS"
-    },
-    {
-      "name": "digest-embedded",
-      "ok": true,
-      "detail": "sha256:9bafecdf5344f3dc308e572940ad8cceaabd096fec7d09348f0995559e342958"
     }
   ],
   "reason": "proof passed",
   "proof": {
     "proof": {
-      "artifactDigest": "sha256:9bafecdf5344f3dc308e572940ad8cceaabd096fec7d09348f0995559e342958",
+      "artifactDigest": "sha256:60cdf3ce5c3a0a6ba480500cbf4608ab4a2e78fe436f3f5c778088eef17c08ba",
       "verifier": "2c0ef5ed13765683",
       "policy": "new-sdlc/self-deliver-fanout@1",
       "result": "pass",
-      "evidence": "home-200=pass,docs-200=pass,digest-embedded=pass"
+      "evidence": "home-200=pass,docs-200=pass"
     },
     "keyId": "2c0ef5ed13765683",
-    "signature": "KJg99UlMO0QWtGJfSOfR82TdUMlSMwoeKLLjCQ2Mo8N/o22tYEQOcNVheFMyruWiKbUm6YB3pWvCrMH8iKNeBQ=="
+    "signature": "T+eAMpG9zZuHvkM/hJ+JAG+lz78OuQNjXlLJ6epkuR3DboY7vpmsZGwK12BXX8HN9B/EQBC9wqlt/4p1X2RNBA=="
   },
   "trusted": {
     "2c0ef5ed13765683": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApQNzXYDHyqTKCK4NlhcvcZ+YrwytkyVlxCSHZCvOpyw=\n-----END PUBLIC KEY-----\n"
   },
-  "generatedAt": "2026-06-28T18:03:56.120Z"
+  "coverage": {
+    "what-this-dogfood-proves": "source content-address (digest) + ed25519 signed admission proof bound to it + real dark-slot deploy + both routes served 200 carrying the digest. Verified by experiments/dogfood/gate.mjs against a pinned key.",
+    "served-ref-cas": "the promote/CAS feature-gate flip is exercised by src/napkin.test.ts (local file-backed), NOT end-to-end in this dogfood run; prod promotion is the owner-held keel step.",
+    "digest-scope": "the digest is a content address of the SOURCE tree, not a hash of the deployed Worker bytes (the page embeds its own signed receipt and cannot hash itself)."
+  },
+  "generatedAt": "2026-06-28T18:24:20.493Z"
 }

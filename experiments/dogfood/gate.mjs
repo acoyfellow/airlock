@@ -187,17 +187,24 @@ async function main() {
   );
 
   // 3. the dark URL must be the slot THIS digest deploys to — derived, not trusted.
+  // Anchor the worker name to the hostname's LEFTMOST LABEL (not a substring), so
+  // a host like new-sdlc-dark-<hex>-attacker.<...>.workers.dev cannot slip past.
   const darkUrl = receipt.darkUrl;
   const expectedName = darkWorkerName(digest);
-  const urlHostOk =
-    typeof darkUrl === "string" &&
-    /^https:\/\/[a-z0-9.-]+\.workers\.dev\/?$/i.test(darkUrl) &&
-    darkUrl.includes(expectedName);
-  record(
-    "dark-url-matches-digest",
-    urlHostOk,
-    `darkUrl=${darkUrl} expected slot name=${expectedName} (*.workers.dev)`,
-  );
+  let urlHostOk = false;
+  let urlDetail = `darkUrl=${darkUrl}`;
+  try {
+    const u = new URL(darkUrl);
+    const firstLabel = u.hostname.split(".")[0];
+    urlHostOk =
+      u.protocol === "https:" &&
+      u.hostname.endsWith(".workers.dev") &&
+      firstLabel === expectedName;
+    urlDetail = `darkUrl host first-label=${firstLabel} expected=${expectedName} (.workers.dev)`;
+  } catch (e) {
+    urlDetail = `darkUrl unparseable: ${e?.message ?? e}`;
+  }
+  record("dark-url-matches-digest", urlHostOk, urlDetail);
   if (!darkUrl) return finish();
 
   // 4. LOOK at the dark slot: key routes must answer 200.

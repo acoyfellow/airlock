@@ -5,25 +5,27 @@
   import { receipt } from '$lib/receipt';
 
   const shortDigest = receipt.candidate.replace(/^sha256:/, '').slice(0, 16);
+  // Until prod is promoted, canonicalize to the slot that actually serves this
+  // page (the dark URL) so shared links and crawlers never hit an unresolved host.
+  const canonicalBase = (receipt.promotedToProd ? site.url : receipt.darkUrl) ?? site.url;
 </script>
 
 <svelte:head>
   <title>{site.title}</title>
   <meta name="description" content={site.description} />
-  <!-- The candidate digest this build was made from; the honesty gate matches
-       this against an independent recompute of the source tree. -->
-  <meta name="candidate-digest" content={receipt.candidate} />
-  <meta name="candidate-admitted" content={String(receipt.admitted)} />
-  <link rel="canonical" href={site.url} />
+  <!-- Canonical/social point at the slot actually serving this page: the dark
+       slot while non-serving (so shared links + crawlers resolve), prod only
+       once promoted. (candidate-* identity meta lives in +layout.svelte.) -->
+  <link rel="canonical" href={canonicalBase} />
   <meta property="og:type" content="website" />
   <meta property="og:title" content={site.title} />
   <meta property="og:description" content={site.description} />
-  <meta property="og:url" content={site.url} />
-  <meta property="og:image" content={`${site.url}/og.png`} />
+  <meta property="og:url" content={canonicalBase} />
+  <meta property="og:image" content={`${canonicalBase}/og.png`} />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content={site.title} />
   <meta name="twitter:description" content={site.description} />
-  <meta name="twitter:image" content={`${site.url}/og.png`} />
+  <meta name="twitter:image" content={`${canonicalBase}/og.png`} />
 </svelte:head>
 
 <main class="shell">

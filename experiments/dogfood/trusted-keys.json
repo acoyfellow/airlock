@@ -1,0 +1,6 @@
+{
+  "_comment": "PINNED TRUST ANCHOR for the honesty gate. This is the verifier's PUBLIC key only (no private material). The gate verifies the signed proof against THIS file, NOT against the keyring carried in RECEIPT.json — so a hand-crafted receipt that brings its own self-issued key is rejected. Changes here are reviewable in git. The matching private key is bootstrapped locally and gitignored (experiments/dogfood/.verifier-key.json), never committed.",
+  "keys": {
+    "2c0ef5ed13765683": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApQNzXYDHyqTKCK4NlhcvcZ+YrwytkyVlxCSHZCvOpyw=\n-----END PUBLIC KEY-----\n"
+  }
+}

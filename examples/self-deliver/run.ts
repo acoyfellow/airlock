@@ -30,10 +30,31 @@ import {
 } from "../../src/ports/index.ts";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const ACCOUNT_ID =
-  process.env.CLOUDFLARE_ACCOUNT_ID ?? "31b91e7f9954ad8aa334d46f012bd8ed";
-const TERRA_CLI =
-  process.env.TERRA_CLI ?? "/Users/jcoeyman/cloudflare/terrarium/src/cli.js";
+
+// No machine-specific defaults: self-deliver deploys to a real Cloudflare
+// account and shells out to a local terra CLI, so both must be provided
+// explicitly. Fail loudly rather than silently targeting someone else's account
+// or a path that only exists on one developer's machine.
+function requireEnv(name: string, hint: string): string {
+  const v = process.env[name];
+  if (!v) {
+    console.error(
+      `self-deliver: missing required env ${name}.\n  ${hint}\n` +
+        `  See README "Reproduce the dogfood" for the full list.`,
+    );
+    process.exit(2);
+  }
+  return v;
+}
+
+const ACCOUNT_ID = requireEnv(
+  "CLOUDFLARE_ACCOUNT_ID",
+  "export CLOUDFLARE_ACCOUNT_ID=<your Cloudflare account id> (the dark slot deploys here)",
+);
+const TERRA_CLI = requireEnv(
+  "TERRA_CLI",
+  "export TERRA_CLI=/path/to/terrarium/src/cli.js (the fanout backend)",
+);
 const TERRA_MODEL = process.env.TERRA_MODEL; // optional; terra picks a default
 
 function sh(bin: string, args: string[], cwd: string, env: NodeJS.ProcessEnv = {}) {
@@ -119,8 +140,23 @@ async function main() {
 
   const deploy = makeDeployer({ repoRoot: REPO_ROOT, accountId: ACCOUNT_ID });
   let slotUrl: string | undefined;
+  // Guard against TOCTOU: writing the receipt + building must NOT change any
+  // digest-relevant source. Re-assert the candidate identity right before every
+  // deploy, so the bytes we ship always match the digest we signed/embedded.
+  const assertStableDigest = (c: string) => {
+    const now = candidateDigest(REPO_ROOT);
+    if (now !== c) {
+      console.error(
+        `self-deliver: candidate digest drifted during the run.\n` +
+          `  expected ${c}\n  now      ${now}\n` +
+          `  a digest-relevant source file changed mid-flight; refusing to deploy.`,
+      );
+      process.exit(3);
+    }
+  };
   const ports: Ports = {
     deploy: async (c) => {
+      assertStableDigest(candidate);
       const slot = await deploy(c);
       slotUrl = slot.url;
       console.log(`dark deploy      : ${slot.url} (${slot.detail ?? ""})`);
@@ -137,18 +173,13 @@ async function main() {
     trusted,
   };
 
-  // fanout: terrarium route probes against the dark slot + an in-process unit job
+  // fanout: terrarium route probes that each fetch the dark slot and confirm the
+  // route is 200 AND the served body carries the exact candidate digest. Every
+  // job is a real observation of the deployed slot — no tautological in-process
+  // jobs that merely restate a value we already hold.
   const jobs: (TestJob | FanoutJob)[] = [
     { name: "home-200", backend: "terra", route: "/", marker: candidate } as FanoutJob,
-    { name: "docs-200", backend: "terra", route: "/docs" } as FanoutJob,
-    {
-      name: "digest-embedded",
-      run: () => ({
-        name: "digest-embedded",
-        ok: candidate.startsWith("sha256:"),
-        detail: candidate,
-      }),
-    },
+    { name: "docs-200", backend: "terra", route: "/docs", marker: candidate } as FanoutJob,
   ];
 
   console.log("fanout^x         : terrarium child runs against the dark slot…");
@@ -183,6 +214,7 @@ async function main() {
   });
   console.log("build            : phase 2 (full receipt embedded)…");
   buildSite();
+  assertStableDigest(candidate);
   const finalSlot = await deploy(candidate);
   console.log(`dark redeploy    : ${finalSlot.url}`);
 
@@ -216,7 +248,18 @@ function writeReceiptArtifact(
     results: receipt.results,
     reason: receipt.reason,
     proof: receipt.proof,
+    // Carried for convenience/inspection only. The honesty gate does NOT trust
+    // this keyring; it verifies against the PINNED public key committed at
+    // experiments/dogfood/trusted-keys.json.
     trusted: { [verifier.keyId]: verifier.publicPem },
+    coverage: {
+      "what-this-dogfood-proves":
+        "source content-address (digest) + ed25519 signed admission proof bound to it + real dark-slot deploy + both routes served 200 carrying the digest. Verified by experiments/dogfood/gate.mjs against a pinned key.",
+      "served-ref-cas":
+        "the promote/CAS feature-gate flip is exercised by src/napkin.test.ts (local file-backed), NOT end-to-end in this dogfood run; prod promotion is the owner-held keel step.",
+      "digest-scope":
+        "the digest is a content address of the SOURCE tree, not a hash of the deployed Worker bytes (the page embeds its own signed receipt and cannot hash itself).",
+    },
     generatedAt: new Date().toISOString(),
   };
   writeFileSync(

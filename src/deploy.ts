@@ -7,7 +7,7 @@
 // Local backend: a single JSON file under .data/ (gitignored) holding both
 // slots. Cloud-portable: the same { served, staged } record lives in KV/DO.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { DeploySlot } from "./pipeline.ts";
 
@@ -28,7 +28,12 @@ export class SlotStore {
     return JSON.parse(readFileSync(this.#path, "utf8")) as Slots;
   }
   #write(s: Slots): void {
-    writeFileSync(this.#path, JSON.stringify(s, null, 2));
+    // Atomic: write to a temp file then rename, so a crash mid-write can never
+    // leave the served-pointer file half-written (which would throw on next
+    // read). The cloud port gets this for free from a DO storage.put.
+    const tmp = `${this.#path}.tmp`;
+    writeFileSync(tmp, JSON.stringify(s, null, 2));
+    renameSync(tmp, this.#path);
   }
   /** Stage a candidate to the dark slot. Does NOT touch the served slot. */
   stage(candidate: string): void {

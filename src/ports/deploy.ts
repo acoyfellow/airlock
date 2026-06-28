@@ -42,8 +42,10 @@ export function makeDeployer(cfg: DeployConfig) {
     const siteDir = join(cfg.repoRoot, SITE_DIR);
     const name = darkWorkerName(candidate);
 
-    // adapter-cloudflare emits _worker.js / _routes.json / _headers into the
-    // assets dir; tell wrangler not to publish those as public assets.
+    // @sveltejs/adapter-cloudflare (pinned 7.2.9 in site/package.json) emits
+    // _worker.js / _routes.json / _headers into the assets dir; tell wrangler not
+    // to publish those as public assets. This list is coupled to the adapter's
+    // output layout — revisit it when bumping the adapter pin.
     writeFileSync(
       join(siteDir, BUILD_DIR, ".assetsignore"),
       "_worker.js\n_routes.json\n_headers\n",

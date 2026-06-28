@@ -15,6 +15,21 @@ The orchestration is one pure function, `runPipeline`, in `src/pipeline.ts`. It
 does no deploying, signing, or promoting itself. The caller passes those in as
 functions (the ports).
 
+## Setup
+
+new-sdlc imports its proof primitive from **keel** by path, as a sibling
+checkout (keel is not published to a registry). Lay the two repos out as
+siblings before running anything:
+
+```text
+parent/
+  keel/       <- checked out next to new-sdlc
+  new-sdlc/   <- imports ../keel/src/index.ts
+```
+
+Without `../keel`, `bun test` and `bun run napkin` fail at module resolution.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+
 ## How to use it
 
 ```sh
@@ -91,6 +106,35 @@ The default `runFanout` is `localFanout`, a `Promise.all` that records a thrown
 test as a failure instead of crashing the run. Other implementations of the
 ports live in [`src/ports/`](./src/ports).
 
+## Reproduce the dogfood
+
+`bun run napkin` is the local, file-backed demo. The real dogfood — new-sdlc
+delivering *itself* to a live (but non-serving) Cloudflare slot — is
+`bun run self-deliver`, and `bun run gate` is the independent verifier.
+
+```sh
+# self-deliver deploys a dark slot on a REAL Cloudflare account and fans tests
+# out through a local terra CLI, so both must be set explicitly (no defaults):
+export CLOUDFLARE_ACCOUNT_ID=<your account id>
+export TERRA_CLI=/path/to/terrarium/src/cli.js
+bun run self-deliver   # build -> dark deploy -> fanout -> sign -> RECEIPT.json
+
+bun run gate           # independently verifies the dark slot by LOOKING
+```
+
+`experiments/dogfood/gate.mjs` recomputes the source digest, refuses a dirty
+worktree, derives the expected dark-slot URL from the digest, curls `/` and
+`/docs` for 200 carrying that digest, and re-verifies the ed25519 proof against
+the **pinned** public key in `experiments/dogfood/trusted-keys.json` (not the
+keyring carried in the receipt). It exits non-zero on any red. The receipt it
+checks is `experiments/dogfood/RECEIPT.json`.
+
+On a corporate network the dark `*.workers.dev` slot is reached through the
+Cloudflare WARP TLS proxy; the gate self-configures that CA (system store +
+known WARP bundle) with TLS verification left on. Off-corp, that exact slot may
+be unreachable — the local checks (digest recompute, proof verify against the
+pin, receipt binding) still run.
+
 ## Limits
 
 - new-sdlc does not deploy, sign, or decide which keys to trust on its own.
@@ -100,6 +144,10 @@ ports live in [`src/ports/`](./src/ports).
 - The napkin is file-backed under `.data/`, not a real deployment.
   `new-sdlc.coey.dev` is not pointed at a pipeline-promoted candidate; that flip
   is a human decision.
+- The candidate digest is a content address of the **source** the build is
+  produced from, not a hash of the deployed Worker bytes. See
+  `experiments/dogfood/gate.mjs` for exactly what the gate does and does not
+  prove.
 
-See [DESIGN.md](./DESIGN.md) for the candidate, proof, and promote flow. MIT,
-version `0.0.1`.
+See [DESIGN.md](./DESIGN.md) for the candidate, proof, and promote flow, and
+[SECURITY.md](./SECURITY.md) for the trust model. MIT, version `0.0.1`.

@@ -19,15 +19,20 @@ import {
 } from "../../keel/src/index.ts";
 
 export type TestResult = { name: string; ok: boolean; detail: string };
-export type TestJob = { name: string; run: () => Promise<TestResult> | TestResult };
+// A unit job runs in-process; an integration job is a probe a fanout backend
+// expands against the deployed slot. `run` is optional so backend-only jobs
+// (e.g. a terrarium route probe) need not carry an in-process function.
+export type TestJob = { name: string; run?: () => Promise<TestResult> | TestResult };
 
-// The fanout port. Default is local Promise.all; swap for terrarium or Facets.
-export type RunFanout = (jobs: TestJob[]) => Promise<TestResult[]>;
+// The fanout port. Receives the dark slot so integration tests can hit it.
+// Default is local Promise.all; swap for terrarium or Facets.
+export type RunFanout = (jobs: TestJob[], slot: DeploySlot) => Promise<TestResult[]>;
 
 export const localFanout: RunFanout = (jobs) =>
   Promise.all(
     jobs.map(async (j) => {
       try {
+        if (!j.run) return { name: j.name, ok: false, detail: "no in-process run()" };
         return await j.run();
       } catch (e) {
         return { name: j.name, ok: false, detail: (e as Error).message };
@@ -37,9 +42,13 @@ export const localFanout: RunFanout = (jobs) =>
 
 export type PushEvent = { repo: string; candidate: string };
 
+// A dark slot: where the candidate is now served WITHOUT taking prod traffic.
+export type DeploySlot = { url: string; detail?: string };
+
 export type Ports = {
   runFanout: RunFanout;
-  deploy: (candidate: string) => Promise<void>; // deploy to a non-serving slot
+  // deploy to a NON-serving slot; returns the dark URL the slot now answers on
+  deploy: (candidate: string) => Promise<DeploySlot>;
   setFeatureGate: (candidate: string, on: boolean) => Promise<void>;
   // the owner/verifier signs what the fanout observed, bound to the candidate
   sign: (candidate: string, evidence: string, pass: boolean) => SignedProof;
@@ -48,8 +57,10 @@ export type Ports = {
 
 export type PipelineReceipt = {
   candidate: string;
+  slot: DeploySlot;
   results: TestResult[];
   evidence: string;
+  proof: SignedProof;
   admitted: boolean;
   promoted: boolean;
   reason: string;
@@ -57,10 +68,10 @@ export type PipelineReceipt = {
 
 export async function runPipeline(event: PushEvent, jobs: TestJob[], ports: Ports): Promise<PipelineReceipt> {
   // 1. deploy the candidate to a slot that serves no traffic yet
-  await ports.deploy(event.candidate);
+  const slot = await ports.deploy(event.candidate);
 
-  // 2. fanout^x tests
-  const results = await ports.runFanout(jobs);
+  // 2. fanout^x tests (run against the dark slot)
+  const results = await ports.runFanout(jobs, slot);
   const passed = results.every((r) => r.ok);
   const evidence = results.map((r) => `${r.name}=${r.ok ? "pass" : "fail"}`).join(",");
 
@@ -70,12 +81,12 @@ export async function runPipeline(event: PushEvent, jobs: TestJob[], ports: Port
 
   if (!decision.admitted) {
     await ports.setFeatureGate(event.candidate, false);
-    return { candidate: event.candidate, results, evidence, admitted: false, promoted: false, reason: decision.reason };
+    return { candidate: event.candidate, slot, results, evidence, proof, admitted: false, promoted: false, reason: decision.reason };
   }
 
-  // 4. promote the feature gate
+  // 4. promote the feature gate (the only promote effect; human-gated for prod)
   await ports.setFeatureGate(event.candidate, true);
-  return { candidate: event.candidate, results, evidence, admitted: true, promoted: true, reason: "proof passed" };
+  return { candidate: event.candidate, slot, results, evidence, proof, admitted: true, promoted: true, reason: "proof passed" };
 }
 
 // Re-exported so a caller can sign without importing keel directly.

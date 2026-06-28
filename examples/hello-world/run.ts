@@ -13,7 +13,10 @@ let liveCandidate = "none";
 
 const ports: Ports = {
   runFanout: localFanout, // swap for terrarium / Cloudflare Facets in production
-  deploy: async (c) => console.log(`  deploy   -> candidate ${c} to a non-serving slot`),
+  deploy: async (c) => {
+    console.log(`  deploy   -> candidate ${c} to a non-serving slot`);
+    return { url: `https://dark.example/${c}` };
+  },
   setFeatureGate: async (c, on) => {
     if (on) liveCandidate = c;
     console.log(`  gate     -> ${on ? `ON for ${c}` : "left OFF"}`);

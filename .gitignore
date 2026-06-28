@@ -10,7 +10,15 @@ site/.wrangler/
 site/.alchemy/
 .alchemy/
 
+# runnable-napkin local backends (content-addressed artifacts, slots) — never commit
+.data/
+
 # local env / secrets — never commit
 .env
 .env.*
 .dev.vars
+# verifier signing key bootstrapped by the dogfood loop — never commit
+experiments/dogfood/.verifier-key.json
+# any owner/verifier signing key the napkin persists locally — never commit
+*.verifier-key.json
+.data/**/*key*

@@ -2,11 +2,18 @@
   import Topbar from '$lib/Topbar.svelte';
   import Footer from '$lib/Footer.svelte';
   import { boundaries, fanoutBackends, pipeline, ports, quickStart, site } from '$lib/site';
+  import { receipt } from '$lib/receipt';
+
+  const shortDigest = receipt.candidate.replace(/^sha256:/, '').slice(0, 16);
 </script>
 
 <svelte:head>
   <title>{site.title}</title>
   <meta name="description" content={site.description} />
+  <!-- The candidate digest this build was made from; the honesty gate matches
+       this against an independent recompute of the source tree. -->
+  <meta name="candidate-digest" content={receipt.candidate} />
+  <meta name="candidate-admitted" content={String(receipt.admitted)} />
   <link rel="canonical" href={site.url} />
   <meta property="og:type" content="website" />
   <meta property="og:title" content={site.title} />
@@ -38,30 +45,35 @@
       </div>
     </div>
 
-    <aside class="receipt-artifact" aria-label="Observed pipeline transcript">
+    <aside class="receipt-artifact" aria-label="Promotion receipt for the served candidate">
       <div class="receipt-header">
         <span>receipt</span>
-        <span>0.0.1</span>
+        <span>{receipt.builtAt.slice(0, 10)}</span>
+      </div>
+      <div class="receipt-line neutral">
+        <span>CANDIDATE</span>
+        <code>sha256:{shortDigest}…</code>
       </div>
       <div class="receipt-line neutral">
         <span>DEPLOY</span>
-        <code>candidate -> non-serving slot</code>
+        <code>{receipt.darkUrl ? 'dark slot (non-serving)' : 'candidate -> non-serving slot'}</code>
       </div>
       <div class="receipt-line neutral">
         <span>FANOUT</span>
-        <code>unit=pass,smoke=pass,lint=pass</code>
+        <code>{receipt.evidence}</code>
       </div>
-      <div class="receipt-line accepted">
-        <span>ADMITTED</span>
-        <code>keel: proof passed</code>
+      <div class="receipt-line" class:accepted={receipt.admitted}>
+        <span>{receipt.admitted ? 'ADMITTED' : 'NOT ADMITTED'}</span>
+        <code>keel: {receipt.admitted ? 'proof passed' : 'no valid proof'}</code>
       </div>
-      <div class="receipt-line accepted">
-        <span>PROMOTED</span>
-        <code>gate ON for candidate</code>
+      <div class="receipt-line" class:accepted={receipt.promotedToProd} class:neutral={!receipt.promotedToProd}>
+        <span>{receipt.promotedToProd ? 'PROMOTED' : 'AWAITING OWNER'}</span>
+        <code>{receipt.promotedToProd ? 'gate ON for candidate' : 'prod gate human-held'}</code>
       </div>
       <p>
-        That is the green path of <code>bun run hello</code>. A red candidate with one failing test
-        is refused, and the gate stays off.
+        This is the real receipt for the digest this page is serving:
+        <code>{receipt.verifier}</code> signed <code>{receipt.policy}</code> bound to the candidate
+        above. A candidate that deploys dark but is not admitted is never promoted.
       </p>
     </aside>
   </section>

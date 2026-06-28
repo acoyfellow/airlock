@@ -13,11 +13,10 @@
         "@context": "https://schema.org",
         "@type": "SoftwareSourceCode",
         "name": "new-sdlc",
-        "description": "A push deploys a candidate to a non-serving slot, fans out tests in parallel, and promotes the feature gate only when keel admits a signed proof bound to that exact candidate.",
-        "codeRepository": "https://github.com/acoyfellow/new-sdlc",
+        "description": "A small pipeline: push a candidate, deploy it to a slot that serves no traffic, run the tests in parallel, and make that version live only if a signed proof bound to that exact candidate verifies.",
         "programmingLanguage": "TypeScript",
         "runtimePlatform": "Bun",
-        "license": "https://github.com/acoyfellow/new-sdlc/blob/main/LICENSE"
+        "license": "MIT"
       }
     </script>
     %sveltekit.head%

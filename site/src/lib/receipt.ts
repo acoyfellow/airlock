@@ -16,14 +16,14 @@ export type Receipt = {
 };
 
 export const receipt: Receipt = {
-  "candidate": "sha256:2f60b864c56c1bae1da81e361baac17cb7dc180e91955cd194d89d113d407296",
-  "darkUrl": null,
-  "evidence": "pending",
-  "admitted": false,
+  "candidate": "sha256:3bc329a318e9187d3002031d2f9317165c829fcd4e07dbaeb5a455c524ea17b8",
+  "darkUrl": "https://new-sdlc-dark-3bc329a318e9187d3002031d.cloudflare-support-chat.workers.dev",
+  "evidence": "home-200=pass,docs-200=pass,digest-embedded=pass",
+  "admitted": true,
   "promotedToProd": false,
   "verifier": "2c0ef5ed13765683",
   "policy": "new-sdlc/self-deliver-fanout@1",
-  "signature": "",
-  "builtAt": "2026-06-28T14:38:56.955Z",
-  "status": "dark candidate — verification in progress"
+  "signature": "ie2e9IpfjCVnBtLfgPnqVUtu+xr27QK5pRRbvXpI+B2o3m+cNDyLOe1Wvvb3O1rcRnEHdixc6szkWsB/kSQ/DA==",
+  "builtAt": "2026-06-28T15:03:12.215Z",
+  "status": "admitted by keel — awaiting owner promotion to new-sdlc.coey.dev"
 };

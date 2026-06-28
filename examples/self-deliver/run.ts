@@ -153,7 +153,7 @@ async function main() {
 
   console.log("fanout^x         : terrarium child runs against the dark slot…");
   const receipt = await runPipeline(
-    { repo: "acoyfellow/new-sdlc", candidate },
+    { repo: "new-sdlc", candidate },
     jobs as TestJob[],
     ports,
   );

@@ -1,27 +1,26 @@
 <script lang="ts">
   import Topbar from '$lib/Topbar.svelte';
   import Footer from '$lib/Footer.svelte';
-  import { site, pipeline, ports, fanoutBackends } from '$lib/site';
+  import { pipeline, ports, fanoutBackends } from '$lib/site';
 
-  const quickstart = [
-    { command: 'git clone https://github.com/acoyfellow/keel', note: 'clone keel next to new-sdlc; it is the proof gate, imported by path' },
-    { command: 'git clone https://github.com/acoyfellow/new-sdlc', note: 'clone new-sdlc as a sibling of keel' },
-    { command: 'cd new-sdlc && bun install', note: 'install the orchestration and site workspace' },
-    { command: 'bun test', note: 'run the deterministic pipeline tests' },
-    { command: 'bun run hello', note: 'green candidate promoted, red blocked, gate holds' },
+  const napkinChecks = [
+    { command: 'bun install', note: 'install the orchestration and site workspace' },
+    { command: 'bun run napkin', note: 'pushes A then B through the real runPipeline; prints a receipt per run' },
+    { command: 'bun test', note: '29 pass: pipeline, napkin, ports, and this site copy' },
   ];
 
   const limits = [
-    { surface: 'Trust', boundary: 'new-sdlc does not decide trust. keel admits or refuses the signed, artifact-bound proof against the trusted keyring.' },
-    { surface: 'Fanout backend', boundary: 'The default localFanout runs jobs in-process. A real terrarium, Workflow, or Facet backend is the integrator port and the place to isolate untrusted jobs.' },
-    { surface: 'Effects', boundary: 'Deploy, sign, and promote are injected ports. The pure core holds no credential and makes no network call unless a port does.' },
-    { surface: 'Owner root', boundary: 'A verifier key trusted and active at signing time can sign a proof for a bad candidate. new-sdlc narrows where authority is used; it does not remove the owner root.' },
+    { surface: 'Trust', boundary: 'new-sdlc does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
+    { surface: 'Fanout backend', boundary: 'localFanout runs jobs in-process. A real terrarium, Workflow, or Facet backend is the integrator port and the place to isolate untrusted jobs.' },
+    { surface: 'Effects', boundary: 'Deploy, sign, and promote are ports the caller supplies. The pure core holds no credential and makes no network call unless a port does.' },
+    { surface: 'Signing key', boundary: 'A signing key trusted and active at signing time can sign a proof for a bad candidate. new-sdlc narrows where the key is used; it does not remove the owner key.' },
+    { surface: 'Not yet on a custom domain', boundary: 'The napkin is file-backed under .data/. The Cloudflare ports deploy to a non-serving *.workers.dev slot, but pointing new-sdlc.coey.dev at a candidate is a human decision, not a pipeline step.' },
   ];
 </script>
 
 <svelte:head>
   <title>new-sdlc / docs</title>
-  <meta name="description" content="new-sdlc documentation: the pipeline, the ports, fanout^x backends, the keel gate, and honest limits." />
+  <meta name="description" content="new-sdlc documentation: the pipeline, the ports, the fanout backends, how the proof is checked, and the limits." />
 </svelte:head>
 
 <main class="shell">
@@ -29,23 +28,27 @@
 
   <header class="doc-hero">
     <p class="eyebrow">Docs</p>
-    <h1>What new-sdlc is and how to use it.</h1>
+    <h1>The pipeline, the ports, and the limits.</h1>
     <p class="lead">
-      new-sdlc orchestrates a delivery loop: a push deploys a candidate to a non-serving slot, fans
-      out tests in parallel, and promotes the feature gate only when keel admits a signed proof
-      bound to that exact candidate. The orchestration is a pure function; every effect is an
-      injected port.
+      new-sdlc is a small pipeline. You push a candidate version, it deploys to a slot that serves
+      no traffic, runs the tests in parallel, and makes that version live only if the tests pass.
+      <code>runPipeline</code> is a pure function that calls four ports the caller supplies and
+      verifies a signed proof before the live pointer moves.
     </p>
   </header>
 
-  <section class="section" aria-labelledby="quickstart">
+  <section class="section" aria-labelledby="run-it">
     <div class="section-heading">
-      <p class="eyebrow">Quick start</p>
-      <h2 id="quickstart">Clone both repos, then run it.</h2>
-      <p>keel is the proof gate. new-sdlc imports it by path, so check keel out next to new-sdlc.</p>
+      <p class="eyebrow">How to use it</p>
+      <h2 id="run-it">How to use it</h2>
+      <p>
+        <code>bun run napkin</code> is file-backed under <code>.data/</code> and needs no Cloudflare
+        account. It pushes a passing candidate and a failing one, prints a receipt per run, and
+        writes a signed audit log. A goes live; B is blocked and the previous version stays live.
+      </p>
     </div>
     <ol class="command-rail">
-      {#each quickstart as item}
+      {#each napkinChecks as item}
         <li><code>{item.command}</code><span>{item.note}</span></li>
       {/each}
     </ol>
@@ -53,9 +56,9 @@
 
   <section class="section" aria-labelledby="pipeline">
     <div class="section-heading">
-      <p class="eyebrow">The pipeline</p>
-      <h2 id="pipeline">The four steps of runPipeline.</h2>
-      <p>A candidate is named by content. These steps decide whether it is allowed to replace the running version, in this order.</p>
+      <p class="eyebrow">How it's built</p>
+      <h2 id="pipeline">How it's built</h2>
+      <p>A candidate is named by content. These steps decide whether it replaces the running version, in this order.</p>
     </div>
     <dl class="concept-list">
       {#each pipeline as step}
@@ -67,8 +70,8 @@
   <section class="section" aria-labelledby="ports">
     <div class="section-heading">
       <p class="eyebrow">The ports</p>
-      <h2 id="ports">Everything with a side effect.</h2>
-      <p>The core never deploys, signs, or promotes on its own. It sequences these ports and reads admission from keel.</p>
+      <h2 id="ports">The ports</h2>
+      <p>The core deploys, signs, and promotes through these functions and nothing else. The caller supplies them.</p>
     </div>
     <dl class="concept-list">
       {#each ports as p}
@@ -79,9 +82,9 @@
 
   <section class="section" aria-labelledby="fanout">
     <div class="section-heading">
-      <p class="eyebrow">fanout^x backends</p>
-      <h2 id="fanout">One port, three backends.</h2>
-      <p>runFanout is one type. The same pipeline runs against any backend that joins parallel work.</p>
+      <p class="eyebrow">Fanout backends</p>
+      <h2 id="fanout">Swapping the fanout backend</h2>
+      <p>runFanout has one type. The same pipeline runs against any backend that joins parallel work.</p>
     </div>
     <dl class="concept-list">
       {#each fanoutBackends as backend}
@@ -92,25 +95,24 @@
 
   <section class="section" aria-labelledby="gate">
     <div class="section-heading">
-      <p class="eyebrow">The keel gate</p>
-      <h2 id="gate">Produce versus admit.</h2>
+      <p class="eyebrow">The proof check</p>
+      <h2 id="gate">How the proof is checked</h2>
       <p>
-        new-sdlc produces a candidate and the evidence. <a href={site.keel}>keel</a> admits or
-        refuses the signed proof. Splitting the two means the promote step depends on a signature
-        keel can check, from a key the owner trusts, bound to the candidate that was tested.
+        new-sdlc assembles a candidate and the test evidence, then signs it. Before the live pointer
+        moves, the signed proof is verified against the trusted keys, bound to the candidate that
+        was tested. That verification is the keel library new-sdlc imports.
       </p>
     </div>
     <ol class="command-rail">
-      <li><code>import &#123; verifySignedProof &#125; from '../keel/src/index.ts'</code><span>path import; keel is not published to a registry</span></li>
-      <li><code>verifySignedProof(proof, candidate, trusted)</code><span>keel returns admitted or refused, bound to the candidate digest</span></li>
+      <li><code>verifySignedProof(proof, candidate, trusted)</code><span>returns whether the proof verifies, bound to the candidate digest</span></li>
     </ol>
   </section>
 
   <section class="section" aria-labelledby="limits">
     <div class="section-heading">
       <p class="eyebrow">Limits</p>
-      <h2 id="limits">What new-sdlc does not do.</h2>
-      <p>These are the known edges, written down on purpose.</p>
+      <h2 id="limits">Limits</h2>
+      <p>These are the known edges.</p>
     </div>
     <dl class="limit-list">
       {#each limits as l}

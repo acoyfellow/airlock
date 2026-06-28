@@ -9,11 +9,8 @@
 // child's captured stdout, and a non-zero exit or a missing/!=PASS result is a
 // failure. The honesty gate re-checks the same artifact independently afterward.
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { spawn } from "node:child_process";
 import { localFanout, type RunFanout, type TestJob, type TestResult } from "../pipeline.ts";
-
-const execFileP = promisify(execFile);
 
 export type TerrariumConfig = {
   terraBin: string; // e.g. node /path/to/terrarium/src/cli.js — see terraCommand
@@ -50,37 +47,55 @@ export type TerraChild = (name: string, task: string) => Promise<TestResult>;
 
 export function makeTerraChild(cfg: TerrariumConfig): TerraChild {
   const { bin, pre } = terraCommand(cfg.terraBin);
-  return async (name, task) => {
-    // NB: not --read-only. terra's read-only preset routes to opencode's
-    // `explore` subagent, which cannot run shell commands (curl), so it can
-    // never observe the route. The default agent runs the bounded probe.
-    const args = [...pre, "--json"];
-    if (cfg.model) args.push("--model", cfg.model);
-    args.push(task);
-    try {
-      const { stdout } = await execFileP(bin, args, {
+  const timeoutMs = cfg.timeoutMs ?? 180_000;
+  return (name, task) =>
+    new Promise<TestResult>((resolve) => {
+      // NB: not --read-only. terra's read-only preset routes to opencode's
+      // `explore` subagent, which cannot run shell commands (curl), so it can
+      // never observe the route. The default agent runs the bounded probe.
+      // stdin is IGNORED: a piped-but-open stdin makes the child agent wait for
+      // EOF and hang until the timeout kills it.
+      const args = [...pre, "--json"];
+      if (cfg.model) args.push("--model", cfg.model);
+      args.push(task);
+
+      const child = spawn(bin, args, {
         cwd: cfg.cwd,
-        timeout: cfg.timeoutMs ?? 180_000,
-        maxBuffer: 32 * 1024 * 1024,
+        stdio: ["ignore", "pipe", "pipe"],
         env: process.env,
       });
-      return parseChild(name, stdout);
-    } catch (e) {
-      const err = e as { stdout?: string; message?: string };
-      // terra may exit non-zero but still have emitted JSON; try to parse it.
-      if (err.stdout) {
-        try {
-          return parseChild(name, err.stdout);
-        } catch {
-          /* fall through */
+
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (d) => (stdout += d));
+      child.stderr.on("data", (d) => (stderr += d));
+
+      const timer = setTimeout(() => {
+        child.kill("SIGTERM");
+        resolve({ name, ok: false, detail: `terra child timed out after ${timeoutMs}ms` });
+      }, timeoutMs);
+
+      child.on("error", (e) => {
+        clearTimeout(timer);
+        resolve({ name, ok: false, detail: `terra spawn error: ${e.message}` });
+      });
+
+      child.on("close", (code) => {
+        clearTimeout(timer);
+        if (stdout.trim().length === 0) {
+          resolve({
+            name,
+            ok: false,
+            detail: `terra child exit=${code}, no stdout (${stderr.slice(0, 120)})`,
+          });
+          return;
         }
-      }
-      return { name, ok: false, detail: `terra child failed: ${err.message ?? "unknown"}` };
-    }
-  };
+        resolve(parseChild(name, stdout));
+      });
+    });
 }
 
-function parseChild(name: string, stdout: string): TestResult {
+export function parseChild(name: string, stdout: string): TestResult {
   let run: { ok?: boolean; exitCode?: number; stdoutTail?: string };
   try {
     run = JSON.parse(stdout);

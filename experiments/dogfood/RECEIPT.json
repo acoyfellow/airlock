@@ -1,45 +1,45 @@
 {
-  "candidate": "sha256:2f60b864c56c1bae1da81e361baac17cb7dc180e91955cd194d89d113d407296",
-  "darkUrl": "https://new-sdlc-dark-2f60b864c56c1bae1da81e36.cloudflare-support-chat.workers.dev",
-  "admitted": false,
+  "candidate": "sha256:3bc329a318e9187d3002031d2f9317165c829fcd4e07dbaeb5a455c524ea17b8",
+  "darkUrl": "https://new-sdlc-dark-3bc329a318e9187d3002031d.cloudflare-support-chat.workers.dev",
+  "admitted": true,
   "promotedToProd": false,
   "promotion": {
     "state": "awaiting-owner",
     "target": "new-sdlc.coey.dev",
     "note": "Promotion is the owner-held, keel-gated step. Not performed by this loop."
   },
-  "evidence": "home-200=fail,docs-200=fail,digest-embedded=pass",
+  "evidence": "home-200=pass,docs-200=pass,digest-embedded=pass",
   "results": [
     {
       "name": "home-200",
-      "ok": false,
-      "detail": "terra child failed: Command failed: /Users/jcoeyman/.bun/bin/bun /Users/jcoeyman/cloudflare/terrarium/src/cli.js --json Run exactly this shell command and read its output:\ncurl -s -o /tmp/body.$$ -w '%{http_code}' https://new-sdlc-dark-2f60b864c56c1bae1da81e36.cloudflare-support-chat.workers.dev/ ; echo ; cat /tmp/body.$$ | head -c 4000\nThe route passes only if the HTTP status code is 200 and the body contains the marker. Also confirm the response body contains the exact text \"sha256:2f60b864c56c1bae1da81e361baac17cb7dc180e91955cd194d89d113d407296\".\nDo not fix anything. On the final line print exactly \"RESULT: PASS\" if it passed, otherwise \"RESULT: FAIL\"."
+      "ok": true,
+      "detail": "child:PASS"
     },
     {
       "name": "docs-200",
-      "ok": false,
-      "detail": "terra child failed: Command failed: /Users/jcoeyman/.bun/bin/bun /Users/jcoeyman/cloudflare/terrarium/src/cli.js --json Run exactly this shell command and read its output:\ncurl -s -o /tmp/body.$$ -w '%{http_code}' https://new-sdlc-dark-2f60b864c56c1bae1da81e36.cloudflare-support-chat.workers.dev/docs ; echo ; cat /tmp/body.$$ | head -c 4000\nThe route passes only if the HTTP status code is 200.\nDo not fix anything. On the final line print exactly \"RESULT: PASS\" if it passed, otherwise \"RESULT: FAIL\"."
+      "ok": true,
+      "detail": "child:PASS"
     },
     {
       "name": "digest-embedded",
       "ok": true,
-      "detail": "sha256:2f60b864c56c1bae1da81e361baac17cb7dc180e91955cd194d89d113d407296"
+      "detail": "sha256:3bc329a318e9187d3002031d2f9317165c829fcd4e07dbaeb5a455c524ea17b8"
     }
   ],
-  "reason": "verifier reported failure",
+  "reason": "proof passed",
   "proof": {
     "proof": {
-      "artifactDigest": "sha256:2f60b864c56c1bae1da81e361baac17cb7dc180e91955cd194d89d113d407296",
+      "artifactDigest": "sha256:3bc329a318e9187d3002031d2f9317165c829fcd4e07dbaeb5a455c524ea17b8",
       "verifier": "2c0ef5ed13765683",
       "policy": "new-sdlc/self-deliver-fanout@1",
-      "result": "fail",
-      "evidence": "home-200=fail,docs-200=fail,digest-embedded=pass"
+      "result": "pass",
+      "evidence": "home-200=pass,docs-200=pass,digest-embedded=pass"
     },
     "keyId": "2c0ef5ed13765683",
-    "signature": "t8hMApE/X0rRBB/5s9pYuHyQTu98Rx3c+Jlxuw5wyzIYxv+lPblHJLPTqcFgbkxPd3oPzEV+P2OVj0MhuGSWAA=="
+    "signature": "ie2e9IpfjCVnBtLfgPnqVUtu+xr27QK5pRRbvXpI+B2o3m+cNDyLOe1Wvvb3O1rcRnEHdixc6szkWsB/kSQ/DA=="
   },
   "trusted": {
     "2c0ef5ed13765683": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApQNzXYDHyqTKCK4NlhcvcZ+YrwytkyVlxCSHZCvOpyw=\n-----END PUBLIC KEY-----\n"
   },
-  "generatedAt": "2026-06-28T14:42:49.542Z"
+  "generatedAt": "2026-06-28T15:03:49.973Z"
 }

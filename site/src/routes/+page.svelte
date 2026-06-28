@@ -31,23 +31,22 @@
 
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="eyebrow">A different delivery loop</p>
-      <h1 id="hero-title">Promote a candidate only when its proof passes.</h1>
+      <p class="eyebrow">new-sdlc</p>
+      <h1 id="hero-title">Push a candidate, run the tests, go live only if they pass.</h1>
       <p class="lead">
-        An agent pushes a candidate to a content-addressed repo. The push deploys it to a slot that
-        serves no traffic, fans out tests in parallel, and turns the feature gate on only when keel
-        admits a signed proof bound to that exact candidate. A candidate that deploys but does not
-        pass is never promoted.
+        new-sdlc is a small pipeline. You push a candidate version, it deploys to a slot that serves
+        no traffic, runs the tests in parallel, and makes that version live only if the tests pass.
+        Run it locally with <code>bun install</code>, <code>bun test</code>, and
+        <code>bun run napkin</code>.
       </p>
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
-        <a class="button secondary" href={site.repository}>View source</a>
       </div>
     </div>
 
     <aside class="receipt-artifact" aria-label="Promotion receipt for the served candidate">
       <div class="receipt-header">
-        <span>receipt</span>
+        <span>served candidate receipt</span>
         <span>{receipt.builtAt.slice(0, 10)}</span>
       </div>
       <div class="receipt-line neutral">
@@ -56,7 +55,7 @@
       </div>
       <div class="receipt-line neutral">
         <span>DEPLOY</span>
-        <code>{receipt.darkUrl ? 'dark slot (non-serving)' : 'candidate -> non-serving slot'}</code>
+        <code>{receipt.darkUrl ? 'dark slot (non-serving)' : 'non-serving slot'}</code>
       </div>
       <div class="receipt-line neutral">
         <span>FANOUT</span>
@@ -64,27 +63,27 @@
       </div>
       <div class="receipt-line" class:accepted={receipt.admitted}>
         <span>{receipt.admitted ? 'ADMITTED' : 'NOT ADMITTED'}</span>
-        <code>keel: {receipt.admitted ? 'proof passed' : 'no valid proof'}</code>
+        <code>{receipt.admitted ? 'proof verified' : 'no valid proof'}</code>
       </div>
       <div class="receipt-line" class:accepted={receipt.promotedToProd} class:neutral={!receipt.promotedToProd}>
         <span>{receipt.promotedToProd ? 'PROMOTED' : 'AWAITING OWNER'}</span>
         <code>{receipt.promotedToProd ? 'gate ON for candidate' : 'prod gate human-held'}</code>
       </div>
       <p>
-        This is the real receipt for the digest this page is serving:
+        This is the receipt for the digest this page serves: verifier
         <code>{receipt.verifier}</code> signed <code>{receipt.policy}</code> bound to the candidate
-        above. A candidate that deploys dark but is not admitted is never promoted.
+        above. A candidate that deploys to a slot but has no verified proof does not go live.
       </p>
     </aside>
   </section>
 
   <section class="section" aria-labelledby="pipeline-title">
     <div class="section-heading">
-      <p class="eyebrow">The pipeline</p>
-      <h2 id="pipeline-title">Four steps, one yes-or-no.</h2>
+      <p class="eyebrow">How it's built</p>
+      <h2 id="pipeline-title">How it's built</h2>
       <p>
-        <code>runPipeline(event, jobs, ports)</code> is a pure function. These steps are exactly its
-        body: deploy, fan out, let keel admit a signed proof, then promote.
+        <code>runPipeline(event, jobs, ports)</code> is a pure function. These four steps are its
+        body, in order. Content addressing binds all of them to the same bytes.
       </p>
     </div>
     <div class="mechanism-list">
@@ -103,11 +102,13 @@
 
   <section id="quick-start" class="section split">
     <div>
-      <p class="eyebrow">Quick start</p>
-      <h2>Try it in three commands.</h2>
+      <p class="eyebrow">How to use it</p>
+      <h2>How to use it</h2>
       <p>
-        The quick path exercises the real orchestration and the hello world. It does not call a
-        network service or ask for a secret.
+        These commands run the real <code>runPipeline</code> against a file-backed backend under
+        <code>.data/</code>. No Cloudflare account, no network call, no secret. Candidate A's tests
+        pass so A goes live; candidate B has a failing test so it is blocked and the previous version
+        stays live.
       </p>
     </div>
     <ol class="command-rail">
@@ -123,10 +124,10 @@
   <section id="ports" class="section">
     <div class="section-heading">
       <p class="eyebrow">The ports</p>
-      <h2>Every side effect is injected.</h2>
+      <h2>The ports</h2>
       <p>
-        The core never deploys, signs, or promotes on its own. It sequences these ports and reads
-        admission from keel. Swapping a backend never edits the orchestration.
+        The core deploys, signs, and promotes through these functions and nothing else. The caller
+        supplies them. Swapping a backend does not edit the orchestration.
       </p>
     </div>
     <dl class="concept-list">
@@ -141,11 +142,12 @@
 
   <section id="fanout" class="section split">
     <div>
-      <p class="eyebrow">fanout^x backends</p>
-      <h2>One port, any backend that joins parallel work.</h2>
+      <p class="eyebrow">Fanout backends</p>
+      <h2>Swapping the fanout backend</h2>
       <p>
-        <code>runFanout</code> is one type. The same pipeline runs against terrarium child runs,
-        Cloudflare Workflows or Facets, or a local <code>Promise.all</code>.
+        <code>runFanout</code> has one type, <code>(jobs, slot) =&gt; Promise&lt;TestResult[]&gt;</code>.
+        The same pipeline runs against a local <code>Promise.all</code>, terrarium child runs, or
+        Cloudflare Workflows or Facets.
       </p>
     </div>
     <div class="mechanism-list">
@@ -160,25 +162,25 @@
 
   <section class="section status-section" aria-labelledby="gate-title">
     <div>
-      <p class="eyebrow">The keel gate</p>
-      <h2 id="gate-title">new-sdlc produces; keel admits.</h2>
+      <p class="eyebrow">The proof check</p>
+      <h2 id="gate-title">How the proof is checked</h2>
       <p>
-        new-sdlc deploys a candidate and assembles evidence. <a href={site.keel}>keel</a> verifies a
-        signed, artifact-bound proof against a trusted keyring and returns a yes or no. new-sdlc
-        never grades its own work, and a passing test with no valid proof for the digest does not
-        promote.
+        new-sdlc assembles a candidate and the test evidence, then signs it. The signed proof is
+        verified against the trusted keys before the live pointer moves. A passing test with no
+        verified proof for the digest does not go live. That verification is the keel library
+        new-sdlc imports.
       </p>
     </div>
     <div class="status-strip">
       <div>
         <span class="dot accepted"></span>
-        <strong>4</strong>
-        <span>pipeline tests pass</span>
+        <strong>10</strong>
+        <span>napkin checks green</span>
       </div>
       <div>
         <span class="dot accepted"></span>
-        <strong>1</strong>
-        <span>runnable hello world</span>
+        <strong>2</strong>
+        <span>signed decisions logged</span>
       </div>
       <div>
         <span class="dot neutral"></span>
@@ -191,7 +193,7 @@
   <section id="limits" class="section split">
     <div>
       <p class="eyebrow">Limits</p>
-      <h2>What new-sdlc does not do.</h2>
+      <h2>Limits</h2>
       <p>
         new-sdlc does not deploy, run servers, or hold your keys. You wire it into the push you
         already have and supply the deploy, fanout, sign, and promote ports.
@@ -277,10 +279,6 @@
     border-color: var(--color-orange);
     background: var(--color-orange);
     color: var(--color-canvas);
-  }
-
-  .button.secondary:hover {
-    border-color: var(--color-blue);
   }
 
   .receipt-artifact {

@@ -13,11 +13,56 @@
 // Every check prints what it LOOKED at. Exit 0 only if all pass. Claims never
 // inflate: a check that cannot be proven is red.
 
+import { spawnSync } from "node:child_process";
 import { createPublicKey, verify as edVerify } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { candidateDigest } from "../../src/ports/digest.mjs";
+
+// ── TLS self-configuration ────────────────────────────────────────────────────
+// The gate must verify dark-URL liveness ITSELF, and on a corp network the dark
+// *.workers.dev slot is reached through the Cloudflare WARP TLS proxy, whose root
+// is not in Node's bundled CA set. Rather than trust the caller to have exported
+// NODE_EXTRA_CA_CERTS (and rather than ever disabling verification), the gate
+// re-execs itself ONCE with the system CA store enabled and a known corp root
+// bundle as NODE_EXTRA_CA_CERTS. This keeps real TLS verification on: if the
+// dark cert genuinely cannot be validated, fetch still throws and the liveness
+// check fails closed.
+function ensureCorpTls() {
+  if (process.env.__GATE_TLS_READY === "1") return;
+  const home = process.env.HOME ?? "";
+  const caCandidates = [
+    process.env.NODE_EXTRA_CA_CERTS,
+    home && `${home}/.local/share/cloudflare-warp-certs/CloudflareRootCertificateCombined.pem`,
+    "/usr/local/share/ca-certificates/Cloudflare_CA.crt",
+  ].filter(Boolean);
+  const caFile = caCandidates.find((p) => {
+    try {
+      return existsSync(p);
+    } catch {
+      return false;
+    }
+  });
+  const supportsSystemCa =
+    process.allowedNodeEnvironmentFlags?.has?.("--use-system-ca") ?? false;
+  const nodeFlags = supportsSystemCa ? ["--use-system-ca"] : [];
+  const env = { ...process.env, __GATE_TLS_READY: "1" };
+  if (caFile) env.NODE_EXTRA_CA_CERTS = caFile;
+  const self = fileURLToPath(import.meta.url);
+  const r = spawnSync(
+    process.execPath,
+    [...nodeFlags, self, ...process.argv.slice(2)],
+    { stdio: "inherit", env },
+  );
+  if (r.error) {
+    console.error(`[gate] TLS re-exec failed: ${r.error.message}`);
+    process.exit(1);
+  }
+  process.exit(r.status ?? 1);
+}
+ensureCorpTls();
+
+const { candidateDigest } = await import("../../src/ports/digest.mjs");
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const PROD_URL = "https://new-sdlc.coey.dev";

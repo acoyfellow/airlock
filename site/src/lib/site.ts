@@ -1,11 +1,9 @@
 export const site = {
   name: 'new-sdlc',
-  title: 'new-sdlc: a candidate is promoted only when keel admits a signed proof',
+  title: 'new-sdlc: push a candidate, run the tests, go live only if they pass',
   description:
-    'A push deploys a candidate to a non-serving slot, fans out tests in parallel, and promotes the feature gate only when keel admits a signed proof bound to that exact candidate.',
+    'A small pipeline. You push a candidate version, it deploys to a slot that serves no traffic, runs the tests in parallel, and makes that version live only if a signed proof says the tests passed.',
   url: 'https://new-sdlc.coey.dev',
-  repository: 'https://github.com/acoyfellow/new-sdlc',
-  keel: 'https://github.com/acoyfellow/keel',
 } as const;
 
 export type StepState = 'produce' | 'gate' | 'promote';
@@ -22,30 +20,30 @@ export type PipelineStep = {
 export const pipeline: readonly PipelineStep[] = [
   {
     index: '01',
-    title: 'Deploy to a non-serving slot',
+    title: 'Deploy to a slot that serves no traffic',
     call: 'deploy(candidate)',
-    body: 'A push names a candidate by content digest. The candidate is deployed to a slot that serves no traffic. Deploying is not promoting.',
+    body: 'A push names a candidate by its content digest. The candidate is deployed to a slot that serves no traffic. Deploying does not make it live.',
     state: 'produce',
   },
   {
     index: '02',
-    title: 'Fan out tests',
+    title: 'Run the tests in parallel',
     call: 'runFanout(jobs)',
-    body: 'Test jobs run in parallel and join into results. The evidence string is name=pass|fail across every job. This is the fanout^x port.',
+    body: 'Test jobs run in parallel against the deployed slot and join into results. The evidence string is name=pass|fail across every job.',
     state: 'produce',
   },
   {
     index: '03',
-    title: 'Sign, then keel admits',
+    title: 'Verify the signed proof',
     call: 'verifySignedProof(proof, candidate, trusted)',
-    body: 'The verifier signs what fanout observed, bound to the exact candidate. keel admits or refuses that signed proof against the trusted keyring.',
+    body: 'The signer signs the test result, bound to the exact candidate digest. The proof is then checked against the trusted keys. That check is the keel library new-sdlc imports.',
     state: 'gate',
   },
   {
     index: '04',
-    title: 'Promote the feature gate',
+    title: 'Flip the live pointer if the proof verifies',
     call: 'setFeatureGate(candidate, true)',
-    body: 'Only an admitted proof flips the gate on. A refused proof leaves the gate off and the running version in place.',
+    body: 'If the proof verifies, the feature gate flips the live pointer to the candidate. If it does not, the pointer stays where it is.',
     state: 'promote',
   },
 ] as const;
@@ -57,11 +55,11 @@ export type PortRow = {
 };
 
 export const ports: readonly PortRow[] = [
-  { port: 'runFanout', type: '(jobs) => Promise<TestResult[]>', role: 'Run the test jobs in parallel. The fanout^x backend.' },
-  { port: 'deploy', type: '(candidate) => Promise<void>', role: 'Put the candidate on a slot that serves no traffic.' },
-  { port: 'setFeatureGate', type: '(candidate, on) => Promise<void>', role: 'The single promote effect. The only way a candidate goes live.' },
-  { port: 'sign', type: '(candidate, evidence, pass) => SignedProof', role: 'The verifier signs what fanout observed, bound to the candidate.' },
-  { port: 'trusted', type: 'TrustedKeys', role: 'The keyring keel checks admission against.' },
+  { port: 'runFanout', type: '(jobs, slot) => Promise<TestResult[]>', role: 'Runs the test jobs in parallel against the deployed slot and returns the results.' },
+  { port: 'deploy', type: '(candidate) => Promise<DeploySlot>', role: 'Puts the candidate on a slot that serves no traffic; returns the URL it answers on.' },
+  { port: 'setFeatureGate', type: '(candidate, on) => Promise<void>', role: 'Flips the live pointer. The only way a candidate goes live.' },
+  { port: 'sign', type: '(candidate, evidence, pass) => SignedProof', role: 'Signs the test result, bound to the candidate.' },
+  { port: 'trusted', type: 'TrustedKeys', role: 'The set of keys a proof is checked against.' },
 ] as const;
 
 export type FanoutBackend = {
@@ -70,20 +68,20 @@ export type FanoutBackend = {
 };
 
 export const fanoutBackends: readonly FanoutBackend[] = [
-  { name: 'terrarium', body: 'Each test is a bounded child agent run, joined when they finish. A test can itself fan out, which is the fanout^x case.' },
+  { name: 'local', body: 'A Promise.all that records a thrown test as a failure instead of crashing. This is localFanout, the backend the napkin uses.' },
+  { name: 'terrarium', body: 'Each test is a bounded child agent run, joined when they finish.' },
   { name: 'cloudflare', body: 'Workflow steps, or Durable Object Facets, one per test, joined back into the results.' },
-  { name: 'local', body: 'A Promise.all that turns a thrown test into a recorded failure. This is localFanout, used by the hello world.' },
 ] as const;
 
 export const quickStart = [
   { command: 'bun install', note: 'install the orchestration and site workspace' },
-  { command: 'bun test', note: 'run the deterministic pipeline tests' },
-  { command: 'bun run hello', note: 'green candidate promoted, red blocked, gate holds the good one' },
+  { command: 'bun test', note: '29 pass: pipeline, napkin, ports, and site copy' },
+  { command: 'bun run napkin', note: 'A goes live, B is blocked on a failing test, the previous version stays live' },
 ] as const;
 
 export const boundaries = [
-  'new-sdlc does not deploy, sign, or promote on its own; every effect is an injected port.',
-  'new-sdlc does not decide trust; keel admits or refuses the signed proof.',
-  'new-sdlc does not promote a candidate without an admitted proof bound to that exact digest.',
-  'The default localFanout is a reference backend; a real terrarium, Workflow, or Facet backend is the integrator job.',
+  'new-sdlc does not deploy, sign, or decide which keys to trust on its own; every effect is a port the caller supplies.',
+  'new-sdlc does not make a candidate live without a verified proof bound to that exact digest.',
+  'localFanout runs the test jobs in-process; isolating untrusted jobs is the job of a different backend.',
+  'The napkin is file-backed under .data/, not a real deployment; new-sdlc.coey.dev is not pointed at a pipeline-promoted candidate.',
 ] as const;

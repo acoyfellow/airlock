@@ -1,114 +1,105 @@
 # new-sdlc
 
-new-sdlc is a small primitive for a different software delivery loop: an agent
-pushes a candidate to a content-addressed artifacts repo; the push deploys that
-candidate to a slot that serves no traffic; tests fan out in parallel; and the
-feature gate is promoted **only** when keel admits a signed proof bound to the
-exact candidate. A candidate that deploys but does not pass is never promoted.
+new-sdlc is a small pipeline: you push a candidate version, it runs the tests,
+and it makes that version live only if the tests pass.
 
-The orchestration is a pure function. Deployment, fanout, promotion, and signing
-are injected ports. new-sdlc runs no network call unless one of those ports makes
-it. The decision to promote rests on the same thing keel guards: a signed,
-artifact-bound proof, not a passing test on its own.
+## What it is
 
-## The Pipeline
+A push names a candidate by its content digest. The pipeline deploys that
+candidate to a slot that serves no traffic, runs the test jobs against it, and
+checks a signed proof that the tests passed. If the proof checks out, it flips
+the live pointer to that candidate. If a test fails, the live pointer does not
+move and the previous version keeps serving.
 
-```text
-agent -> artifacts repo --(on push)--> deploy -> fanout^x tests -> promote
-```
+The orchestration is one pure function, `runPipeline`, in `src/pipeline.ts`. It
+does no deploying, signing, or promoting itself. The caller passes those in as
+functions (the ports).
 
-`runPipeline(event, jobs, ports)` is the orchestration, and these are its exact
-steps:
-
-```text
-push event (repo, candidate digest)
-        │
-        ▼
- 1. deploy(candidate)            ->  to a slot that serves no traffic yet
-        │
-        ▼
- 2. runFanout(jobs)              ->  fanout^x tests in parallel, joined to results
-        │                            evidence = "name=pass,name=fail,..."
-        ▼
- 3. sign(candidate, evidence)    ->  the verifier signs what fanout observed,
-        │                            bound to this exact candidate
-        ▼
-    keel: verifySignedProof(proof, candidate, trusted)
-        │
-   ┌────┴────────┐
-   ▼             ▼
- admitted      refused
-        │             │
-        ▼             ▼
- 4. setFeatureGate    setFeatureGate(candidate, false)
-    (candidate, true)  gate stays off; the running version holds
-```
-
-Step for step, that is `src/pipeline.ts`:
-
-1. `deploy(candidate)` puts the candidate on a non-serving slot.
-2. `runFanout(jobs)` runs the test jobs in parallel and collects results; the
-   evidence string is `name=pass|fail` joined across every job.
-3. `sign(candidate, evidence, passed)` produces a signed proof; keel's
-   `verifySignedProof` decides admission against the trusted keyring, bound to
-   the candidate digest.
-4. On admission, `setFeatureGate(candidate, true)` promotes. On refusal, the gate
-   is left off and the receipt carries keel's reason.
-
-## The Ports
-
-Everything with a side effect is injected. The core never deploys, signs, or
-promotes on its own.
-
-| Port | Responsibility |
-|---|---|
-| `runFanout(jobs)` | Run the test jobs in parallel and return their results. The fanout^x backend. |
-| `deploy(candidate)` | Put the candidate on a slot that serves no traffic. |
-| `setFeatureGate(candidate, on)` | The single promote effect. Turning the gate on is the only way a candidate goes live. |
-| `sign(candidate, evidence, pass)` | The verifier signs what fanout observed, bound to the candidate. Returns a keel `SignedProof`. |
-| `trusted` | The keel `TrustedKeys` map. Admission is checked against it. |
-
-The default `runFanout` is `localFanout`, a `Promise.all` that also turns a
-thrown test into a recorded failure rather than a crash.
-
-## fanout^x backends
-
-`runFanout` is one type — `(jobs) => Promise<TestResult[]>` — so the same
-pipeline runs against any backend that can join parallel results:
-
-- **terrarium** — each test is a bounded child agent run, joined when they
-  finish. This is the fanout^x case: a test can itself fan out.
-- **cloudflare** — Workflow steps, or Durable Object Facets, one per test.
-- **local** — `Promise.all`, which is `localFanout` and what the hello world
-  uses.
-
-Swapping backends never touches the orchestration; only the port changes.
-
-## Quick Start
+## How to use it
 
 ```sh
 bun install
-bun test       # run the pipeline tests
-bun run hello  # run the hello-world: green promoted, red blocked, gate holds
+bun test       # 29 pass: pipeline, napkin, ports, site copy
+bun run napkin # pushes two candidates through runPipeline
 ```
 
-`bun run hello` runs the pipeline twice. A green candidate is admitted by keel
-and the gate is promoted; a candidate with one failing test is refused and the
-gate stays off, so the live feature gate keeps the good candidate.
+`bun run napkin` is file-backed under `.data/` and needs no Cloudflare account.
+It pushes two candidates:
 
-## How It Relates to keel and terrarium
+- Candidate `A` has all-passing tests, so it is promoted and the webapp serves
+  `A`.
+- Candidate `B` has a failing integration test, so it is blocked. The webapp
+  keeps serving `A`.
 
-- **keel** ([github.com/acoyfellow/keel](https://github.com/acoyfellow/keel)) is
-  the gate. new-sdlc imports `makeProof`, `signProof`, `verifySignedProof`, and
-  the `SignedProof` / `TrustedKeys` types from keel. keel decides whether a
-  signed, artifact-bound proof admits a candidate; new-sdlc decides nothing about
-  trust on its own. new-sdlc produces a candidate and the evidence; keel admits
-  or refuses it. That separation — *produce* vs *admit* — is the point.
-- **terrarium** is one fanout^x backend behind `runFanout`. When fanout runs on
-  terrarium, each test is a bounded child run and a test may itself fan out into
-  more child runs, which is why the step is written `fanout^x`.
+The run prints a receipt for each candidate. `B`'s receipt:
 
-new-sdlc depends on keel as a sibling path. It is not published to a registry. See
-[CONTRIBUTING.md](./CONTRIBUTING.md) for the workspace assumption.
+```text
+agent push B: bundle 'app@B — integration fails'
+--- receipt: B ---
+  evidence       unit=pass,lint=pass,integration=fail
+  admitted       false
+  promoted       false
+  reason         verifier reported failure
+  served before  sha256:39133bff70cf057dc4bd813d05697ac8cff6c40cb2a9ec6757a08d63ae749952
+  served after   sha256:39133bff70cf057dc4bd813d05697ac8cff6c40cb2a9ec6757a08d63ae749952
+  webapp serves  [200] sha256:39133bff70...: "app@A — all tests pass"
 
-MIT, version `0.0.1`. An extracted primitive, kept small.
+PASS: A served, B blocked, prior version held
+```
+
+It writes two signed decisions to an audit log under `.data/napkin-run/`:
+`approve` for `A`, `deny` for `B`.
+
+## How it's built
+
+`runPipeline(event, jobs, ports)` runs these steps in order. Each step is in
+`src/pipeline.ts`.
+
+1. The candidate is named by its content digest. Two builds with the same bytes
+   get the same name.
+2. `deploy(candidate)` puts the candidate on a slot that serves no traffic and
+   returns the URL that slot answers on.
+3. `runFanout(jobs, slot)` runs the test jobs in parallel against that slot and
+   collects the results. The evidence string is `name=pass|fail` joined across
+   every job.
+4. `sign(candidate, evidence, passed)` produces a signed proof that the tests
+   passed, bound to that exact candidate digest. `verifySignedProof` then checks
+   the signature and the digest binding against the trusted keys. That check is
+   the keel library new-sdlc imports.
+5. If the proof verifies, `setFeatureGate(candidate, true)` flips the live
+   pointer to the candidate. If it does not, the pointer is left where it is.
+6. The web handler serves whatever the live pointer names.
+
+Content addressing holds this together: the deploy, the proof, and the promote
+all name the same bytes, so a proof for one candidate cannot promote a different
+one.
+
+### Ports
+
+Every effect with a side effect is a function the caller supplies. The core
+calls these and nothing else.
+
+| Port | Type | What it does |
+|---|---|---|
+| `runFanout` | `(jobs, slot) => Promise<TestResult[]>` | Runs the test jobs in parallel against the deployed slot and returns the results. |
+| `deploy` | `(candidate) => Promise<DeploySlot>` | Puts the candidate on a slot that serves no traffic; returns the URL it answers on. |
+| `setFeatureGate` | `(candidate, on) => Promise<void>` | Flips the live pointer. This is the only way a candidate goes live. |
+| `sign` | `(candidate, evidence, pass) => SignedProof` | Signs the test result, bound to the candidate. |
+| `trusted` | `TrustedKeys` | The set of keys a proof is checked against. |
+
+The default `runFanout` is `localFanout`, a `Promise.all` that records a thrown
+test as a failure instead of crashing the run. Other implementations of the
+ports live in [`src/ports/`](./src/ports).
+
+## Limits
+
+- new-sdlc does not deploy, sign, or decide which keys to trust on its own.
+  Every effect is a port the caller supplies.
+- `localFanout` runs the test jobs in-process. Isolating untrusted jobs is the
+  job of a different backend.
+- The napkin is file-backed under `.data/`, not a real deployment.
+  `new-sdlc.coey.dev` is not pointed at a pipeline-promoted candidate; that flip
+  is a human decision.
+
+See [DESIGN.md](./DESIGN.md) for the candidate, proof, and promote flow. MIT,
+version `0.0.1`.

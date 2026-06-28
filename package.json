@@ -8,9 +8,11 @@
     "site"
   ],
   "scripts": {
-    "test": "bun test ./src/*.test.ts",
+    "test": "bun test ./src/*.test.ts ./src/ports/*.test.ts",
     "hello": "bun run examples/hello-world/run.ts",
     "napkin": "bun run examples/napkin/run.ts",
+    "self-deliver": "bun run examples/self-deliver/run.ts",
+    "gate": "node experiments/dogfood/gate.mjs",
     "typecheck": "tsc --noEmit",
     "site:dev": "bun run --cwd site dev",
     "site:build": "bun run --cwd site build",

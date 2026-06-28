@@ -8,6 +8,11 @@ const bannedFragments = [
   'seamless',
   'robust',
   'revolutionary',
+  'the key insight',
+  'it turns out',
+  'real power',
+  'just the beginning',
+  '→',
 ] as const;
 
 describe('site content', () => {
@@ -34,8 +39,8 @@ describe('site content', () => {
     expect(fanoutBackends.map((b) => b.name).sort()).toEqual(['cloudflare', 'local', 'terrarium']);
   });
 
-  test('Given the quick start When read Then it matches the README commands', () => {
-    expect(quickStart.map((q) => q.command)).toEqual(['bun install', 'bun test', 'bun run hello']);
+  test('Given the quick start When read Then it matches the README carrier commands', () => {
+    expect(quickStart.map((q) => q.command)).toEqual(['bun install', 'bun test', 'bun run napkin']);
   });
 
   test('Given the public copy When checked Then unsupported launch claims are absent', () => {

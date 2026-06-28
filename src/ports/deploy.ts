@@ -69,7 +69,7 @@ export function makeDeployer(cfg: DeployConfig) {
   };
 }
 
-function parseWorkersDevUrl(stdout: string, name: string): string | null {
+export function parseWorkersDevUrl(stdout: string, name: string): string | null {
   const matches = stdout.match(/https:\/\/[^\s]+\.workers\.dev/g) ?? [];
   // prefer the URL that carries this worker's name
   const exact = matches.find((u) => u.includes(name));

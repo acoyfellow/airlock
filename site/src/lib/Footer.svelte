@@ -1,10 +1,6 @@
-<script lang="ts">
-  import { site } from '$lib/site';
-</script>
-
 <footer class="footer">
-  <p>MIT. Version 0.0.1. An extracted primitive, kept small.</p>
-  <a href={site.repository}>github.com/acoyfellow/new-sdlc</a>
+  <p>MIT licensed. Version 0.0.1. An extracted primitive, kept small.</p>
+  <p>Source not yet public.</p>
 </footer>
 
 <style>

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { site } from '$lib/site';
   const onDocs = $derived($page.url.pathname.startsWith('/docs'));
 </script>
 
@@ -11,7 +10,6 @@
   </a>
   <div class="nav-links">
     <a href="/docs" aria-current={onDocs ? 'page' : undefined}>Docs</a>
-    <a href={site.repository}>Source</a>
   </div>
 </nav>
 

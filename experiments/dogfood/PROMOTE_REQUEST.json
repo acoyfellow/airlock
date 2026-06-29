@@ -1,6 +1,6 @@
 {
-  "candidate": "sha256:ed910db55ae3c90159ec715c17fe8e142ce1b4324c9e09434f4f71bae42a06f2",
-  "darkUrl": "https://new-sdlc-dark-ed910db55ae3c90159ec715c.cloudflare-support-chat.workers.dev",
-  "requestedAt": "2026-06-29T22:38:46.397Z",
+  "candidate": "sha256:6ed0e0046c5a91f0fdafea3c0cdf7044729f6f527d343fae2d654f0e39260cce",
+  "darkUrl": "https://new-sdlc-dark-6ed0e0046c5a91f0fdafea3c.cloudflare-support-chat.workers.dev",
+  "requestedAt": "2026-06-29T22:49:56.324Z",
   "note": "keel admitted this candidate. Promotion to new-sdlc.coey.dev is human-gated; prod route left unchanged."
 }

@@ -44,6 +44,10 @@
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
       </div>
+      <p class="verify-cue">
+        This page proves itself. The receipt to the right is signed and bound to the exact bytes
+        served here; verify it by looking with <code>node experiments/dogfood/gate.mjs</code>.
+      </p>
     </div>
 
     <div class="hero-aside">
@@ -221,13 +225,29 @@
     </figure>
   </section>
 
-  <div
-    class="bleed cracks-band"
-    role="img"
-    aria-label="A field of cracked, drying earth — the drift a content-addressed candidate is checked against."
-  >
-    <span class="bleed-label">drift — what the digest is checked against</span>
-  </div>
+  <section class="section drift-section" aria-labelledby="drift-title">
+    <div class="section-heading">
+      <p class="eyebrow">Why content addressing</p>
+      <h2 id="drift-title">Drift is what the digest refuses</h2>
+      <p>
+        The candidate is named by a hash of its source bytes. If a file changes after the proof is
+        signed, the recomputed digest no longer matches, and the gate refuses it. The cracks are
+        that drift — caught before anything goes live.
+      </p>
+    </div>
+    <figure class="plate cracks-plate">
+      <img
+        src="/dali/pattern-cracked.jpg"
+        alt="A field of cracked, drying earth, fractured into mismatched plates."
+        width="1024"
+        height="940"
+      />
+      <figcaption>
+        <span>Bytes that no longer match the signed digest.</span>
+        <b>refused</b>
+      </figcaption>
+    </figure>
+  </section>
 
   <section id="limits" class="section split">
     <div>
@@ -274,9 +294,22 @@
   }
 
   .hero-plate img {
-    aspect-ratio: 16 / 8;
+    aspect-ratio: 16 / 6;
     object-fit: cover;
-    object-position: center 44%;
+    object-position: center 46%;
+  }
+
+  .verify-cue {
+    max-width: 640px;
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .verify-cue code {
+    font-size: 0.86rem;
   }
 
   h1,
@@ -527,10 +560,19 @@
     line-height: 1.55;
   }
 
-  .cracks-band {
-    height: 168px;
-    margin-top: var(--space-20);
-    background-image: url('/dali/pattern-cracked.jpg');
+  .drift-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.62fr);
+    gap: var(--space-10);
+    align-items: center;
+  }
+  .drift-section .section-heading {
+    margin-bottom: 0;
+  }
+  .cracks-plate img {
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    object-position: center 45%;
   }
 
   .closing {
@@ -541,36 +583,78 @@
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
-    min-height: 280px;
-    padding: var(--space-10);
+    justify-content: flex-start;
+    min-height: 300px;
+    padding: var(--space-10) var(--space-12);
     overflow: hidden;
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-lg);
     background-image: linear-gradient(
-        90deg,
-        color-mix(in srgb, #2a1606 36%, transparent),
-        transparent 55%
+        100deg,
+        rgba(26, 15, 6, 0.82) 0%,
+        rgba(26, 15, 6, 0.62) 42%,
+        rgba(26, 15, 6, 0.12) 78%,
+        transparent 100%
       ),
       url('/dali/ambient.jpg');
     background-size: cover;
-    background-position: center 38%;
+    background-position: center 40%;
   }
 
   .closing-band p {
-    max-width: 18ch;
+    position: relative;
+    max-width: 16ch;
     margin: 0;
     color: #fff;
     font-size: clamp(1.5rem, 3.2vw, 2.4rem);
     font-weight: 760;
-    line-height: 1.08;
+    line-height: 1.1;
     letter-spacing: -0.02em;
-    text-shadow: 0 1px 24px rgba(26, 15, 6, 0.55);
+    text-shadow: 0 1px 18px rgba(26, 15, 6, 0.7);
   }
 
   @media (max-width: 900px) {
-    .status-section {
+    .status-section,
+    .drift-section {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: clamp(2.1rem, 8.5vw, 2.9rem);
+      line-height: 1.04;
+    }
+
+    .hero {
+      gap: var(--space-8);
+      padding-top: var(--space-10);
+    }
+
+    .hero-aside {
+      gap: var(--space-3);
+    }
+
+    .verify-cue {
+      margin-top: var(--space-5);
+      padding-top: var(--space-4);
+      font-size: 0.9rem;
+    }
+
+    .closing-band {
+      min-height: 240px;
+      padding: var(--space-8);
+      background-image: linear-gradient(
+          180deg,
+          rgba(26, 15, 6, 0.78) 0%,
+          rgba(26, 15, 6, 0.55) 55%,
+          rgba(26, 15, 6, 0.2) 100%
+        ),
+        url('/dali/ambient.jpg');
+    }
+
+    .closing-band p {
+      max-width: none;
     }
   }
 

@@ -18,12 +18,17 @@ functions (the ports).
 ## Setup
 
 new-sdlc imports its proof primitive from **keel** by path, as a sibling
-checkout (keel is not published to a registry). Lay the two repos out as
-siblings before running anything:
+checkout (keel is not published to a registry). keel is open source; clone it
+next to new-sdlc before running anything:
+
+```sh
+# from the directory that contains new-sdlc/
+git clone https://github.com/acoyfellow/keel.git keel
+```
 
 ```text
 parent/
-  keel/       <- checked out next to new-sdlc
+  keel/       <- checked out next to new-sdlc (../keel)
   new-sdlc/   <- imports ../keel/src/index.ts
 ```
 

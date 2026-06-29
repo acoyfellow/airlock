@@ -18,18 +18,20 @@ functions (the ports).
 ## Setup
 
 new-sdlc imports its proof primitive from **keel** by path, as a sibling
-checkout (keel is not published to a registry). keel is open source; clone it
-next to new-sdlc before running anything:
+checkout (keel is not published to a registry). keel is open source. From the
+new-sdlc repo root, clone keel to `../keel` so it lands as a sibling:
 
 ```sh
-# from the directory that contains new-sdlc/
-git clone https://github.com/acoyfellow/keel.git keel
+# run from inside the new-sdlc repo root:
+git clone https://github.com/acoyfellow/keel.git ../keel
 ```
+
+That produces the layout the imports expect:
 
 ```text
 parent/
-  keel/       <- checked out next to new-sdlc (../keel)
-  new-sdlc/   <- imports ../keel/src/index.ts
+  keel/       <- ../keel, checked out next to new-sdlc
+  new-sdlc/   <- imports ../keel/src/index.ts (this repo)
 ```
 
 Without `../keel`, `bun test` and `bun run napkin` fail at module resolution.

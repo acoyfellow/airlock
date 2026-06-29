@@ -54,3 +54,63 @@
   color: var(--color-text);
 }
 .command-rail span { color: var(--color-muted); font-size: 0.85rem; }
+
+/* Framed image accents. The four desert pieces are deliberate, captioned
+   plates tied to a concept — never text-behind wallpaper. One source of truth
+   so both pages frame art identically. */
+.plate {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-layer);
+}
+.plate img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.plate figcaption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border);
+  font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+.plate figcaption b {
+  color: var(--color-orange);
+  font-weight: 700;
+  white-space: nowrap;
+}
+/* Full-bleed texture band: breaks the shell to span the viewport. */
+.bleed {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  border-top: 1px solid var(--color-border-strong);
+  border-bottom: 1px solid var(--color-border-strong);
+  background-color: var(--color-layer-2);
+  background-position: center 55%;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.bleed .bleed-label {
+  position: absolute;
+  left: max(16px, calc(50% - 590px + 16px));
+  bottom: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, #1a0f06 72%, transparent);
+  color: #ffe9cf;
+  font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}

@@ -1,6 +1,6 @@
 <footer class="footer">
   <p>MIT licensed. Version 0.0.1. An extracted primitive, kept small.</p>
-  <p>Source not yet public.</p>
+  <p>Surreal accents are AI-generated for this page, not works by any named artist. Source not yet public.</p>
 </footer>
 
 <style>

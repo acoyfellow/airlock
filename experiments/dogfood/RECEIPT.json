@@ -1,6 +1,6 @@
 {
-  "candidate": "sha256:60cdf3ce5c3a0a6ba480500cbf4608ab4a2e78fe436f3f5c778088eef17c08ba",
-  "darkUrl": "https://new-sdlc-dark-60cdf3ce5c3a0a6ba480500c.cloudflare-support-chat.workers.dev",
+  "candidate": "sha256:ed910db55ae3c90159ec715c17fe8e142ce1b4324c9e09434f4f71bae42a06f2",
+  "darkUrl": "https://new-sdlc-dark-ed910db55ae3c90159ec715c.cloudflare-support-chat.workers.dev",
   "admitted": true,
   "promotedToProd": false,
   "promotion": {
@@ -24,14 +24,14 @@
   "reason": "proof passed",
   "proof": {
     "proof": {
-      "artifactDigest": "sha256:60cdf3ce5c3a0a6ba480500cbf4608ab4a2e78fe436f3f5c778088eef17c08ba",
+      "artifactDigest": "sha256:ed910db55ae3c90159ec715c17fe8e142ce1b4324c9e09434f4f71bae42a06f2",
       "verifier": "2c0ef5ed13765683",
       "policy": "new-sdlc/self-deliver-fanout@1",
       "result": "pass",
       "evidence": "home-200=pass,docs-200=pass"
     },
     "keyId": "2c0ef5ed13765683",
-    "signature": "T+eAMpG9zZuHvkM/hJ+JAG+lz78OuQNjXlLJ6epkuR3DboY7vpmsZGwK12BXX8HN9B/EQBC9wqlt/4p1X2RNBA=="
+    "signature": "k5bWd01To5g8gD9FThJPAtvih1Gwuk8ynvJHdn0FVIR8pzAIc8qBzF5V+dKvaWcJzjnYn5gVgXajvqkQ2skADw=="
   },
   "trusted": {
     "2c0ef5ed13765683": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApQNzXYDHyqTKCK4NlhcvcZ+YrwytkyVlxCSHZCvOpyw=\n-----END PUBLIC KEY-----\n"
@@ -41,5 +41,5 @@
     "served-ref-cas": "the promote/CAS feature-gate flip is exercised by src/napkin.test.ts (local file-backed), NOT end-to-end in this dogfood run; prod promotion is the owner-held keel step.",
     "digest-scope": "the digest is a content address of the SOURCE tree, not a hash of the deployed Worker bytes (the page embeds its own signed receipt and cannot hash itself)."
   },
-  "generatedAt": "2026-06-28T18:24:20.493Z"
+  "generatedAt": "2026-06-29T22:38:55.455Z"
 }

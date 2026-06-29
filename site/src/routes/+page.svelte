@@ -46,7 +46,22 @@
       </div>
     </div>
 
-    <aside class="receipt-artifact" aria-label="Promotion receipt for the served candidate">
+    <div class="hero-aside">
+      <figure class="plate hero-plate">
+        <img
+          src="/dali/hero.jpg"
+          alt="A single dark drop held in the air above cracked desert ground at sunset, its long reflection reaching down into the cracks."
+          width="1024"
+          height="940"
+          fetchpriority="high"
+        />
+        <figcaption>
+          <span>A candidate, suspended over the ground until the proof clears it.</span>
+          <b>dark slot</b>
+        </figcaption>
+      </figure>
+
+      <aside class="receipt-artifact" aria-label="Promotion receipt for the served candidate">
       <div class="receipt-header">
         <span>served candidate receipt</span>
         <span>{receipt.builtAt.slice(0, 10)}</span>
@@ -76,7 +91,8 @@
         <code>{receipt.verifier}</code> signed <code>{receipt.policy}</code> bound to the candidate
         above. A candidate that deploys to a slot but has no verified proof does not go live.
       </p>
-    </aside>
+      </aside>
+    </div>
   </section>
 
   <section class="section" aria-labelledby="pipeline-title">
@@ -163,7 +179,7 @@
   </section>
 
   <section class="section status-section" aria-labelledby="gate-title">
-    <div>
+    <div class="status-copy">
       <p class="eyebrow">The proof check</p>
       <h2 id="gate-title">How the proof is checked</h2>
       <p>
@@ -172,25 +188,46 @@
         verified proof for the digest does not go live. That verification is the keel library
         new-sdlc imports.
       </p>
+      <div class="status-strip">
+        <div>
+          <span class="dot accepted"></span>
+          <strong>10</strong>
+          <span>napkin checks green</span>
+        </div>
+        <div>
+          <span class="dot accepted"></span>
+          <strong>2</strong>
+          <span>signed decisions logged</span>
+        </div>
+        <div>
+          <span class="dot neutral"></span>
+          <strong>3</strong>
+          <span>fanout backends, one port</span>
+        </div>
+      </div>
     </div>
-    <div class="status-strip">
-      <div>
-        <span class="dot accepted"></span>
-        <strong>10</strong>
-        <span>napkin checks green</span>
-      </div>
-      <div>
-        <span class="dot accepted"></span>
-        <strong>2</strong>
-        <span>signed decisions logged</span>
-      </div>
-      <div>
-        <span class="dot neutral"></span>
-        <strong>3</strong>
-        <span>fanout backends, one port</span>
-      </div>
-    </div>
+
+    <figure class="plate monolith-plate">
+      <img
+        src="/dali/glyph-monolith.jpg"
+        alt="A single tall monolith standing on an empty plain, casting one long, sharp shadow."
+        width="1024"
+        height="920"
+      />
+      <figcaption>
+        <span>One admitted candidate, standing on a verified proof.</span>
+        <b>signed</b>
+      </figcaption>
+    </figure>
   </section>
+
+  <div
+    class="bleed cracks-band"
+    role="img"
+    aria-label="A field of cracked, drying earth — the drift a content-addressed candidate is checked against."
+  >
+    <span class="bleed-label">drift — what the digest is checked against</span>
+  </div>
 
   <section id="limits" class="section split">
     <div>
@@ -208,21 +245,38 @@
     </ul>
   </section>
 
+  <section class="closing" aria-label="In one line">
+    <div class="closing-band">
+      <p>Deploy to the dark. Prove it. Then, and only then, go live.</p>
+    </div>
+  </section>
+
   <Footer />
 </main>
 
 <style>
   .hero {
     display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.65fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.7fr);
     gap: var(--space-10);
-    align-items: end;
+    align-items: center;
     min-height: calc(100dvh - 120px);
-    padding: var(--space-20) 0 var(--space-16);
+    padding: var(--space-16) 0 var(--space-16);
   }
 
   .hero-copy {
     max-width: 760px;
+  }
+
+  .hero-aside {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .hero-plate img {
+    aspect-ratio: 16 / 8;
+    object-fit: cover;
+    object-position: center 44%;
   }
 
   h1,
@@ -234,9 +288,10 @@
 
   h1 {
     max-width: 850px;
-    font-size: clamp(2.75rem, 8vw, 6.75rem);
+    font-size: clamp(2.5rem, 5.6vw, 4.75rem);
     font-weight: 780;
-    line-height: 0.92;
+    line-height: 0.96;
+    letter-spacing: -0.02em;
   }
 
   h2 {
@@ -403,7 +458,20 @@
 
   .status-section {
     display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.62fr);
+    gap: var(--space-10);
+    align-items: center;
+  }
+
+  .status-copy {
+    display: grid;
     gap: var(--space-8);
+  }
+
+  .monolith-plate img {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: center 40%;
   }
 
   .status-strip {
@@ -457,6 +525,53 @@
     background: var(--color-layer);
     color: var(--color-muted);
     line-height: 1.55;
+  }
+
+  .cracks-band {
+    height: 168px;
+    margin-top: var(--space-20);
+    background-image: url('/dali/pattern-cracked.jpg');
+  }
+
+  .closing {
+    padding: var(--space-16) 0 var(--space-12);
+  }
+
+  .closing-band {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    padding: var(--space-10);
+    overflow: hidden;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background-image: linear-gradient(
+        90deg,
+        color-mix(in srgb, #2a1606 36%, transparent),
+        transparent 55%
+      ),
+      url('/dali/ambient.jpg');
+    background-size: cover;
+    background-position: center 38%;
+  }
+
+  .closing-band p {
+    max-width: 18ch;
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+    font-weight: 760;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    text-shadow: 0 1px 24px rgba(26, 15, 6, 0.55);
+  }
+
+  @media (max-width: 900px) {
+    .status-section {
+      grid-template-columns: 1fr;
+    }
   }
 
   @media (max-width: 900px) {

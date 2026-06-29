@@ -16,14 +16,14 @@ export type Receipt = {
 };
 
 export const receipt: Receipt = {
-  "candidate": "sha256:60cdf3ce5c3a0a6ba480500cbf4608ab4a2e78fe436f3f5c778088eef17c08ba",
-  "darkUrl": "https://new-sdlc-dark-60cdf3ce5c3a0a6ba480500c.cloudflare-support-chat.workers.dev",
+  "candidate": "sha256:ed910db55ae3c90159ec715c17fe8e142ce1b4324c9e09434f4f71bae42a06f2",
+  "darkUrl": "https://new-sdlc-dark-ed910db55ae3c90159ec715c.cloudflare-support-chat.workers.dev",
   "evidence": "home-200=pass,docs-200=pass",
   "admitted": true,
   "promotedToProd": false,
   "verifier": "2c0ef5ed13765683",
   "policy": "new-sdlc/self-deliver-fanout@1",
-  "signature": "T+eAMpG9zZuHvkM/hJ+JAG+lz78OuQNjXlLJ6epkuR3DboY7vpmsZGwK12BXX8HN9B/EQBC9wqlt/4p1X2RNBA==",
-  "builtAt": "2026-06-28T18:23:34.274Z",
+  "signature": "k5bWd01To5g8gD9FThJPAtvih1Gwuk8ynvJHdn0FVIR8pzAIc8qBzF5V+dKvaWcJzjnYn5gVgXajvqkQ2skADw==",
+  "builtAt": "2026-06-29T22:38:18.796Z",
   "status": "admitted by keel — awaiting owner promotion to new-sdlc.coey.dev"
 };

@@ -284,25 +284,29 @@ async function main() {
     `proof.result=${sp?.proof?.result}`,
   );
 
-  // 8. deploying is not promoting: prod must NOT already serve this candidate.
-  // Distinguish "prod unreachable" (vacuously safe) from "prod reachable, other
-  // digest" so a future DNS break can never masquerade as a real promotion check.
+  // 8. prod must agree with the receipt's CLAIMED promotion state. Until the
+  // owner promotes (promotedToProd:false) prod must NOT serve this candidate
+  // (deploying a dark slot is not promoting). Once the owner promotes
+  // (promotedToProd:true) prod MUST serve exactly this proven candidate. Either
+  // way the gate refuses a prod state that disagrees with the receipt.
   const prod = await fetchStatus(PROD_URL + "/");
   const prodDigest = prod.status === 200 ? metaContent(prod.body, "candidate-digest") : null;
+  const promoted = receipt.promotedToProd === true;
+  const prodServesCandidate = prodDigest === digest;
   record(
-    "prod-not-serving-this-candidate",
-    prodDigest !== digest,
+    promoted ? "prod-serves-promoted-candidate" : "prod-not-serving-this-candidate",
+    promoted ? prodServesCandidate : !prodServesCandidate,
     prod.status === 0
-      ? `prod ${PROD_URL} unreachable (not promoted): ${prod.error ?? ""}`
+      ? `prod ${PROD_URL} unreachable: ${prod.error ?? ""}${promoted ? " (receipt claims PROMOTED)" : " (not promoted)"}`
       : prod.status === 200
-        ? `prod reachable, serves digest=${prodDigest} (candidate ${prodDigest === digest ? "IS" : "is NOT"} promoted)`
-        : `prod ${PROD_URL} -> HTTP ${prod.status} (not serving this candidate)`,
+        ? `prod reachable, serves digest=${prodDigest} (candidate ${prodServesCandidate ? "IS" : "is NOT"} on prod; receipt claims ${promoted ? "PROMOTED" : "dark/awaiting-owner"})`
+        : `prod ${PROD_URL} -> HTTP ${prod.status}`,
   );
 
-  return finish();
+  return finish(receipt.promotedToProd === true);
 }
 
-function finish() {
+function finish(promoted = false) {
   const failed = checks.filter((c) => !c.ok);
   console.log("\n──────── gate summary ────────");
   console.log(`${checks.length - failed.length}/${checks.length} checks passed`);
@@ -311,7 +315,11 @@ function finish() {
     for (const f of failed) console.log(`  - ${f.name}: ${f.detail}`);
     process.exit(1);
   }
-  console.log("GREEN — dark candidate proven by looking. Prod promotion remains owner-held.");
+  console.log(
+    promoted
+      ? "GREEN — proven candidate promoted by the owner and serving on prod."
+      : "GREEN — dark candidate proven by looking. Prod promotion remains owner-held.",
+  );
   process.exit(0);
 }
 

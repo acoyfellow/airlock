@@ -1,6 +1,6 @@
 {
-  "candidate": "sha256:7fbc219f9f807e03e915dd14db176100847541ebb2d32448975e2a2ade4d9649",
-  "darkUrl": "https://airlock-dark-7fbc219f9f807e03e915dd14.cloudflare-support-chat.workers.dev",
-  "requestedAt": "2026-06-29T23:01:31.264Z",
+  "candidate": "sha256:e74e7745856b98b0aa752d8828360dfac9b6246bd28b44ac029b41a13dbb94ab",
+  "darkUrl": "https://airlock-dark-e74e7745856b98b0aa752d88.coy.workers.dev",
+  "requestedAt": "2026-06-30T14:37:31.866Z",
   "note": "keel admitted this candidate. Promotion to airlock.coey.dev is human-gated; prod route left unchanged."
 }

@@ -1,6 +1,6 @@
 export const site = {
   name: 'airlock',
-  title: 'airlock: push a candidate, run the tests, go live only if they pass',
+  title: 'airlock: a new version stays dark until its tests pass',
   description:
     'A small pipeline. You push a candidate version, it deploys to a slot that serves no traffic, runs the tests in parallel, and makes that version live only if a signed proof says the tests passed.',
   url: 'https://airlock.coey.dev',

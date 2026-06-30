@@ -1,12 +1,12 @@
 {
-  "candidate": "sha256:7fbc219f9f807e03e915dd14db176100847541ebb2d32448975e2a2ade4d9649",
-  "darkUrl": "https://airlock-dark-7fbc219f9f807e03e915dd14.cloudflare-support-chat.workers.dev",
+  "candidate": "sha256:e74e7745856b98b0aa752d8828360dfac9b6246bd28b44ac029b41a13dbb94ab",
+  "darkUrl": "https://airlock-dark-e74e7745856b98b0aa752d88.coy.workers.dev",
   "admitted": true,
-  "promotedToProd": false,
+  "promotedToProd": true,
   "promotion": {
-    "state": "awaiting-owner",
+    "state": "promoted-by-owner",
     "target": "airlock.coey.dev",
-    "note": "Promotion is the owner-held, keel-gated step. Not performed by this loop."
+    "note": "Owner exercised the human-held promotion after keel admitted the proof. Prod now serves this exact proven candidate."
   },
   "evidence": "home-200=pass,docs-200=pass",
   "results": [
@@ -24,14 +24,14 @@
   "reason": "proof passed",
   "proof": {
     "proof": {
-      "artifactDigest": "sha256:7fbc219f9f807e03e915dd14db176100847541ebb2d32448975e2a2ade4d9649",
+      "artifactDigest": "sha256:e74e7745856b98b0aa752d8828360dfac9b6246bd28b44ac029b41a13dbb94ab",
       "verifier": "2c0ef5ed13765683",
       "policy": "airlock/self-deliver-fanout@1",
       "result": "pass",
       "evidence": "home-200=pass,docs-200=pass"
     },
     "keyId": "2c0ef5ed13765683",
-    "signature": "L7Q3HzdTDE0rDNQs4pg05iSrY+0h5qvmVqdLrSvWw8M96YjoBCyKWcxjLMzln7Euee1D6iQ6/d9k3uk6zrYTDQ=="
+    "signature": "qjmt4vKXqw5aSEPaa3Y1DgA8qI6e0omC4gQ2F5JZP4G+zcdw9dv3XyQtNmJF8EzCYjhpUW8cQg5jJM7qYSWkDw=="
   },
   "trusted": {
     "2c0ef5ed13765683": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApQNzXYDHyqTKCK4NlhcvcZ+YrwytkyVlxCSHZCvOpyw=\n-----END PUBLIC KEY-----\n"
@@ -41,5 +41,5 @@
     "served-ref-cas": "the promote/CAS feature-gate flip is exercised by src/napkin.test.ts (local file-backed), NOT end-to-end in this dogfood run; prod promotion is the owner-held keel step.",
     "digest-scope": "the digest is a content address of the SOURCE tree, not a hash of the deployed Worker bytes (the page embeds its own signed receipt and cannot hash itself)."
   },
-  "generatedAt": "2026-06-29T23:01:41.055Z"
+  "generatedAt": "2026-06-30T14:37:43.199Z"
 }

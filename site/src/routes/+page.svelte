@@ -90,27 +90,49 @@
     <div class="section-heading">
       <p class="eyebrow">The flow</p>
       <h2 id="flow-title">A candidate stays sealed until the proof clears it.</h2>
+      <p>
+        airlock is one link in a longer chain. Candidates arrive from agents on a pulse or from you,
+        and what goes live flows on to traffic and to whatever watches it. The part airlock owns is
+        the gate in the middle.
+      </p>
     </div>
-    <pre class="flow" aria-label="airlock flow diagram">
-push  ·  an agent or you
-  |
-  v
-artifacts repo            candidate = content digest
-  |
-  |  on push
-  v
-deploy to a dark slot     serves no traffic
-  |
-  v
-fanout^x tests            run in parallel, against the dark slot
-  |
-  v
-signed proof  (keel)      bound to the exact digest
-  |
-  +-- pass --> flip the feature flag   LIVE
-  |
-  +-- fail --> hold                    known-good keeps serving
-</pre>
+
+    <div
+      class="flow"
+      aria-label="airlock flow: a candidate stays sealed until its signed proof clears it"
+    >
+      <div class="flow-open">
+        <span class="flow-open-k">candidates arrive</span>
+        <span class="flow-open-v">agents on a pulse, or you</span>
+      </div>
+      <span class="flow-link" aria-hidden="true"></span>
+
+      <div class="chamber">
+        <span class="chamber-tag">the airlock</span>
+        <ol class="lane">
+          <li><span class="k">push</span><span class="v">a candidate is a content digest</span></li>
+          <li><span class="k">dark slot</span><span class="v">deploys, serves no traffic</span></li>
+          <li><span class="k">fanout tests</span><span class="v">run in parallel against the dark slot</span></li>
+          <li><span class="k">signed proof</span><span class="v">bound to the digest, verified by keel</span></li>
+        </ol>
+        <div class="verdict">
+          <div class="branch pass">
+            <span class="branch-k">proof verifies</span>
+            <span class="branch-v">flip the flag, the candidate goes live</span>
+          </div>
+          <div class="branch hold">
+            <span class="branch-k">no proof</span>
+            <span class="branch-v">hold, the known-good version keeps serving</span>
+          </div>
+        </div>
+      </div>
+
+      <span class="flow-link" aria-hidden="true"></span>
+      <div class="flow-open">
+        <span class="flow-open-k">the rest of the chain</span>
+        <span class="flow-open-v">live traffic, and whatever watches it</span>
+      </div>
+    </div>
   </section>
 
   <section class="section" aria-labelledby="pipeline-title">
@@ -232,8 +254,8 @@ signed proof  (keel)      bound to the exact digest
       <h2 id="drift-title">Drift is what the digest refuses</h2>
       <p>
         The candidate is named by a hash of its source bytes. If a file changes after the proof is
-        signed, the recomputed digest no longer matches, and the gate refuses it. The cracks are
-        that drift — caught before anything goes live.
+        signed, the recomputed digest no longer matches, and the gate refuses it. The change is
+        caught before anything goes live.
       </p>
     </div>
   </section>
@@ -265,17 +287,149 @@ signed proof  (keel)      bound to the exact digest
 
 <style>
   .flow {
-    font-family: "IBM Plex Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.82rem;
-    line-height: 1.5;
-    color: var(--color-text);
-    background: var(--color-layer);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: var(--space-8) var(--space-6);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    overflow-x: auto;
+    background: var(--color-layer);
+  }
+
+  .flow-open {
+    display: grid;
+    gap: 2px;
+    justify-items: center;
+    text-align: center;
+    padding: var(--space-3) var(--space-5);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: transparent;
+  }
+  .flow-open-k {
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--color-text);
+  }
+  .flow-open-v {
+    font-size: 0.8rem;
+    color: var(--color-faint);
+  }
+
+  .flow-link {
+    width: 0;
+    height: 26px;
+    border-left: 1px dashed var(--color-border-strong);
+  }
+
+  .chamber {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-7) var(--space-6) var(--space-6);
+    border: 1.5px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-accent) 6%, var(--color-raised));
+  }
+  .chamber-tag {
+    position: absolute;
+    top: -0.72em;
+    left: var(--space-5);
+    padding: 0 var(--space-2);
+    background: var(--color-layer);
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .lane {
+    display: grid;
+    gap: 0;
     margin: 0;
-    white-space: pre;
+    padding: 0;
+    list-style: none;
+    border-left: 2px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
+  .lane li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 132px 1fr;
+    gap: var(--space-4);
+    align-items: baseline;
+    padding: var(--space-3) 0 var(--space-3) var(--space-5);
+  }
+  .lane li::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 1.15em;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+  .lane .k {
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 600;
+    font-size: 0.86rem;
+    color: var(--color-text);
+  }
+  .lane .v {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .verdict {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+  .branch {
+    display: grid;
+    grid-template-columns: 132px 1fr;
+    gap: var(--space-4);
+    align-items: baseline;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--color-faint);
+    background: var(--color-layer-2);
+  }
+  .branch.pass {
+    border-left-color: var(--color-green);
+  }
+  .branch.hold {
+    border-left-color: var(--color-amber);
+  }
+  .branch-k {
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+  .branch.pass .branch-k {
+    color: var(--color-green);
+  }
+  .branch.hold .branch-k {
+    color: var(--color-amber);
+  }
+  .branch-v {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 640px) {
+    .lane li,
+    .branch {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
   }
   .hero {
     display: grid;

@@ -104,7 +104,12 @@ export function parseChild(name: string, stdout: string): TestResult {
     run = { stdoutTail: stdout };
   }
   const tail = run.stdoutTail ?? "";
-  const result = /RESULT:\s*(PASS|FAIL)/i.exec(tail)?.[1]?.toUpperCase();
+  // Take the LAST RESULT line: the child is told to print its verdict on the
+  // final line, but it often echoes the instruction ("print RESULT: PASS
+  // otherwise RESULT: FAIL") earlier in its summary. The first match would read
+  // that narration instead of the verdict; the last match is the verdict.
+  const matches = [...tail.matchAll(/RESULT:\s*(PASS|FAIL)/gi)];
+  const result = matches.at(-1)?.[1]?.toUpperCase();
   const childOk = run.ok !== false && (run.exitCode === undefined || run.exitCode === 0);
   const ok = childOk && result === "PASS";
   const detail = result ? `child:${result}${childOk ? "" : " (exit!=0)"}` : "no RESULT line from child";

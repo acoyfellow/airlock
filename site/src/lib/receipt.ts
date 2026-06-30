@@ -16,14 +16,14 @@ export type Receipt = {
 };
 
 export const receipt: Receipt = {
-  "candidate": "sha256:7fbc219f9f807e03e915dd14db176100847541ebb2d32448975e2a2ade4d9649",
-  "darkUrl": "https://airlock-dark-7fbc219f9f807e03e915dd14.cloudflare-support-chat.workers.dev",
+  "candidate": "sha256:e74e7745856b98b0aa752d8828360dfac9b6246bd28b44ac029b41a13dbb94ab",
+  "darkUrl": "https://airlock-dark-e74e7745856b98b0aa752d88.coy.workers.dev",
   "evidence": "home-200=pass,docs-200=pass",
   "admitted": true,
-  "promotedToProd": false,
+  "promotedToProd": true,
   "verifier": "2c0ef5ed13765683",
   "policy": "airlock/self-deliver-fanout@1",
-  "signature": "L7Q3HzdTDE0rDNQs4pg05iSrY+0h5qvmVqdLrSvWw8M96YjoBCyKWcxjLMzln7Euee1D6iQ6/d9k3uk6zrYTDQ==",
-  "builtAt": "2026-06-29T23:00:43.457Z",
-  "status": "admitted by keel — awaiting owner promotion to airlock.coey.dev"
+  "signature": "qjmt4vKXqw5aSEPaa3Y1DgA8qI6e0omC4gQ2F5JZP4G+zcdw9dv3XyQtNmJF8EzCYjhpUW8cQg5jJM7qYSWkDw==",
+  "builtAt": "2026-06-30T14:37:01.475Z",
+  "status": "promoted to airlock.coey.dev by owner — proof verified, gate ON"
 };

@@ -92,6 +92,15 @@ describe("terrarium fanout parsing", () => {
 
     const badExit = JSON.stringify({ ok: false, exitCode: 1, stdoutTail: "RESULT: PASS\n" });
     expect(parseChild("t", badExit).ok).toBe(false);
+
+    // The child echoes the instruction (which names both verdicts) before its
+    // final verdict line. The last RESULT is the verdict, not the narration.
+    const echo = JSON.stringify({
+      ok: true,
+      exitCode: 0,
+      stdoutTail: 'I will print "RESULT: PASS" if it passed, otherwise "RESULT: FAIL".\nStatus was 200.\nRESULT: PASS\n',
+    });
+    expect(parseChild("t", echo).ok).toBe(true);
   });
 });
 

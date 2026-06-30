@@ -3,10 +3,10 @@
 // no self-grading, no inline trust. The private key arrives via loadVerifier
 // and is never logged here.
 
-import { makeProof, signProof, type SignedProof } from "../../../keel/src/index.ts";
+import { makeProof, signProof, type SignedProof } from "keel";
 import type { Verifier } from "./keys.ts";
 
-export const SIGN_POLICY = "new-sdlc/self-deliver-fanout@1";
+export const SIGN_POLICY = "airlock/self-deliver-fanout@1";
 
 export function makeSigner(verifier: Verifier) {
   return (candidate: string, evidence: string, pass: boolean): SignedProof =>

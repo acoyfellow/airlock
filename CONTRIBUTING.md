@@ -1,6 +1,6 @@
 # Contributing
 
-new-sdlc is small on purpose. before adding surface, ask whether the work belongs
+airlock is small on purpose. before adding surface, ask whether the work belongs
 in an injected port rather than in the orchestration core.
 
 - `bun install`, `bun test` must stay green and deterministic.
@@ -8,29 +8,29 @@ in an injected port rather than in the orchestration core.
 - every behavioral claim needs a test; every fix needs a regression test.
 - keep the orchestration pure. deploy, fanout, promote, and signing stay in the
   caller's ports, never in `runPipeline`.
-- keep the trust decision in keel. new-sdlc produces a candidate and evidence;
+- keep the trust decision in keel. airlock produces a candidate and evidence;
   keel admits or refuses the signed proof.
 
 ## The keel dependency
 
-new-sdlc depends on **keel** for the proof API: `makeProof`, `signProof`,
+airlock depends on **keel** for the proof API: `makeProof`, `signProof`,
 `verifySignedProof`, and the `SignedProof` / `TrustedKeys` types. keel is not
-published to a registry, so new-sdlc imports it by path as a **sibling
+published to a registry, so airlock imports it by path as a **sibling
 checkout**:
 
 ```text
 parent/
-  keel/       <- checked out next to new-sdlc
-  new-sdlc/   <- imports ../keel/src/index.ts
+  keel/       <- checked out next to airlock
+  airlock/   <- imports ../keel/src/index.ts
 ```
 
 `src/pipeline.ts` and the examples import keel relative to their own location
 (`../../keel/src/index.ts` from `src/`, `../../../keel/src/index.ts` from
 `examples/`), each resolving to the sibling `keel/` checkout. To build or test
-new-sdlc, place keel next to it and run:
+airlock, place keel next to it and run:
 
 ```sh
-cd new-sdlc && bun install && bun test
+cd airlock && bun install && bun test
 ```
 
 This keeps keel the single source of the proof primitive instead of vendoring a

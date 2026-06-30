@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { makeKeyPair } from "../../keel/src/index.ts";
+import { makeKeyPair } from "keel";
 import { runPipeline, localFanout, makeProof, signProof, type Ports, type TestJob } from "./pipeline.ts";
 
 const owner = makeKeyPair();

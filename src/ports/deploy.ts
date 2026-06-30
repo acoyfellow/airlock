@@ -1,8 +1,8 @@
 // The deploy port: push the built site to a NON-serving Cloudflare slot,
 // addressed by the candidate digest. The slot is a standalone Worker named for
-// the digest (new-sdlc-dark-<hex>) on a *.workers.dev URL. It serves the
+// the digest (airlock-dark-<hex>) on a *.workers.dev URL. It serves the
 // candidate so tests and the gate can look at it, but it is NOT wired to the
-// production custom domain (new-sdlc.coey.dev). Deploying is not promoting.
+// production custom domain (airlock.coey.dev). Deploying is not promoting.
 //
 // Promotion — pointing the prod route at an admitted candidate — is a separate,
 // human-gated step (see setFeatureGate) and is intentionally out of this port.
@@ -26,7 +26,7 @@ const DARK_CONFIG = ".dark.wrangler.jsonc";
 /** A worker name derived from the candidate digest: stable, dns-safe, <= 63 ch. */
 export function darkWorkerName(candidate: string): string {
   const hex = candidate.replace(/^sha256:/, "").toLowerCase();
-  return `new-sdlc-dark-${hex.slice(0, 24)}`;
+  return `airlock-dark-${hex.slice(0, 24)}`;
 }
 
 function wrangler(cfg: DeployConfig): string {

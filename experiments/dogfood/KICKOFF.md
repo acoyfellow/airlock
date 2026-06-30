@@ -1,7 +1,7 @@
-You are the DRIVER (decider) for the new-sdlc dogfood loop. Repo: ~/cloudflare/new-sdlc.
+You are the DRIVER (decider) for the airlock dogfood loop. Repo: ~/cloudflare/airlock.
 FIRST: read experiments/dogfood/SPEC.md in full and obey it exactly.
 
-Your job: restructure new-sdlc so it DELIVERS ITSELF through its own pipeline
+Your job: restructure airlock so it DELIVERS ITSELF through its own pipeline
 (candidate -> dark deploy -> fanout^x -> keel-admit signed proof -> promote).
 Replace the in-memory mocks with REAL ports. Prove it end to end against a DARK
 (non-serving) Cloudflare slot.
@@ -13,7 +13,7 @@ Hard rules (from prior loops, non-negotiable):
 - Nothing is green unless the gate proved it. Claims never inflate.
 - Use terrarium (terra --agent "pi -p --no-session" --model <id> "task") as the
   fanout backend for tests; you (Opus) do the build-orchestration + source work.
-- AUTHORITY STOP: do NOT flip the prod gate for new-sdlc.coey.dev and do NOT git
+- AUTHORITY STOP: do NOT flip the prod gate for airlock.coey.dev and do NOT git
   push to any remote. When you have a green gate + signed proof + dark URL, WRITE
   experiments/dogfood/RECEIPT.json and STOP. Report the dark URL + digest + proof
   and wait for the owner to approve promotion.

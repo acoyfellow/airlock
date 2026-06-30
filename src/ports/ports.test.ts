@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, writeFileSync, rmSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { verifySignedProof } from "../../../keel/src/index.ts";
+import { verifySignedProof } from "keel";
 
 import { candidateDigest, sourceFiles } from "./digest.mjs";
 import { makeSigner } from "./sign.ts";
@@ -59,15 +59,15 @@ describe("sign port (keel)", () => {
 describe("deploy port naming", () => {
   test("dark worker name is derived from the digest, dns-safe", () => {
     const name = darkWorkerName("sha256:e8d9a768b85d11af23b0367d9868f5b80");
-    expect(name).toBe("new-sdlc-dark-e8d9a768b85d11af23b0367d");
+    expect(name).toBe("airlock-dark-e8d9a768b85d11af23b0367d");
     expect(name).toMatch(/^[a-z0-9][a-z0-9-]*$/);
     expect(name.length).toBeLessThanOrEqual(63);
   });
 
   test("parses the workers.dev URL from wrangler output, preferring the named one", () => {
-    const out = `Deployed new-sdlc-dark-abc triggers\n  https://new-sdlc-dark-abc.sub.workers.dev\nCurrent Version ID: 123`;
-    expect(parseWorkersDevUrl(out, "new-sdlc-dark-abc")).toBe(
-      "https://new-sdlc-dark-abc.sub.workers.dev",
+    const out = `Deployed airlock-dark-abc triggers\n  https://airlock-dark-abc.sub.workers.dev\nCurrent Version ID: 123`;
+    expect(parseWorkersDevUrl(out, "airlock-dark-abc")).toBe(
+      "https://airlock-dark-abc.sub.workers.dev",
     );
     expect(parseWorkersDevUrl("no url here", "x")).toBeNull();
   });

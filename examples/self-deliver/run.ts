@@ -10,7 +10,7 @@
 //     -> re-embed the full receipt + redeploy the same dark slot
 //     -> write RECEIPT.json
 //
-// This does NOT promote to new-sdlc.coey.dev. Promotion is owner-held. The
+// This does NOT promote to airlock.coey.dev. Promotion is owner-held. The
 // honesty gate (experiments/dogfood/gate.mjs) verifies everything by LOOKING.
 
 import { execFileSync } from "node:child_process";
@@ -130,7 +130,7 @@ async function main() {
     admitted: false,
     promotedToProd: false,
     verifier: verifier.keyId,
-    policy: "new-sdlc/self-deliver-fanout@1",
+    policy: "airlock/self-deliver-fanout@1",
     signature: "",
     builtAt,
     status: "dark candidate — verification in progress",
@@ -184,7 +184,7 @@ async function main() {
 
   console.log("fanout^x         : terrarium child runs against the dark slot…");
   const receipt = await runPipeline(
-    { repo: "new-sdlc", candidate },
+    { repo: "airlock", candidate },
     jobs as TestJob[],
     ports,
   );
@@ -210,7 +210,7 @@ async function main() {
     policy: receipt.proof.proof.policy,
     signature: receipt.proof.signature,
     builtAt,
-    status: "admitted by keel — awaiting owner promotion to new-sdlc.coey.dev",
+    status: "admitted by keel — awaiting owner promotion to airlock.coey.dev",
   });
   console.log("build            : phase 2 (full receipt embedded)…");
   buildSite();
@@ -241,7 +241,7 @@ function writeReceiptArtifact(
     promotedToProd: false,
     promotion: {
       state: "awaiting-owner",
-      target: "new-sdlc.coey.dev",
+      target: "airlock.coey.dev",
       note: "Promotion is the owner-held, keel-gated step. Not performed by this loop.",
     },
     evidence: receipt.evidence,

@@ -21,7 +21,7 @@ function cloudflareApiToken(): string {
   return value;
 }
 
-const projectName = 'new-sdlc';
+const projectName = 'airlock';
 
 const project = await alchemy(projectName, {
   password: requiredEnv('ALCHEMY_PASSWORD'),
@@ -40,7 +40,7 @@ const resourcePrefix = isProduction ? projectName : `${projectName}-${project.st
 
 export const SITE = await SvelteKit(`${resourcePrefix}-site`, {
   name: `${resourcePrefix}-site`,
-  ...(isProduction ? { domains: ['new-sdlc.coey.dev'] } : {}),
+  ...(isProduction ? { domains: ['airlock.coey.dev'] } : {}),
   adopt: true,
   url: true,
 });

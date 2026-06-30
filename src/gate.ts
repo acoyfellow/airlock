@@ -20,10 +20,10 @@ import {
   SignedDecisionLog,
   type SignedProof,
   type TrustedKeys,
-} from "../../keel/src/index.ts";
+} from "keel";
 import type { TestResult } from "./pipeline.ts";
 
-export const GATE_POLICY = "new-sdlc/napkin-fanout@1";
+export const GATE_POLICY = "airlock/napkin-fanout@1";
 export const SERVED_REF = "served"; // the one ref the webapp reads
 
 /** The owner identity that signs admissions. Private PEM stays in memory. */

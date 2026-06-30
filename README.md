@@ -1,6 +1,6 @@
-# new-sdlc
+# airlock
 
-new-sdlc is a small pipeline: you push a candidate version, it runs the tests,
+airlock is a small pipeline: you push a candidate version, it runs the tests,
 and it makes that version live only if the tests pass.
 
 ## What it is
@@ -17,12 +17,12 @@ functions (the ports).
 
 ## Setup
 
-new-sdlc imports its proof primitive from **keel** by path, as a sibling
+airlock imports its proof primitive from **keel** by path, as a sibling
 checkout (keel is not published to a registry). keel is open source. From the
-new-sdlc repo root, clone keel to `../keel` so it lands as a sibling:
+airlock repo root, clone keel to `../keel` so it lands as a sibling:
 
 ```sh
-# run from inside the new-sdlc repo root:
+# run from inside the airlock repo root:
 git clone https://github.com/acoyfellow/keel.git ../keel
 ```
 
@@ -30,8 +30,8 @@ That produces the layout the imports expect:
 
 ```text
 parent/
-  keel/       <- ../keel, checked out next to new-sdlc
-  new-sdlc/   <- imports ../keel/src/index.ts (this repo)
+  keel/       <- ../keel, checked out next to airlock
+  airlock/   <- imports ../keel/src/index.ts (this repo)
 ```
 
 Without `../keel`, `bun test` and `bun run napkin` fail at module resolution.
@@ -87,7 +87,7 @@ It writes two signed decisions to an audit log under `.data/napkin-run/`:
 4. `sign(candidate, evidence, passed)` produces a signed proof that the tests
    passed, bound to that exact candidate digest. `verifySignedProof` then checks
    the signature and the digest binding against the trusted keys. That check is
-   the keel library new-sdlc imports.
+   the keel library airlock imports.
 5. If the proof verifies, `setFeatureGate(candidate, true)` flips the live
    pointer to the candidate. If it does not, the pointer is left where it is.
 6. The web handler serves whatever the live pointer names.
@@ -115,7 +115,7 @@ ports live in [`src/ports/`](./src/ports).
 
 ## Reproduce the dogfood
 
-`bun run napkin` is the local, file-backed demo. The real dogfood — new-sdlc
+`bun run napkin` is the local, file-backed demo. The real dogfood — airlock
 delivering *itself* to a live (but non-serving) Cloudflare slot — is
 `bun run self-deliver`, and `bun run gate` is the independent verifier.
 
@@ -144,12 +144,12 @@ pin, receipt binding) still run.
 
 ## Limits
 
-- new-sdlc does not deploy, sign, or decide which keys to trust on its own.
+- airlock does not deploy, sign, or decide which keys to trust on its own.
   Every effect is a port the caller supplies.
 - `localFanout` runs the test jobs in-process. Isolating untrusted jobs is the
   job of a different backend.
 - The napkin is file-backed under `.data/`, not a real deployment.
-  `new-sdlc.coey.dev` is not pointed at a pipeline-promoted candidate; that flip
+  `airlock.coey.dev` is not pointed at a pipeline-promoted candidate; that flip
   is a human decision.
 - The candidate digest is a content address of the **source** the build is
   produced from, not a hash of the deployed Worker bytes. See

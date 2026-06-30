@@ -10,17 +10,17 @@
   ];
 
   const limits = [
-    { surface: 'Trust', boundary: 'new-sdlc does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
+    { surface: 'Trust', boundary: 'airlock does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
     { surface: 'Fanout backend', boundary: 'localFanout runs jobs in-process. A real terrarium, Workflow, or Facet backend is the integrator port and the place to isolate untrusted jobs.' },
     { surface: 'Effects', boundary: 'Deploy, sign, and promote are ports the caller supplies. The pure core holds no credential and makes no network call unless a port does.' },
-    { surface: 'Signing key', boundary: 'A signing key trusted and active at signing time can sign a proof for a bad candidate. new-sdlc narrows where the key is used; it does not remove the owner key.' },
-    { surface: 'Not yet on a custom domain', boundary: 'The napkin is file-backed under .data/. The Cloudflare ports deploy to a non-serving *.workers.dev slot, but pointing new-sdlc.coey.dev at a candidate is a human decision, not a pipeline step.' },
+    { surface: 'Signing key', boundary: 'A signing key trusted and active at signing time can sign a proof for a bad candidate. airlock narrows where the key is used; it does not remove the owner key.' },
+    { surface: 'Not yet on a custom domain', boundary: 'The napkin is file-backed under .data/. The Cloudflare ports deploy to a non-serving *.workers.dev slot, but pointing airlock.coey.dev at a candidate is a human decision, not a pipeline step.' },
   ];
 </script>
 
 <svelte:head>
-  <title>new-sdlc / docs</title>
-  <meta name="description" content="new-sdlc documentation: the pipeline, the ports, the fanout backends, how the proof is checked, and the limits." />
+  <title>airlock / docs</title>
+  <meta name="description" content="airlock documentation: the pipeline, the ports, the fanout backends, how the proof is checked, and the limits." />
 </svelte:head>
 
 <main class="shell">
@@ -30,7 +30,7 @@
     <p class="eyebrow">Docs</p>
     <h1>The pipeline, the ports, and the limits.</h1>
     <p class="lead">
-      new-sdlc is a small pipeline. You push a candidate version, it deploys to a slot that serves
+      airlock is a small pipeline. You push a candidate version, it deploys to a slot that serves
       no traffic, runs the tests in parallel, and makes that version live only if the tests pass.
       <code>runPipeline</code> is a pure function that calls four ports the caller supplies and
       verifies a signed proof before the live pointer moves.
@@ -98,9 +98,9 @@
       <p class="eyebrow">The proof check</p>
       <h2 id="gate">How the proof is checked</h2>
       <p>
-        new-sdlc assembles a candidate and the test evidence, then signs it. Before the live pointer
+        airlock assembles a candidate and the test evidence, then signs it. Before the live pointer
         moves, the signed proof is verified against the trusted keys, bound to the candidate that
-        was tested. That verification is the keel library new-sdlc imports.
+        was tested. That verification is the keel library airlock imports.
       </p>
     </div>
     <ol class="command-rail">

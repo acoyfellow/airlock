@@ -1,6 +1,6 @@
 # Design
 
-new-sdlc makes a candidate version live only after a signed proof says its tests
+airlock makes a candidate version live only after a signed proof says its tests
 passed, bound to that exact candidate. This page explains the flow and why the
 side effects are ports.
 
@@ -15,7 +15,7 @@ side effects are ports.
    results join into an evidence string, `name=pass|fail` across every job.
 3. **Proof.** The signer signs the result, bound to the candidate digest. The
    pipeline then verifies that signed proof against the trusted keys. The
-   verification is the keel library new-sdlc imports.
+   verification is the keel library airlock imports.
 4. **Promote.** If the proof verifies, the feature gate flips the live pointer
    to the candidate. If it does not, the pointer stays where it is.
 
@@ -49,7 +49,7 @@ runFanout: (jobs, slot) => Promise<TestResult[]>
 
 ## Who signs and who checks
 
-new-sdlc assembles the candidate, runs the tests, and signs the result. The
+airlock assembles the candidate, runs the tests, and signs the result. The
 proof is then checked against the trusted keys. The signing step and the
 checking step are separate. If one component both ran the tests and decided
 whether the result was good enough, a bug in it could promote a bad candidate by
@@ -88,7 +88,7 @@ integrator's ports.
 `*.workers.dev` slot named for the candidate digest, a `runFanout` where each
 route check runs against the deployed slot, a `sign` whose key is loaded from
 the environment, and a `setFeatureGate` that is human-gated for prod (it records
-a promotion request and never flips the `new-sdlc.coey.dev` route).
+a promotion request and never flips the `airlock.coey.dev` route).
 
 A worker's self-report is not the evidence. `experiments/dogfood/gate.mjs`
 decides by looking: it recomputes the candidate digest from source, curls the
@@ -98,9 +98,9 @@ re-derived from the artifact is marked failed.
 
 ## Limits
 
-- new-sdlc does not deploy, sign, or decide which keys to trust on its own.
+- airlock does not deploy, sign, or decide which keys to trust on its own.
   Every effect is a port.
-- new-sdlc does not promote a candidate without a verified proof bound to that
+- airlock does not promote a candidate without a verified proof bound to that
   exact digest.
 - `localFanout` runs the test jobs in-process. A real terrarium, Workflow, or
   Facet backend is the integrator's port and the place to isolate untrusted

@@ -14,7 +14,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync } from "node:fs";
 import { dirname, isAbsolute, join } from "node:path";
-import { makeKeyPair, type TrustedKeys } from "../../../keel/src/index.ts";
+import { makeKeyPair, type TrustedKeys } from "keel";
 
 export type Verifier = {
   keyId: string;

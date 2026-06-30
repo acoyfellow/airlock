@@ -11,7 +11,7 @@
 
 import { rmSync } from "node:fs";
 import { join } from "node:path";
-import { makeKeyPair } from "../../../keel/src/index.ts";
+import { makeKeyPair } from "keel";
 import { makeNapkin, type NapkinReceipt } from "../../src/napkin.ts";
 import type { TestJob } from "../../src/pipeline.ts";
 

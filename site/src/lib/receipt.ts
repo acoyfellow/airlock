@@ -17,13 +17,13 @@ export type Receipt = {
 
 export const receipt: Receipt = {
   "candidate": "sha256:7fbc219f9f807e03e915dd14db176100847541ebb2d32448975e2a2ade4d9649",
-  "darkUrl": "https://new-sdlc-dark-7fbc219f9f807e03e915dd14.cloudflare-support-chat.workers.dev",
+  "darkUrl": "https://airlock-dark-7fbc219f9f807e03e915dd14.cloudflare-support-chat.workers.dev",
   "evidence": "home-200=pass,docs-200=pass",
   "admitted": true,
   "promotedToProd": false,
   "verifier": "2c0ef5ed13765683",
-  "policy": "new-sdlc/self-deliver-fanout@1",
+  "policy": "airlock/self-deliver-fanout@1",
   "signature": "L7Q3HzdTDE0rDNQs4pg05iSrY+0h5qvmVqdLrSvWw8M96YjoBCyKWcxjLMzln7Euee1D6iQ6/d9k3uk6zrYTDQ==",
   "builtAt": "2026-06-29T23:00:43.457Z",
-  "status": "admitted by keel — awaiting owner promotion to new-sdlc.coey.dev"
+  "status": "admitted by keel — awaiting owner promotion to airlock.coey.dev"
 };

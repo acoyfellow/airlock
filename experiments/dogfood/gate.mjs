@@ -15,7 +15,7 @@
 //      against a PINNED trust anchor committed to git (experiments/dogfood/
 //      trusted-keys.json) — NOT the keyring carried in the receipt — and requires
 //      it to bind the EXACT recomputed digest with result=pass,
-//   6. confirms prod (new-sdlc.coey.dev) is NOT already serving this candidate
+//   6. confirms prod (airlock.coey.dev) is NOT already serving this candidate
 //      (deploying is not promoting).
 //
 // NOTE ON WHAT THE DIGEST PROVES: the candidate digest is a content address of
@@ -80,7 +80,7 @@ ensureCorpTls();
 const { candidateDigest } = await import("../../src/ports/digest.mjs");
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const PROD_URL = "https://new-sdlc.coey.dev";
+const PROD_URL = "https://airlock.coey.dev";
 
 const checks = [];
 function record(name, ok, detail) {
@@ -124,7 +124,7 @@ function metaContent(body, name) {
 // that is not the slot this exact digest would deploy to.
 function darkWorkerName(digest) {
   const hex = digest.replace(/^sha256:/, "").toLowerCase();
-  return `new-sdlc-dark-${hex.slice(0, 24)}`;
+  return `airlock-dark-${hex.slice(0, 24)}`;
 }
 
 async function main() {
@@ -188,7 +188,7 @@ async function main() {
 
   // 3. the dark URL must be the slot THIS digest deploys to — derived, not trusted.
   // Anchor the worker name to the hostname's LEFTMOST LABEL (not a substring), so
-  // a host like new-sdlc-dark-<hex>-attacker.<...>.workers.dev cannot slip past.
+  // a host like airlock-dark-<hex>-attacker.<...>.workers.dev cannot slip past.
   const darkUrl = receipt.darkUrl;
   const expectedName = darkWorkerName(digest);
   let urlHostOk = false;

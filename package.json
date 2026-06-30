@@ -1,5 +1,5 @@
 {
-  "name": "new-sdlc",
+  "name": "airlock",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -24,5 +24,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "keel": "github:acoyfellow/keel"
   }
 }

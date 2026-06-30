@@ -1,9 +1,9 @@
 export const site = {
-  name: 'new-sdlc',
-  title: 'new-sdlc: push a candidate, run the tests, go live only if they pass',
+  name: 'airlock',
+  title: 'airlock: push a candidate, run the tests, go live only if they pass',
   description:
     'A small pipeline. You push a candidate version, it deploys to a slot that serves no traffic, runs the tests in parallel, and makes that version live only if a signed proof says the tests passed.',
-  url: 'https://new-sdlc.coey.dev',
+  url: 'https://airlock.coey.dev',
 } as const;
 
 export type StepState = 'produce' | 'gate' | 'promote';
@@ -36,7 +36,7 @@ export const pipeline: readonly PipelineStep[] = [
     index: '03',
     title: 'Verify the signed proof',
     call: 'verifySignedProof(proof, candidate, trusted)',
-    body: 'The signer signs the test result, bound to the exact candidate digest. The proof is then checked against the trusted keys. That check is the keel library new-sdlc imports.',
+    body: 'The signer signs the test result, bound to the exact candidate digest. The proof is then checked against the trusted keys. That check is the keel library airlock imports.',
     state: 'gate',
   },
   {
@@ -80,8 +80,8 @@ export const quickStart = [
 ] as const;
 
 export const boundaries = [
-  'new-sdlc does not deploy, sign, or decide which keys to trust on its own; every effect is a port the caller supplies.',
-  'new-sdlc does not make a candidate live without a verified proof bound to that exact digest.',
+  'airlock does not deploy, sign, or decide which keys to trust on its own; every effect is a port the caller supplies.',
+  'airlock does not make a candidate live without a verified proof bound to that exact digest.',
   'localFanout runs the test jobs in-process; isolating untrusted jobs is the job of a different backend.',
-  'The napkin is file-backed under .data/, not a real deployment; new-sdlc.coey.dev is not pointed at a pipeline-promoted candidate.',
+  'The napkin is file-backed under .data/, not a real deployment; airlock.coey.dev is not pointed at a pipeline-promoted candidate.',
 ] as const;

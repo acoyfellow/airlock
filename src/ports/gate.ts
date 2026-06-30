@@ -1,5 +1,5 @@
 // The setFeatureGate port: the ONLY promote effect. Promotion means pointing
-// production routing (new-sdlc.coey.dev) at the admitted candidate's slot.
+// production routing (airlock.coey.dev) at the admitted candidate's slot.
 //
 // For prod this is HUMAN-GATED by design — it is the whole point of the loop.
 // In the dogfood configuration this port never flips prod. When keel admits and
@@ -26,7 +26,7 @@ export function makeHumanGate(cfg: GateConfig) {
         candidate,
         darkUrl: cfg.darkUrl() ?? null,
         requestedAt: new Date().toISOString(),
-        note: "keel admitted this candidate. Promotion to new-sdlc.coey.dev is human-gated; prod route left unchanged.",
+        note: "keel admitted this candidate. Promotion to airlock.coey.dev is human-gated; prod route left unchanged.",
       };
       writeFileSync(
         join(cfg.repoRoot, "experiments/dogfood/PROMOTE_REQUEST.json"),

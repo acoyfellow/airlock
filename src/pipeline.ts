@@ -16,7 +16,7 @@ import {
   verifySignedProof,
   type SignedProof,
   type TrustedKeys,
-} from "../../keel/src/index.ts";
+} from "keel";
 
 export type TestResult = { name: string; ok: boolean; detail: string };
 // A unit job runs in-process; an integration job is a probe a fanout backend

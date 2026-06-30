@@ -2,7 +2,7 @@
 // Runs the pipeline twice: a green candidate promotes; a candidate with one
 // failing test is blocked, and the feature gate stays off.
 
-import { makeKeyPair } from "../../../keel/src/index.ts";
+import { makeKeyPair } from "keel";
 import { runPipeline, localFanout, makeProof, signProof, type Ports, type TestJob } from "../../src/pipeline.ts";
 
 const owner = makeKeyPair();

@@ -1,7 +1,7 @@
-# DOGFOOD LOOP — make new-sdlc deliver itself
+# DOGFOOD LOOP — make airlock deliver itself
 
 ## Why this loop exists
-new-sdlc *describes* a delivery loop (candidate -> dark deploy -> fanout^x tests
+airlock *describes* a delivery loop (candidate -> dark deploy -> fanout^x tests
 -> keel-admits-signed-proof -> promote feature gate) but does NOT deliver itself
 that way. Today the site ships via a plain alchemy deploy straight to prod,
 bypassing runPipeline. Only localFanout is real; deploy, sign, setFeatureGate,
@@ -10,7 +10,7 @@ This loop makes the repo deliver itself through its own pipeline.
 
 ## Definition of done (the only thing that counts)
 A push of a content-addressed candidate of THIS repo runs runPipeline with REAL
-ports, and new-sdlc.coey.dev only serves a new version after keel admits a
+ports, and airlock.coey.dev only serves a new version after keel admits a
 signed proof bound to that exact candidate digest. The homepage shows the real
 promotion receipt for the digest it is currently serving.
 
@@ -38,7 +38,7 @@ promotion receipt for the digest it is currently serving.
 ## Scope guard (authority)
 - The loop MAY: edit source, build, deploy to a DARK/non-serving slot, run
   fanout, produce a signed proof, and write receipts.
-- The loop may NOT: flip the prod gate for new-sdlc.coey.dev, or git push to a
+- The loop may NOT: flip the prod gate for airlock.coey.dev, or git push to a
   remote, without explicit owner approval. Promotion is the keel-gated,
   owner-held step — that is the whole point of the design. Surface the proof +
   dark URL and STOP for the promote decision.

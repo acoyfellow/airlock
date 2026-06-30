@@ -1,11 +1,11 @@
 {
   "candidate": "sha256:7fbc219f9f807e03e915dd14db176100847541ebb2d32448975e2a2ade4d9649",
-  "darkUrl": "https://new-sdlc-dark-7fbc219f9f807e03e915dd14.cloudflare-support-chat.workers.dev",
+  "darkUrl": "https://airlock-dark-7fbc219f9f807e03e915dd14.cloudflare-support-chat.workers.dev",
   "admitted": true,
   "promotedToProd": false,
   "promotion": {
     "state": "awaiting-owner",
-    "target": "new-sdlc.coey.dev",
+    "target": "airlock.coey.dev",
     "note": "Promotion is the owner-held, keel-gated step. Not performed by this loop."
   },
   "evidence": "home-200=pass,docs-200=pass",
@@ -26,7 +26,7 @@
     "proof": {
       "artifactDigest": "sha256:7fbc219f9f807e03e915dd14db176100847541ebb2d32448975e2a2ade4d9649",
       "verifier": "2c0ef5ed13765683",
-      "policy": "new-sdlc/self-deliver-fanout@1",
+      "policy": "airlock/self-deliver-fanout@1",
       "result": "pass",
       "evidence": "home-200=pass,docs-200=pass"
     },

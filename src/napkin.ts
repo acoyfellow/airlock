@@ -22,7 +22,7 @@ import {
   type TestJob,
   type TestResult,
 } from "./pipeline.ts";
-import type { SignedProof } from "../../keel/src/index.ts";
+import type { SignedProof } from "keel";
 import { ArtifactsRepo, FileArtifactStore } from "./artifacts.ts";
 import { SlotStore, makeLocalDeployer } from "./deploy.ts";
 import { KeelGate, type Owner } from "./gate.ts";

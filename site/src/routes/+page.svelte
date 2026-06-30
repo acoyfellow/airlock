@@ -33,10 +33,10 @@
 
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="eyebrow">new-sdlc</p>
+      <p class="eyebrow">airlock</p>
       <h1 id="hero-title">Push a candidate, run the tests, go live only if they pass.</h1>
       <p class="lead">
-        new-sdlc is a small pipeline. You push a candidate version, it deploys to a slot that serves
+        airlock is a small pipeline. You push a candidate version, it deploys to a slot that serves
         no traffic, runs the tests in parallel, and makes that version live only if the tests pass.
         Run it locally with <code>bun install</code>, <code>bun test</code>, and
         <code>bun run napkin</code>.
@@ -187,10 +187,10 @@
       <p class="eyebrow">The proof check</p>
       <h2 id="gate-title">How the proof is checked</h2>
       <p>
-        new-sdlc assembles a candidate and the test evidence, then signs it. The signed proof is
+        airlock assembles a candidate and the test evidence, then signs it. The signed proof is
         verified against the trusted keys before the live pointer moves. A passing test with no
         verified proof for the digest does not go live. That verification is the keel library
-        new-sdlc imports.
+        airlock imports.
       </p>
       <div class="status-strip">
         <div>
@@ -254,7 +254,7 @@
       <p class="eyebrow">Limits</p>
       <h2>Limits</h2>
       <p>
-        new-sdlc does not deploy, run servers, or hold your keys. You wire it into the push you
+        airlock does not deploy, run servers, or hold your keys. You wire it into the push you
         already have and supply the deploy, fanout, sign, and promote ports.
       </p>
     </div>

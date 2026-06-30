@@ -4,9 +4,9 @@
 </script>
 
 <nav class="topbar" aria-label="Primary">
-  <a class="brand" href="/" aria-label="new-sdlc home">
-    <img class="brand-mark" src="/new-sdlc-mark.png" alt="" width="22" height="22" aria-hidden="true" />
-    <span>new-sdlc</span>
+  <a class="brand" href="/" aria-label="airlock home">
+    <img class="brand-mark" src="/airlock-mark.png" alt="" width="22" height="22" aria-hidden="true" />
+    <span>airlock</span>
   </a>
   <div class="nav-links">
     <a href="/docs" aria-current={onDocs ? 'page' : undefined}>Docs</a>

@@ -7,7 +7,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { makeKeyPair, verifySignedChain } from "../../keel/src/index.ts";
+import { makeKeyPair, verifySignedChain } from "keel";
 import { makeNapkin } from "./napkin.ts";
 import { digestBundle } from "./artifacts.ts";
 import type { TestJob } from "./pipeline.ts";

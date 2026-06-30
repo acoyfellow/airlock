@@ -16,14 +16,14 @@ export type Receipt = {
 };
 
 export const receipt: Receipt = {
-  "candidate": "sha256:e74e7745856b98b0aa752d8828360dfac9b6246bd28b44ac029b41a13dbb94ab",
-  "darkUrl": "https://airlock-dark-e74e7745856b98b0aa752d88.coy.workers.dev",
+  "candidate": "sha256:e7ab3959eb089c63cbb0672077a23ea2f5dbc081c23458a4ecaf6852342f390f",
+  "darkUrl": "https://airlock-dark-e7ab3959eb089c63cbb06720.coy.workers.dev",
   "evidence": "home-200=pass,docs-200=pass",
   "admitted": true,
   "promotedToProd": true,
   "verifier": "2c0ef5ed13765683",
   "policy": "airlock/self-deliver-fanout@1",
-  "signature": "qjmt4vKXqw5aSEPaa3Y1DgA8qI6e0omC4gQ2F5JZP4G+zcdw9dv3XyQtNmJF8EzCYjhpUW8cQg5jJM7qYSWkDw==",
-  "builtAt": "2026-06-30T14:37:01.475Z",
+  "signature": "m5pKKZvwU51qTZUtXioibQWjsFK3XdcR0XUTZjxJ0xKLVrLS7er3WRtvIo8xChEw7sf9HlbG3Isqt4MCYSBJCA==",
+  "builtAt": "2026-06-30T15:41:25.002Z",
   "status": "promoted to airlock.coey.dev by owner — proof verified, gate ON"
 };

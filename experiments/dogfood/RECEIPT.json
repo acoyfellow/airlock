@@ -1,6 +1,6 @@
 {
-  "candidate": "sha256:e74e7745856b98b0aa752d8828360dfac9b6246bd28b44ac029b41a13dbb94ab",
-  "darkUrl": "https://airlock-dark-e74e7745856b98b0aa752d88.coy.workers.dev",
+  "candidate": "sha256:e7ab3959eb089c63cbb0672077a23ea2f5dbc081c23458a4ecaf6852342f390f",
+  "darkUrl": "https://airlock-dark-e7ab3959eb089c63cbb06720.coy.workers.dev",
   "admitted": true,
   "promotedToProd": true,
   "promotion": {
@@ -24,14 +24,14 @@
   "reason": "proof passed",
   "proof": {
     "proof": {
-      "artifactDigest": "sha256:e74e7745856b98b0aa752d8828360dfac9b6246bd28b44ac029b41a13dbb94ab",
+      "artifactDigest": "sha256:e7ab3959eb089c63cbb0672077a23ea2f5dbc081c23458a4ecaf6852342f390f",
       "verifier": "2c0ef5ed13765683",
       "policy": "airlock/self-deliver-fanout@1",
       "result": "pass",
       "evidence": "home-200=pass,docs-200=pass"
     },
     "keyId": "2c0ef5ed13765683",
-    "signature": "qjmt4vKXqw5aSEPaa3Y1DgA8qI6e0omC4gQ2F5JZP4G+zcdw9dv3XyQtNmJF8EzCYjhpUW8cQg5jJM7qYSWkDw=="
+    "signature": "m5pKKZvwU51qTZUtXioibQWjsFK3XdcR0XUTZjxJ0xKLVrLS7er3WRtvIo8xChEw7sf9HlbG3Isqt4MCYSBJCA=="
   },
   "trusted": {
     "2c0ef5ed13765683": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApQNzXYDHyqTKCK4NlhcvcZ+YrwytkyVlxCSHZCvOpyw=\n-----END PUBLIC KEY-----\n"
@@ -41,5 +41,5 @@
     "served-ref-cas": "the promote/CAS feature-gate flip is exercised by src/napkin.test.ts (local file-backed), NOT end-to-end in this dogfood run; prod promotion is the owner-held keel step.",
     "digest-scope": "the digest is a content address of the SOURCE tree, not a hash of the deployed Worker bytes (the page embeds its own signed receipt and cannot hash itself)."
   },
-  "generatedAt": "2026-06-30T14:37:43.199Z"
+  "generatedAt": "2026-06-30T15:42:04.054Z"
 }

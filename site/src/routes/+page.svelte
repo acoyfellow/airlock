@@ -51,19 +51,6 @@
     </div>
 
     <div class="hero-aside">
-      <figure class="plate hero-plate">
-        <img
-          src="/dali/hero.jpg"
-          alt="A single dark drop held in the air above cracked desert ground at sunset, its long reflection reaching down into the cracks."
-          width="1024"
-          height="940"
-          fetchpriority="high"
-        />
-        <figcaption>
-          <span>A candidate, suspended over the ground until the proof clears it.</span>
-          <b>dark slot</b>
-        </figcaption>
-      </figure>
 
       <aside class="receipt-artifact" aria-label="Promotion receipt for the served candidate">
       <div class="receipt-header">
@@ -237,19 +224,6 @@ signed proof  (keel)      bound to the exact digest
         </div>
       </div>
     </div>
-
-    <figure class="plate monolith-plate">
-      <img
-        src="/dali/glyph-monolith.jpg"
-        alt="A single tall monolith standing on an empty plain, casting one long, sharp shadow."
-        width="1024"
-        height="920"
-      />
-      <figcaption>
-        <span>One admitted candidate, standing on a verified proof.</span>
-        <b>signed</b>
-      </figcaption>
-    </figure>
   </section>
 
   <section class="section drift-section" aria-labelledby="drift-title">
@@ -262,18 +236,6 @@ signed proof  (keel)      bound to the exact digest
         that drift — caught before anything goes live.
       </p>
     </div>
-    <figure class="plate cracks-plate">
-      <img
-        src="/dali/pattern-cracked.jpg"
-        alt="A field of cracked, drying earth, fractured into mismatched plates."
-        width="1024"
-        height="940"
-      />
-      <figcaption>
-        <span>Bytes that no longer match the signed digest.</span>
-        <b>refused</b>
-      </figcaption>
-    </figure>
   </section>
 
   <section id="limits" class="section split">
@@ -330,12 +292,6 @@ signed proof  (keel)      bound to the exact digest
   .hero-aside {
     display: grid;
     gap: var(--space-4);
-  }
-
-  .hero-plate img {
-    aspect-ratio: 16 / 6;
-    object-fit: cover;
-    object-position: center 46%;
   }
 
   .verify-cue {
@@ -540,12 +496,6 @@ signed proof  (keel)      bound to the exact digest
     gap: var(--space-8);
   }
 
-  .monolith-plate img {
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    object-position: center 40%;
-  }
-
   .status-strip {
     display: flex;
     flex-wrap: wrap;
@@ -607,11 +557,6 @@ signed proof  (keel)      bound to the exact digest
   }
   .drift-section .section-heading {
     margin-bottom: 0;
-  }
-  .cracks-plate img {
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    object-position: center 45%;
   }
 
   .closing {
@@ -675,13 +620,6 @@ signed proof  (keel)      bound to the exact digest
     .closing-band {
       min-height: 240px;
       padding: var(--space-8);
-      background-image: linear-gradient(
-          180deg,
-          rgba(26, 15, 6, 0.78) 0%,
-          rgba(26, 15, 6, 0.55) 55%,
-          rgba(26, 15, 6, 0.2) 100%
-        ),
-        url('/dali/ambient.jpg');
     }
 
     .closing-band p {

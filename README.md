@@ -17,25 +17,13 @@ functions (the ports).
 
 ## Setup
 
-airlock imports its proof primitive from **keel** by path, as a sibling
-checkout (keel is not published to a registry). keel is open source. From the
-airlock repo root, clone keel to `../keel` so it lands as a sibling:
-
 ```sh
-# run from inside the airlock repo root:
-git clone https://github.com/acoyfellow/keel.git ../keel
+bun install
 ```
 
-That produces the layout the imports expect:
-
-```text
-parent/
-  keel/       <- ../keel, checked out next to airlock
-  airlock/   <- imports ../keel/src/index.ts (this repo)
-```
-
-Without `../keel`, `bun test` and `bun run napkin` fail at module resolution.
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+airlock checks its proof with **keel**, pulled in as a git dependency
+(`keel: github:acoyfellow/keel`). keel is the proof-check building block; airlock
+is the pipeline around it. Nothing else to clone.
 
 ## How to use it
 
@@ -71,6 +59,36 @@ PASS: A served, B blocked, prior version held
 
 It writes two signed decisions to an audit log under `.data/napkin-run/`:
 `approve` for `A`, `deny` for `B`.
+
+## Repo map
+
+Understand the whole thing from the layout, not by reading every line:
+
+```text
+src/
+  pipeline.ts     the pure core: runPipeline(candidate, jobs, ports)
+                  candidate -> deploy(dark) -> fanout tests -> proof -> promote|hold.
+                  no side effects of its own; everything real is a port.
+  ports/          the only place real things happen (inject these):
+    deploy.ts       lands a candidate on a non-serving dark slot, returns its URL
+    fanout.ts       runs the test jobs (local; terrarium / Workflow / Facet behind same type)
+    sign.ts         signs the result, bound to the digest (the only key use)
+    keys.ts         the trusted keys a proof is checked against
+    gate.ts         the promote effect (flip the live pointer); human-gated for prod
+    index.ts        assembles the ports
+  serve.ts        the webapp: serves only the candidate the gate cleared.
+                  feature = test + flag; a flag is on iff its test passed in the served candidate.
+  artifacts.ts    content-addressed store: exact bytes by digest
+  deploy.ts       dark-slot deploy helper
+  gate.ts         promote-gate wiring
+  napkin.ts       the end-to-end demo, fully file-backed
+examples/         hello-world, napkin, self-deliver (airlock shipping itself)
+experiments/dogfood   the honesty gate: decides by LOOKING (re-derives digest, re-verifies proof)
+site/             the airlock.coey.dev site (light, AX-flavored)
+```
+
+keel (git dependency) is the proof-check primitive: `verifySignedProof`, `makeProof`,
+`DecisionLog`. airlock is the pipeline that uses it.
 
 ## How it's built
 

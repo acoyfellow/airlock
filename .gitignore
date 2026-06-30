@@ -22,3 +22,6 @@ experiments/dogfood/.verifier-key.json
 # any owner/verifier signing key the napkin persists locally — never commit
 *.verifier-key.json
 .data/**/*key*
+
+# dogfood evidence screenshots (generated, heavy) — keep portable JSON/MD receipts in dogfood/ root
+experiments/dogfood/evidence/

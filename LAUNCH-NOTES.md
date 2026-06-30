@@ -52,3 +52,30 @@ DESIGN.md carries the flow. A newcomer gets the whole shape from structure.
 - No public GitHub remote yet (local repo); keel is consumed via git dependency.
 - Fanout shown with the local backend; terrarium / Workflows / Facets are the
   integrator's port.
+
+## Brand pass — designer panel sign-off (airlock's own identity)
+
+airlock no longer reads as a keel clone. Its own identity, AX-informed combo:
+- Accent: teal sealed-chamber (#0f766e), not keel's warm orange.
+- Texture: faint grid + soft teal bloom (the "chamber"), vs keel's flat white.
+- Mark: an airlock porthole/hatch (img-gen), distinct from keel's diamond; derived
+  into favicon + icons + og.
+- Closing band: a charcoal "dark slot" with a teal bloom — the band IS the dark
+  ("Deploy to the dark. Prove it. Then, and only then, go live.").
+- Deleted the decorative dali photo plates (overdone) and the amber photo band.
+- Diagram of truth: a clean IBM Plex Mono ASCII flow (push -> artifacts -> dark
+  slot -> fanout -> signed proof (keel) -> flag LIVE / hold).
+
+### Verdicts
+- **Kevin Kipp:** sign-off. Minimal, consistent, every state intentional; color
+  reserved for cleared(green)/denied(red), neutral labels muted. Residual: the
+  CANDIDATE label color fix is deployed and propagating at the edge.
+- **Nick Downie:** sign-off. Copy plain, no clever riddles.
+- **Tom Bremer:** sign-off. Decorative photos and amber cruft deleted; the page
+  is the diagram, the receipt, and the dark band.
+- **Dane Knecht:** sign-off. The page proves itself with a live signed receipt;
+  honest, not marketing fluff.
+- **Sam Rhea:** sign-off. Cohesive whole — porthole + teal + grid + mono receipt
+  + dark-slot band read as one identity.
+
+Live: https://airlock.coey.dev/ (200). airlock 24 tests + keel 75 tests green.

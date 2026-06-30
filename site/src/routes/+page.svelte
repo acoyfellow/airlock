@@ -406,7 +406,7 @@ signed proof  (keel)      bound to the exact digest
   }
 
   .receipt-line.neutral span {
-    color: var(--color-amber);
+    color: var(--color-muted);
   }
 
   .receipt-artifact p {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import ThemeToggle from '$lib/ThemeToggle.svelte';
   const onDocs = $derived($page.url.pathname.startsWith('/docs'));
 </script>
 
@@ -10,6 +11,7 @@
   </a>
   <div class="nav-links">
     <a href="/docs" aria-current={onDocs ? 'page' : undefined}>Docs</a>
+    <ThemeToggle />
   </div>
 </nav>
 

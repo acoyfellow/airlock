@@ -45,44 +45,25 @@
         <a class="button primary" href="/docs">Read the docs</a>
       </div>
       <p class="verify-cue">
-        This page proves itself. The receipt to the right is signed and bound to the exact bytes
-        served here; verify it by looking with <code>node experiments/dogfood/gate.mjs</code>.
+        This page proves itself. The served-candidate receipt below is signed and bound to the exact
+        bytes served here; verify it by looking with <code>node experiments/dogfood/gate.mjs</code>.
       </p>
     </div>
 
     <div class="hero-aside">
-
-      <aside class="receipt-artifact" aria-label="Promotion receipt for the served candidate">
-      <div class="receipt-header">
-        <span>served candidate receipt</span>
-        <span>{receipt.builtAt.slice(0, 10)}</span>
-      </div>
-      <div class="receipt-line neutral">
-        <span>CANDIDATE</span>
-        <code>sha256:{shortDigest}…</code>
-      </div>
-      <div class="receipt-line neutral">
-        <span>DEPLOY</span>
-        <code>{receipt.darkUrl ? 'dark slot (non-serving)' : 'non-serving slot'}</code>
-      </div>
-      <div class="receipt-line neutral">
-        <span>FANOUT</span>
-        <code>{receipt.evidence}</code>
-      </div>
-      <div class="receipt-line" class:accepted={receipt.admitted}>
-        <span>{receipt.admitted ? 'ADMITTED' : 'NOT ADMITTED'}</span>
-        <code>{receipt.admitted ? 'proof verified' : 'no valid proof'}</code>
-      </div>
-      <div class="receipt-line" class:accepted={receipt.promotedToProd} class:neutral={!receipt.promotedToProd}>
-        <span>{receipt.promotedToProd ? 'PROMOTED' : 'AWAITING OWNER'}</span>
-        <code>{receipt.promotedToProd ? 'gate ON for candidate' : 'prod gate human-held'}</code>
-      </div>
-      <p>
-        This is the receipt for the digest this page serves: verifier
-        <code>{receipt.verifier}</code> signed <code>{receipt.policy}</code> bound to the candidate
-        above. A candidate that deploys to a slot but has no verified proof does not go live.
-      </p>
-      </aside>
+      <figure class="plate fx-textured hero-plate">
+        <img
+          src="/airlock-hero.jpg"
+          alt="A lone operator before a colossal sealed airlock hatch, just beginning to open onto a calm horizon"
+          width="1010"
+          height="900"
+          loading="eager"
+        />
+        <figcaption>
+          <span>a candidate, held until the door opens</span>
+          <b>airlock</b>
+        </figcaption>
+      </figure>
     </div>
   </section>
 
@@ -246,6 +227,38 @@
         </div>
       </div>
     </div>
+
+    <aside class="receipt-artifact fx-shiny" aria-label="Promotion receipt for the served candidate">
+      <div class="receipt-header">
+        <span>served candidate receipt</span>
+        <span>{receipt.builtAt.slice(0, 10)}</span>
+      </div>
+      <div class="receipt-line neutral">
+        <span>CANDIDATE</span>
+        <code>sha256:{shortDigest}…</code>
+      </div>
+      <div class="receipt-line neutral">
+        <span>DEPLOY</span>
+        <code>{receipt.darkUrl ? 'dark slot (non-serving)' : 'non-serving slot'}</code>
+      </div>
+      <div class="receipt-line neutral">
+        <span>FANOUT</span>
+        <code>{receipt.evidence}</code>
+      </div>
+      <div class="receipt-line" class:accepted={receipt.admitted}>
+        <span>{receipt.admitted ? 'ADMITTED' : 'NOT ADMITTED'}</span>
+        <code>{receipt.admitted ? 'proof verified' : 'no valid proof'}</code>
+      </div>
+      <div class="receipt-line" class:accepted={receipt.promotedToProd} class:neutral={!receipt.promotedToProd}>
+        <span>{receipt.promotedToProd ? 'PROMOTED' : 'AWAITING OWNER'}</span>
+        <code>{receipt.promotedToProd ? 'gate ON for candidate' : 'prod gate human-held'}</code>
+      </div>
+      <p>
+        This is the receipt for the digest this page serves: verifier
+        <code>{receipt.verifier}</code> signed <code>{receipt.policy}</code> bound to the candidate
+        above. A candidate that deploys to a slot but has no verified proof does not go live.
+      </p>
+    </aside>
   </section>
 
   <section class="section drift-section" aria-labelledby="drift-title">
@@ -446,6 +459,14 @@
   .hero-aside {
     display: grid;
     gap: var(--space-4);
+  }
+
+  .hero-plate {
+    box-shadow: var(--shadow-lg);
+  }
+  .hero-plate img {
+    aspect-ratio: 1010 / 900;
+    object-fit: cover;
   }
 
   .verify-cue {

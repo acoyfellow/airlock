@@ -34,7 +34,7 @@
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
       <p class="eyebrow">airlock</p>
-      <h1 id="hero-title">Push a candidate, run the tests, go live only if they pass.</h1>
+      <h1 id="hero-title">A new version stays dark until its tests pass.</h1>
       <p class="lead">
         airlock is a small pipeline. You push a candidate version, it deploys to a slot that serves
         no traffic, runs the tests in parallel, and makes that version live only if the tests pass.
@@ -256,7 +256,7 @@ signed proof  (keel)      bound to the exact digest
 
   <section class="closing" aria-label="In one line">
     <div class="closing-band">
-      <p>Deploy to the dark. Prove it. Then, and only then, go live.</p>
+      <p>The door opens only when the tests pass.</p>
     </div>
   </section>
 

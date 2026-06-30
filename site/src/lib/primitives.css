@@ -13,7 +13,7 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--color-orange);
+  color: var(--color-accent);
 }
 .eyebrow::before { content: '['; color: var(--color-border-strong); }
 .eyebrow::after { content: ']'; color: var(--color-border-strong); }
@@ -83,7 +83,7 @@
   color: var(--color-muted);
 }
 .plate figcaption b {
-  color: var(--color-orange);
+  color: var(--color-accent);
   font-weight: 700;
   white-space: nowrap;
 }

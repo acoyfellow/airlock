@@ -405,8 +405,8 @@ signed proof  (keel)      bound to the exact digest
   }
 
   .button.primary {
-    border-color: var(--color-orange);
-    background: var(--color-orange);
+    border-color: var(--color-accent);
+    background: var(--color-accent);
     color: var(--color-canvas);
   }
 
@@ -514,7 +514,7 @@ signed proof  (keel)      bound to the exact digest
 
   .mechanism-list > div > span {
     font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    color: var(--color-orange);
+    color: var(--color-accent);
   }
 
   .mechanism-list p {
@@ -593,7 +593,7 @@ signed proof  (keel)      bound to the exact digest
 
   .boundary-list li {
     padding: var(--space-4) var(--space-5);
-    border-left: 2px solid var(--color-orange);
+    border-left: 2px solid var(--color-accent);
     background: var(--color-layer);
     color: var(--color-muted);
     line-height: 1.55;

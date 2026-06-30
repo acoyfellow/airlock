@@ -626,18 +626,11 @@ signed proof  (keel)      bound to the exact digest
     min-height: 300px;
     padding: var(--space-10) var(--space-12);
     overflow: hidden;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--color-text);
     border-radius: var(--radius-lg);
-    background-image: linear-gradient(
-        100deg,
-        rgba(26, 15, 6, 0.82) 0%,
-        rgba(26, 15, 6, 0.62) 42%,
-        rgba(26, 15, 6, 0.12) 78%,
-        transparent 100%
-      ),
-      url('/dali/ambient.jpg');
-    background-size: cover;
-    background-position: center 40%;
+    background:
+      radial-gradient(130% 120% at 88% 50%, color-mix(in srgb, var(--color-accent) 34%, transparent), transparent 62%),
+      var(--color-text);
   }
 
   .closing-band p {
@@ -649,7 +642,6 @@ signed proof  (keel)      bound to the exact digest
     font-weight: 760;
     line-height: 1.1;
     letter-spacing: -0.02em;
-    text-shadow: 0 1px 18px rgba(26, 15, 6, 0.7);
   }
 
   @media (max-width: 900px) {

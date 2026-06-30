@@ -99,6 +99,33 @@
     </div>
   </section>
 
+  <section class="section" aria-labelledby="flow-title">
+    <div class="section-heading">
+      <p class="eyebrow">The flow</p>
+      <h2 id="flow-title">A candidate stays sealed until the proof clears it.</h2>
+    </div>
+    <pre class="flow" aria-label="airlock flow diagram">
+push  ·  an agent or you
+  |
+  v
+artifacts repo            candidate = content digest
+  |
+  |  on push
+  v
+deploy to a dark slot     serves no traffic
+  |
+  v
+fanout^x tests            run in parallel, against the dark slot
+  |
+  v
+signed proof  (keel)      bound to the exact digest
+  |
+  +-- pass --> flip the feature flag   LIVE
+  |
+  +-- fail --> hold                    known-good keeps serving
+</pre>
+  </section>
+
   <section class="section" aria-labelledby="pipeline-title">
     <div class="section-heading">
       <p class="eyebrow">How it's built</p>
@@ -275,6 +302,19 @@
 </main>
 
 <style>
+  .flow {
+    font-family: "IBM Plex Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: var(--color-layer);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    overflow-x: auto;
+    margin: 0;
+    white-space: pre;
+  }
   .hero {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.7fr);

@@ -36,10 +36,10 @@
       <p class="eyebrow">airlock</p>
       <h1 id="hero-title">A new version stays dark until its tests pass.</h1>
       <p class="lead">
-        airlock is a small pipeline. You push a candidate version, it deploys to a slot that serves
-        no traffic, runs the tests in parallel, and makes that version live only if the tests pass.
-        Run it locally with <code>bun install</code>, <code>bun test</code>, and
-        <code>bun run napkin</code>.
+        airlock is the deploy gate between a candidate build and live traffic. On Cloudflare, that
+        means a source candidate lands in Artifacts, deploys to a non-serving Worker slot, gets
+        tested from the outside, and only then can the live pointer move. Run the local version with
+        <code>bun install</code>, <code>bun test</code>, and <code>bun run napkin</code>.
       </p>
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
@@ -72,9 +72,10 @@
       <p class="eyebrow">The flow</p>
       <h2 id="flow-title">A candidate stays sealed until the proof clears it.</h2>
       <p>
-        airlock is one link in a longer chain. Candidates arrive from agents on a pulse or from you,
-        and what goes live flows on to traffic and to whatever watches it. The part airlock owns is
-        the gate in the middle.
+        The diagram shows one slice of the new SDLC: a candidate is produced, held away from users,
+        tested as a real deploy, and promoted only after a signed proof clears. Pulse can sit before
+        this and drive agents. Observability can sit after this and watch what went live. airlock is
+        the gate between them.
       </p>
     </div>
 
@@ -113,6 +114,70 @@
         <span class="flow-open-k">the rest of the chain</span>
         <span class="flow-open-v">live traffic, and whatever watches it</span>
       </div>
+    </div>
+
+    <div class="infra-map" aria-label="What the diagram means on Cloudflare">
+      <div class="infra-copy">
+        <p class="eyebrow">Cloudflare translation</p>
+        <h3>What this literally means on Cloudflare</h3>
+        <p>
+          airlock is not a new runtime. It is a control plane you wire around Cloudflare primitives.
+          The important thing is that the same candidate digest is carried through every step.
+        </p>
+      </div>
+      <dl class="infra-list">
+        <div>
+          <dt>candidates arrive</dt>
+          <dd>
+            An agent, a human, or a pulse loop pushes source into a Cloudflare Artifacts repo. The
+            repo state becomes the candidate.
+          </dd>
+        </div>
+        <div>
+          <dt>push</dt>
+          <dd>
+            airlock hashes the source tree. That digest is the candidate name; every deploy, test,
+            and proof must point back to it.
+          </dd>
+        </div>
+        <div>
+          <dt>dark slot</dt>
+          <dd>
+            The candidate deploys to a Worker or Pages slot that has a URL but serves no user
+            traffic. Tests can fetch it. Users cannot be routed to it yet.
+          </dd>
+        </div>
+        <div>
+          <dt>fanout tests</dt>
+          <dd>
+            The checks run against that dark URL. Locally this is <code>Promise.all</code>; in a
+            Cloudflare shape it can be Workflows steps, Durable Object Facets, Queues, or whatever
+            backend supplies the <code>runFanout</code> port.
+          </dd>
+        </div>
+        <div>
+          <dt>signed proof</dt>
+          <dd>
+            The test result is signed with the candidate digest inside it. keel verifies the
+            signature and the trusted key before airlock treats the result as permission to promote.
+          </dd>
+        </div>
+        <div>
+          <dt>flip the flag</dt>
+          <dd>
+            The caller moves the live pointer: a feature flag, route binding, Worker version, KV/D1
+            value, or another release pointer. airlock only calls the supplied promote port after the
+            proof verifies.
+          </dd>
+        </div>
+        <div>
+          <dt>the rest of the chain</dt>
+          <dd>
+            After promotion, the normal Cloudflare surface takes over: traffic, logs, analytics,
+            traces, alerts, and any pulse or observability system that wants to inspect what shipped.
+          </dd>
+        </div>
+      </dl>
     </div>
   </section>
 
@@ -439,11 +504,77 @@
 
   @media (max-width: 640px) {
     .lane li,
-    .branch {
+    .branch,
+    .infra-list div {
       grid-template-columns: 1fr;
       gap: 2px;
     }
+    .infra-map {
+      grid-template-columns: 1fr;
+      padding: var(--space-5);
+    }
+    .infra-copy {
+      position: static;
+    }
   }
+  .infra-map {
+    display: grid;
+    grid-template-columns: minmax(0, 0.62fr) minmax(320px, 1fr);
+    gap: var(--space-8);
+    align-items: start;
+    margin-top: var(--space-8);
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-layer) 86%, transparent);
+  }
+  .infra-copy {
+    position: sticky;
+    top: var(--space-6);
+  }
+  .infra-copy h3 {
+    max-width: 16ch;
+    font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  .infra-copy p {
+    margin-top: var(--space-4);
+    color: var(--color-muted);
+    line-height: 1.6;
+  }
+  .infra-list {
+    display: grid;
+    gap: 0;
+    margin: 0;
+  }
+  .infra-list div {
+    display: grid;
+    grid-template-columns: minmax(120px, 180px) 1fr;
+    gap: var(--space-5);
+    padding: var(--space-4) 0;
+    border-top: 1px solid var(--color-border);
+  }
+  .infra-list div:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .infra-list dt {
+    margin: 0;
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+  .infra-list dd {
+    margin: 0;
+    color: var(--color-muted);
+    line-height: 1.55;
+  }
+  .infra-list code {
+    font-size: 0.86em;
+  }
+
   .hero {
     display: grid;
     grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.7fr);

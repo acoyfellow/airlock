@@ -30,10 +30,10 @@
     <p class="eyebrow">Docs</p>
     <h1>The pipeline, the ports, and the limits.</h1>
     <p class="lead">
-      airlock is a small pipeline. You push a candidate version, it deploys to a slot that serves
-      no traffic, runs the tests in parallel, and makes that version live only if the tests pass.
-      <code>runPipeline</code> is a pure function that calls four ports the caller supplies and
-      verifies a signed proof before the live pointer moves.
+      airlock is the deploy gate between a candidate build and live traffic. On Cloudflare, the
+      usual shape is Artifacts for source, a non-serving Worker or Pages slot for the dark deploy,
+      Workflows or Durable Object Facets for fanout, keel for proof verification, and a caller-owned
+      release pointer for promotion. <code>runPipeline</code> is the pure core that joins those parts.
     </p>
   </header>
 
@@ -64,6 +64,43 @@
       {#each pipeline as step}
         <div><dt>{step.index} {step.title}</dt><dd>{step.body} <code>{step.call}</code></dd></div>
       {/each}
+    </dl>
+  </section>
+
+  <section class="section" aria-labelledby="cloudflare-shape">
+    <div class="section-heading">
+      <p class="eyebrow">Cloudflare shape</p>
+      <h2 id="cloudflare-shape">What each word maps to</h2>
+      <p>
+        The demo is local, but the names are chosen to map cleanly onto Cloudflare infrastructure.
+        This is the literal version of the diagram on the home page.
+      </p>
+    </div>
+    <dl class="concept-list">
+      <div>
+        <dt>candidate</dt>
+        <dd>Source in a Cloudflare Artifacts repo, named by a digest of the tree airlock is about to test.</dd>
+      </div>
+      <div>
+        <dt>dark slot</dt>
+        <dd>A deployed Worker or Pages version with a URL, held away from user traffic.</dd>
+      </div>
+      <div>
+        <dt>fanout</dt>
+        <dd>Parallel checks against the dark URL. The backend can be local promises, terrarium children, Workflows steps, Durable Object Facets, or Queues.</dd>
+      </div>
+      <div>
+        <dt>signed proof</dt>
+        <dd>A keel-verified proof that says these checks passed for this exact digest under a trusted key.</dd>
+      </div>
+      <div>
+        <dt>flag</dt>
+        <dd>The release pointer the caller owns: a feature flag, route binding, Worker version, KV/D1 value, or another promote primitive.</dd>
+      </div>
+      <div>
+        <dt>after airlock</dt>
+        <dd>Traffic and observability. Logs, analytics, traces, alerts, and pulse can inspect the version that was allowed through.</dd>
+      </div>
     </dl>
   </section>
 

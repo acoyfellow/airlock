@@ -32,8 +32,8 @@
     <p class="lead">
       airlock is the deploy gate between a candidate build and live traffic. On Cloudflare, the
       usual shape is Artifacts for source, a non-serving Worker or Pages slot for the dark deploy,
-      Workflows or Durable Object Facets for fanout, keel for proof verification, and a caller-owned
-      release pointer for promotion. <code>runPipeline</code> is the pure core that joins those parts.
+      Workflows or Durable Object Facets for fanout, signed proof verification, and Cloudflare Flags
+      for promotion. <code>runPipeline</code> is the pure core that joins those parts.
     </p>
   </header>
 
@@ -91,11 +91,11 @@
       </div>
       <div>
         <dt>signed proof</dt>
-        <dd>A keel-verified proof that says these checks passed for this exact digest under a trusted key.</dd>
+        <dd>A proof that says these checks passed for this exact digest under a trusted key.</dd>
       </div>
       <div>
-        <dt>flag</dt>
-        <dd>The release pointer the caller owns: a feature flag, route binding, Worker version, KV/D1 value, or another promote primitive.</dd>
+        <dt>Cloudflare Flags</dt>
+        <dd>The native feature flag flips only after the proof verifies for this exact candidate.</dd>
       </div>
       <div>
         <dt>after airlock</dt>
@@ -106,9 +106,9 @@
 
   <section class="section" aria-labelledby="ports">
     <div class="section-heading">
-      <p class="eyebrow">The ports</p>
-      <h2 id="ports">The ports</h2>
-      <p>The core deploys, signs, and promotes through these functions and nothing else. The caller supplies them.</p>
+      <p class="eyebrow">What you supply</p>
+      <h2 id="ports">The functions airlock calls</h2>
+      <p>airlock never deploys, signs, or promotes on its own. It calls these functions, and you supply them. That is how the same core runs on files locally and on Cloudflare in production.</p>
     </div>
     <dl class="concept-list">
       {#each ports as p}

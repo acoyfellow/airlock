@@ -6,10 +6,18 @@
     <meta name="theme-color" content="#0a1216" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#f4f7f8" media="(prefers-color-scheme: light)" />
     <script>
-      // Apply the saved theme before first paint to avoid a flash.
+      // Apply the saved theme before first paint to avoid a flash. A ?theme=
+      // query param wins so screenshot harnesses (WKWebView blocks
+      // cross-origin localStorage) can force light/dark without a click.
       try {
-        var t = localStorage.getItem('airlock-theme');
-        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        var q = new URLSearchParams(location.search).get('theme');
+        if (q === 'light' || q === 'dark') {
+          document.documentElement.setAttribute('data-theme', q);
+          try { localStorage.setItem('airlock-theme', q); } catch (e) {}
+        } else {
+          var t = localStorage.getItem('airlock-theme');
+          if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+        }
       } catch (e) {}
     </script>
     <link rel="icon" href="/favicon.png" sizes="48x48" />

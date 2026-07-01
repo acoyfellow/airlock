@@ -1,10 +1,9 @@
 <script lang="ts">
   import Topbar from '$lib/Topbar.svelte';
   import Footer from '$lib/Footer.svelte';
-  import { boundaries, fanoutBackends, pipeline, ports, quickStart, site } from '$lib/site';
+  import { quickStart, site } from '$lib/site';
   import { receipt } from '$lib/receipt';
 
-  const shortDigest = receipt.candidate.replace(/^sha256:/, '').slice(0, 16);
   // Until prod is promoted, canonicalize to the slot that actually serves this
   // page (the dark URL) so shared links and crawlers never hit an unresolved host.
   const canonicalBase = (receipt.promotedToProd ? site.url : receipt.darkUrl) ?? site.url;
@@ -34,20 +33,14 @@
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
       <p class="eyebrow">airlock</p>
-      <h1 id="hero-title">A new version stays dark until its tests pass.</h1>
+      <h1 id="hero-title">Ship only the version that passed.</h1>
       <p class="lead">
-        airlock is the deploy gate between a candidate build and live traffic. On Cloudflare, that
-        means a source candidate lands in Artifacts, deploys to a non-serving Worker slot, gets
-        tested from the outside, and only then can the live pointer move. Run the local version with
-        <code>bun install</code>, <code>bun test</code>, and <code>bun run napkin</code>.
+        airlock puts your new version on a URL nobody is on yet, runs its tests there, and makes it
+        live only if they pass. If a test fails, everyone stays on the current version.
       </p>
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
       </div>
-      <p class="verify-cue">
-        This page proves itself. The served-candidate receipt below is signed and bound to the exact
-        bytes served here; verify it by looking with <code>node experiments/dogfood/gate.mjs</code>.
-      </p>
     </div>
 
     <div class="hero-aside">
@@ -68,151 +61,120 @@
   </section>
 
   <section class="section" aria-labelledby="flow-title">
-    <div class="section-heading">
-      <p class="eyebrow">The flow</p>
-      <h2 id="flow-title">A candidate stays sealed until the proof clears it.</h2>
+    <div class="section-heading compact-heading">
+      <p class="eyebrow">ADLC / the agentic development lifecycle</p>
+      <h2 id="flow-title">One version, from source to live traffic.</h2>
       <p>
-        The diagram shows one slice of the new SDLC: a candidate is produced, held away from users,
-        tested as a real deploy, and promoted only after a signed proof clears. Pulse can sit before
-        this and drive agents. Observability can sit after this and watch what went live. airlock is
-        the gate between them.
+        The same five steps, named for the Cloudflare parts they run on. Nothing reaches users until
+        the proof verifies.
       </p>
     </div>
 
-    <div
-      class="flow"
-      aria-label="airlock flow: a candidate stays sealed until its signed proof clears it"
-    >
-      <div class="flow-open">
-        <span class="flow-open-k">candidates arrive</span>
-        <span class="flow-open-v">agents on a pulse, or you</span>
-      </div>
-      <span class="flow-link" aria-hidden="true"></span>
+    <div class="cf-path" aria-label="Cloudflare-native airlock path for one candidate">
+      <figure class="before-band" aria-label="Before airlock: many agents commit to the same repository at once">
+        <img
+          src="/airlock-agents.jpg"
+          alt="A swarm of operators crossing a horizon toward a tall teal repository monolith"
+          width="1024"
+          height="680"
+          loading="lazy"
+        />
+        <figcaption class="before-overlay">
+          <span class="edge-k">before airlock</span>
+          <h3>Many agents, one repository.</h3>
+          <p>
+            airlock is built for a swarm of agents committing to the same repository at once. Each
+            one produces a candidate; airlock decides which one earns live traffic.
+          </p>
+        </figcaption>
+      </figure>
 
-      <div class="chamber">
-        <span class="chamber-tag">the airlock</span>
-        <ol class="lane">
-          <li><span class="k">push</span><span class="v">a candidate is a content digest</span></li>
-          <li><span class="k">dark slot</span><span class="v">deploys, serves no traffic</span></li>
-          <li><span class="k">fanout tests</span><span class="v">run in parallel against the dark slot</span></li>
-          <li><span class="k">signed proof</span><span class="v">bound to the digest, verified by keel</span></li>
-        </ol>
-        <div class="verdict">
-          <div class="branch pass">
-            <span class="branch-k">proof verifies</span>
-            <span class="branch-v">flip the flag, the candidate goes live</span>
+      <ol class="cf-steps">
+        <li>
+          <span class="cf-logo artifacts" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l8 4-8 4-8-4 8-4z" />
+              <path d="M4 12l8 4 8-4" />
+              <path d="M4 17l8 4 8-4" />
+            </svg>
+          </span>
+          <div>
+            <h3>Artifacts</h3>
+            <p>Source lands in an Artifacts repo. airlock names that tree by digest.</p>
           </div>
-          <div class="branch hold">
-            <span class="branch-k">no proof</span>
-            <span class="branch-v">hold, the known-good version keeps serving</span>
+        </li>
+        <li>
+          <span class="cf-logo workers" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 7l-5 5 5 5" />
+              <path d="M16 7l5 5-5 5" />
+              <path d="M14 5l-4 14" />
+            </svg>
+          </span>
+          <div>
+            <h3>Workers or Pages</h3>
+            <p>The candidate deploys to a dark URL. Tests can fetch it; users cannot reach it.</p>
           </div>
-        </div>
-      </div>
-
-      <span class="flow-link" aria-hidden="true"></span>
-      <div class="flow-open">
-        <span class="flow-open-k">the rest of the chain</span>
-        <span class="flow-open-v">live traffic, and whatever watches it</span>
-      </div>
-    </div>
-
-    <div class="infra-map" aria-label="What the diagram means on Cloudflare">
-      <div class="infra-copy">
-        <p class="eyebrow">Cloudflare translation</p>
-        <h3>What this literally means on Cloudflare</h3>
-        <p>
-          airlock is not a new runtime. It is a control plane you wire around Cloudflare primitives.
-          The important thing is that the same candidate digest is carried through every step.
-        </p>
-      </div>
-      <dl class="infra-list">
-        <div>
-          <dt>candidates arrive</dt>
-          <dd>
-            An agent, a human, or a pulse loop pushes source into a Cloudflare Artifacts repo. The
-            repo state becomes the candidate.
-          </dd>
-        </div>
-        <div>
-          <dt>push</dt>
-          <dd>
-            airlock hashes the source tree. That digest is the candidate name; every deploy, test,
-            and proof must point back to it.
-          </dd>
-        </div>
-        <div>
-          <dt>dark slot</dt>
-          <dd>
-            The candidate deploys to a Worker or Pages slot that has a URL but serves no user
-            traffic. Tests can fetch it. Users cannot be routed to it yet.
-          </dd>
-        </div>
-        <div>
-          <dt>fanout tests</dt>
-          <dd>
-            The checks run against that dark URL. Locally this is <code>Promise.all</code>; in a
-            Cloudflare shape it can be Workflows steps, Durable Object Facets, Queues, or whatever
-            backend supplies the <code>runFanout</code> port.
-          </dd>
-        </div>
-        <div>
-          <dt>signed proof</dt>
-          <dd>
-            The test result is signed with the candidate digest inside it. keel verifies the
-            signature and the trusted key before airlock treats the result as permission to promote.
-          </dd>
-        </div>
-        <div>
-          <dt>flip the flag</dt>
-          <dd>
-            The caller moves the live pointer: a feature flag, route binding, Worker version, KV/D1
-            value, or another release pointer. airlock only calls the supplied promote port after the
-            proof verifies.
-          </dd>
-        </div>
-        <div>
-          <dt>the rest of the chain</dt>
-          <dd>
-            After promotion, the normal Cloudflare surface takes over: traffic, logs, analytics,
-            traces, alerts, and any pulse or observability system that wants to inspect what shipped.
-          </dd>
-        </div>
-      </dl>
-    </div>
-  </section>
-
-  <section class="section" aria-labelledby="pipeline-title">
-    <div class="section-heading">
-      <p class="eyebrow">How it's built</p>
-      <h2 id="pipeline-title">How it's built</h2>
-      <p>
-        <code>runPipeline(event, jobs, ports)</code> is a pure function. These four steps are its
-        body, in order. Content addressing binds all of them to the same bytes.
-      </p>
-    </div>
-    <div class="mechanism-list">
-      {#each pipeline as step}
-        <div>
-          <span>{step.index}</span>
-          <div class="step-body">
-            <h3>{step.title}</h3>
-            <p>{step.body}</p>
-            <code>{step.call}</code>
+        </li>
+        <li>
+          <span class="cf-logo fanout" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="5" cy="12" r="2.25" />
+              <circle cx="19" cy="5" r="2.25" />
+              <circle cx="19" cy="19" r="2.25" />
+              <circle cx="19" cy="12" r="2.25" />
+              <path d="M7 11l10-5" />
+              <path d="M7 12h10" />
+              <path d="M7 13l10 5" />
+            </svg>
+          </span>
+          <div>
+            <h3>Workflows / DO / Queues</h3>
+            <p>Checks fan out against the dark URL and join into one result.</p>
           </div>
-        </div>
-      {/each}
+        </li>
+        <li>
+          <span class="cf-logo proof" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l8 3v6c0 4.5-3.2 8.3-8 9-4.8-.7-8-4.5-8-9V6l8-3z" />
+              <path d="M8.5 12.5l2.5 2.5 4.5-5" />
+            </svg>
+          </span>
+          <div>
+            <h3>Signed proof</h3>
+            <p>The result is signed with the digest inside it, then checked against trusted keys.</p>
+          </div>
+        </li>
+        <li>
+          <span class="cf-logo promote" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 3v18" />
+              <path d="M6 4h11l-2.5 3.5L17 11H6" />
+              <circle cx="6" cy="3" r="0.5" fill="currentColor" />
+            </svg>
+          </span>
+          <div>
+            <h3>Cloudflare Flags</h3>
+            <p>If the proof verifies, the caller flips the flag for this candidate. If not, users stay on the current version.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="path-edge after">
+        <span class="edge-k">after airlock</span>
+        <span class="edge-v">live traffic, logs, analytics, traces, alerts</span>
+      </div>
     </div>
   </section>
 
   <section id="quick-start" class="section split">
     <div>
       <p class="eyebrow">How to use it</p>
-      <h2>How to use it</h2>
+      <h2>Run it locally</h2>
       <p>
-        These commands run the real <code>runPipeline</code> against a file-backed backend under
-        <code>.data/</code>. No Cloudflare account, no network call, no secret. Candidate A's tests
-        pass so A goes live; candidate B has a failing test so it is blocked and the previous version
-        stays live.
+        Three commands, no Cloudflare account and no keys. It pushes two versions: one whose tests
+        pass and goes live, one with a failing test that gets blocked while the current version
+        stays live. <a href="/docs">The docs</a> cover the ports, the proof check, and the limits.
       </p>
     </div>
     <ol class="command-rail">
@@ -225,354 +187,181 @@
     </ol>
   </section>
 
-  <section id="ports" class="section">
-    <div class="section-heading">
-      <p class="eyebrow">The ports</p>
-      <h2>The ports</h2>
-      <p>
-        The core deploys, signs, and promotes through these functions and nothing else. The caller
-        supplies them. Swapping a backend does not edit the orchestration.
-      </p>
-    </div>
-    <dl class="concept-list">
-      {#each ports as p}
-        <div>
-          <dt>{p.port}</dt>
-          <dd><code>{p.type}</code><br />{p.role}</dd>
-        </div>
-      {/each}
-    </dl>
-  </section>
-
-  <section id="fanout" class="section split">
-    <div>
-      <p class="eyebrow">Fanout backends</p>
-      <h2>Swapping the fanout backend</h2>
-      <p>
-        <code>runFanout</code> has one type, <code>(jobs, slot) =&gt; Promise&lt;TestResult[]&gt;</code>.
-        The same pipeline runs against a local <code>Promise.all</code>, terrarium child runs, or
-        Cloudflare Workflows or Facets.
-      </p>
-    </div>
-    <div class="mechanism-list">
-      {#each fanoutBackends as backend}
-        <div>
-          <span>{backend.name}</span>
-          <p>{backend.body}</p>
-        </div>
-      {/each}
-    </div>
-  </section>
-
-  <section class="section status-section" aria-labelledby="gate-title">
-    <div class="status-copy">
-      <p class="eyebrow">The proof check</p>
-      <h2 id="gate-title">How the proof is checked</h2>
-      <p>
-        airlock assembles a candidate and the test evidence, then signs it. The signed proof is
-        verified against the trusted keys before the live pointer moves. A passing test with no
-        verified proof for the digest does not go live. That verification is the keel library
-        airlock imports.
-      </p>
-      <div class="status-strip">
-        <div>
-          <span class="dot accepted"></span>
-          <strong>10</strong>
-          <span>napkin checks green</span>
-        </div>
-        <div>
-          <span class="dot accepted"></span>
-          <strong>2</strong>
-          <span>signed decisions logged</span>
-        </div>
-        <div>
-          <span class="dot neutral"></span>
-          <strong>3</strong>
-          <span>fanout backends, one port</span>
-        </div>
-      </div>
-    </div>
-
-    <aside class="receipt-artifact fx-shiny" aria-label="Promotion receipt for the served candidate">
-      <div class="receipt-header">
-        <span>served candidate receipt</span>
-        <span>{receipt.builtAt.slice(0, 10)}</span>
-      </div>
-      <div class="receipt-line neutral">
-        <span>CANDIDATE</span>
-        <code>sha256:{shortDigest}…</code>
-      </div>
-      <div class="receipt-line neutral">
-        <span>DEPLOY</span>
-        <code>{receipt.darkUrl ? 'dark slot (non-serving)' : 'non-serving slot'}</code>
-      </div>
-      <div class="receipt-line neutral">
-        <span>FANOUT</span>
-        <code>{receipt.evidence}</code>
-      </div>
-      <div class="receipt-line" class:accepted={receipt.admitted}>
-        <span>{receipt.admitted ? 'ADMITTED' : 'NOT ADMITTED'}</span>
-        <code>{receipt.admitted ? 'proof verified' : 'no valid proof'}</code>
-      </div>
-      <div class="receipt-line" class:accepted={receipt.promotedToProd} class:neutral={!receipt.promotedToProd}>
-        <span>{receipt.promotedToProd ? 'PROMOTED' : 'AWAITING OWNER'}</span>
-        <code>{receipt.promotedToProd ? 'gate ON for candidate' : 'prod gate human-held'}</code>
-      </div>
-      <p>
-        This is the receipt for the digest this page serves: verifier
-        <code>{receipt.verifier}</code> signed <code>{receipt.policy}</code> bound to the candidate
-        above. A candidate that deploys to a slot but has no verified proof does not go live.
-      </p>
-    </aside>
-  </section>
-
-  <section class="section drift-section" aria-labelledby="drift-title">
-    <div class="section-heading">
-      <p class="eyebrow">Why content addressing</p>
-      <h2 id="drift-title">Drift is what the digest refuses</h2>
-      <p>
-        The candidate is named by a hash of its source bytes. If a file changes after the proof is
-        signed, the recomputed digest no longer matches, and the gate refuses it. The change is
-        caught before anything goes live.
-      </p>
-    </div>
-  </section>
-
-  <section id="limits" class="section split">
-    <div>
-      <p class="eyebrow">Limits</p>
-      <h2>Limits</h2>
-      <p>
-        airlock does not deploy, run servers, or hold your keys. You wire it into the push you
-        already have and supply the deploy, fanout, sign, and promote ports.
-      </p>
-    </div>
-    <ul class="boundary-list">
-      {#each boundaries as item}
-        <li>{item}</li>
-      {/each}
-    </ul>
-  </section>
-
-  <section class="closing" aria-label="In one line">
-    <div class="closing-band">
-      <p>The door opens only when the tests pass.</p>
-    </div>
-  </section>
-
   <Footer />
 </main>
 
 <style>
-  .flow {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0;
-    padding: var(--space-8) var(--space-6);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-layer);
-  }
-
-  .flow-open {
-    display: grid;
-    gap: 2px;
-    justify-items: center;
-    text-align: center;
-    padding: var(--space-3) var(--space-5);
-    border: 1px dashed var(--color-border-strong);
-    border-radius: var(--radius-md);
-    background: transparent;
-  }
-  .flow-open-k {
-    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.8rem;
-    color: var(--color-text);
-  }
-  .flow-open-v {
-    font-size: 0.8rem;
-    color: var(--color-faint);
-  }
-
-  .flow-link {
-    width: 0;
-    height: 26px;
-    border-left: 1px dashed var(--color-border-strong);
-  }
-
-  .chamber {
-    position: relative;
-    width: 100%;
-    max-width: 560px;
-    display: grid;
-    gap: var(--space-5);
-    padding: var(--space-7) var(--space-6) var(--space-6);
-    border: 1.5px solid var(--color-accent);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--color-accent) 6%, var(--color-raised));
-  }
-  .chamber-tag {
-    position: absolute;
-    top: -0.72em;
-    left: var(--space-5);
-    padding: 0 var(--space-2);
-    background: var(--color-layer);
-    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-accent);
-  }
-
-  .lane {
-    display: grid;
-    gap: 0;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    border-left: 2px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
-  }
-  .lane li {
-    position: relative;
-    display: grid;
-    grid-template-columns: 132px 1fr;
-    gap: var(--space-4);
-    align-items: baseline;
-    padding: var(--space-3) 0 var(--space-3) var(--space-5);
-  }
-  .lane li::before {
-    content: '';
-    position: absolute;
-    left: -5px;
-    top: 1.15em;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-accent);
-  }
-  .lane .k {
-    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-weight: 600;
-    font-size: 0.86rem;
-    color: var(--color-text);
-  }
-  .lane .v {
-    color: var(--color-muted);
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
-
-  .verdict {
-    display: grid;
-    gap: var(--space-3);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-border);
-  }
-  .branch {
-    display: grid;
-    grid-template-columns: 132px 1fr;
-    gap: var(--space-4);
-    align-items: baseline;
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
-    border-left: 3px solid var(--color-faint);
-    background: var(--color-layer-2);
-  }
-  .branch.pass {
-    border-left-color: var(--color-green);
-  }
-  .branch.hold {
-    border-left-color: var(--color-amber);
-  }
-  .branch-k {
-    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-weight: 700;
-    font-size: 0.82rem;
-  }
-  .branch.pass .branch-k {
-    color: var(--color-green);
-  }
-  .branch.hold .branch-k {
-    color: var(--color-amber);
-  }
-  .branch-v {
-    color: var(--color-muted);
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
 
   @media (max-width: 640px) {
-    .lane li,
-    .branch,
-    .infra-list div {
+    .cf-steps {
       grid-template-columns: 1fr;
-      gap: 2px;
     }
-    .infra-map {
-      grid-template-columns: 1fr;
-      padding: var(--space-5);
+    .cf-steps li {
+      min-height: 0;
     }
-    .infra-copy {
-      position: static;
+    .cf-steps li + li::before {
+      display: none;
+    }
+    .path-edge {
+      align-items: start;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .before-overlay {
+      max-width: none;
+      padding: var(--space-6);
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-canvas) 60%, transparent) 0%,
+        color-mix(in srgb, var(--color-canvas) 88%, transparent) 100%
+      );
     }
   }
-  .infra-map {
+  .compact-heading {
+    margin-bottom: var(--space-12);
+  }
+
+  .cf-path {
     display: grid;
-    grid-template-columns: minmax(0, 0.62fr) minmax(320px, 1fr);
-    gap: var(--space-8);
-    align-items: start;
-    margin-top: var(--space-8);
+    gap: var(--space-4);
     padding: var(--space-6);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: color-mix(in srgb, var(--color-layer) 86%, transparent);
   }
-  .infra-copy {
-    position: sticky;
-    top: var(--space-6);
+  .before-band {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-layer);
   }
-  .infra-copy h3 {
-    max-width: 16ch;
-    font-size: clamp(1.25rem, 1.8vw, 1.65rem);
+  .before-band img {
+    display: block;
+    width: 100%;
+    height: clamp(240px, 34vw, 380px);
+    object-fit: cover;
+    object-position: 50% 42%;
+  }
+  .before-overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    gap: var(--space-3);
+    max-width: 30rem;
+    padding: var(--space-10) var(--space-12);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-canvas) 94%, transparent) 0%,
+      color-mix(in srgb, var(--color-canvas) 88%, transparent) 42%,
+      color-mix(in srgb, var(--color-canvas) 60%, transparent) 66%,
+      transparent 96%
+    );
+  }
+  .before-overlay h3 {
+    margin: 0;
+    font-size: clamp(1.3rem, 2.4vw, 1.9rem);
     line-height: 1.08;
     letter-spacing: -0.02em;
+    color: var(--color-text);
   }
-  .infra-copy p {
-    margin-top: var(--space-4);
+  .before-overlay p {
+    margin: 0;
+    max-width: 26rem;
     color: var(--color-muted);
+    font-size: 0.95rem;
     line-height: 1.6;
   }
-  .infra-list {
-    display: grid;
-    gap: 0;
-    margin: 0;
+
+  .path-edge {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    color: var(--color-muted);
   }
-  .infra-list div {
-    display: grid;
-    grid-template-columns: minmax(120px, 180px) 1fr;
-    gap: var(--space-5);
-    padding: var(--space-4) 0;
-    border-top: 1px solid var(--color-border);
-  }
-  .infra-list div:first-child {
-    border-top: 0;
-    padding-top: 0;
-  }
-  .infra-list dt {
-    margin: 0;
+  .edge-k,
+  .edge-v,
+  .cf-steps h3 {
     font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--color-accent);
   }
-  .infra-list dd {
+  .edge-k {
+    color: var(--color-faint);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .edge-v {
+    font-size: 0.82rem;
+  }
+  .cf-steps {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cf-steps li {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: var(--space-4);
+    min-height: 230px;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-raised);
+    box-shadow: var(--shadow-md);
+  }
+  .cf-steps li + li::before {
+    content: '';
+    position: absolute;
+    left: calc(-1 * var(--space-3));
+    top: 34px;
+    width: var(--space-3);
+    border-top: 1px solid var(--color-border-strong);
+  }
+  .cf-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 11px;
+    background:
+      radial-gradient(circle at 68% 30%, rgba(255, 255, 255, 0.3), transparent 30%),
+      color-mix(in srgb, var(--color-accent) 12%, var(--color-layer));
+    color: var(--color-text);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+  .cf-logo svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+  .cf-logo.artifacts { color: var(--color-orange); }
+  .cf-logo.workers { color: var(--color-blue); }
+  .cf-logo.fanout { color: var(--color-accent); }
+  .cf-logo.proof { color: var(--color-green); }
+  .cf-logo.promote { color: var(--color-amber); }
+  .cf-steps h3 {
+    margin: 0 0 var(--space-2);
+    font-size: 0.92rem;
+    line-height: 1.25;
+    color: var(--color-text);
+  }
+  .cf-steps p {
     margin: 0;
     color: var(--color-muted);
+    font-size: 0.9rem;
     line-height: 1.55;
-  }
-  .infra-list code {
-    font-size: 0.86em;
   }
 
   .hero {
@@ -598,19 +387,6 @@
   .hero-plate img {
     aspect-ratio: 1010 / 900;
     object-fit: cover;
-  }
-
-  .verify-cue {
-    max-width: 640px;
-    margin-top: var(--space-6);
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--color-border);
-    color: var(--color-muted);
-    font-size: 0.95rem;
-    line-height: 1.6;
-  }
-  .verify-cue code {
-    font-size: 0.86rem;
   }
 
   h1,
@@ -672,55 +448,6 @@
     color: var(--color-canvas);
   }
 
-  .receipt-artifact {
-    display: grid;
-    gap: var(--space-3);
-    padding: var(--space-6);
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--color-raised) 88%, transparent);
-  }
-
-  .receipt-header,
-  .receipt-line,
-  .status-strip {
-    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  }
-
-  .receipt-header,
-  .receipt-line {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-4);
-  }
-
-  .receipt-header {
-    color: var(--color-faint);
-    font-size: 0.75rem;
-  }
-
-  .receipt-line {
-    padding: var(--space-3);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-layer-2);
-    font-size: 0.82rem;
-  }
-
-  .receipt-line.accepted span {
-    color: var(--color-green);
-  }
-
-  .receipt-line.neutral span {
-    color: var(--color-muted);
-  }
-
-  .receipt-artifact p {
-    color: var(--color-muted);
-    font-size: 0.92rem;
-    line-height: 1.55;
-  }
-
   .split {
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(320px, 1fr);
@@ -733,173 +460,7 @@
     overflow-wrap: anywhere;
   }
 
-  .concept-list {
-    display: grid;
-    gap: 0;
-    margin: 0;
-  }
-  .concept-list div {
-    display: grid;
-    grid-template-columns: minmax(120px, 200px) 1fr;
-    gap: var(--space-6);
-    padding: var(--space-5) 0;
-    border-top: 1px solid var(--color-border);
-  }
-  .concept-list div:first-child {
-    border-top: 0;
-  }
-  .concept-list dt {
-    margin: 0;
-    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-weight: 700;
-    color: var(--color-text);
-  }
-  .concept-list dd {
-    margin: 0;
-    color: var(--color-muted);
-    line-height: 1.65;
-  }
-
-  .mechanism-list {
-    display: grid;
-    gap: var(--space-3);
-  }
-
-  .mechanism-list > div {
-    display: grid;
-    grid-template-columns: 64px 1fr;
-    gap: var(--space-4);
-    align-items: start;
-    padding: var(--space-4) 0;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .mechanism-list > div > span {
-    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    color: var(--color-accent);
-  }
-
-  .mechanism-list p {
-    margin: 0;
-    color: var(--color-muted);
-    line-height: 1.6;
-  }
-
-  .step-body {
-    display: grid;
-    gap: var(--space-2);
-  }
-
-  .status-section {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.62fr);
-    gap: var(--space-10);
-    align-items: center;
-  }
-
-  .status-copy {
-    display: grid;
-    gap: var(--space-8);
-  }
-
-  .status-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-
-  .status-strip div {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-layer);
-    color: var(--color-muted);
-    font-size: 0.82rem;
-  }
-
-  .status-strip strong {
-    color: var(--color-text);
-  }
-
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-faint);
-  }
-
-  .dot.accepted {
-    background: var(--color-green);
-  }
-
-  .dot.neutral {
-    background: var(--color-amber);
-  }
-
-  .boundary-list {
-    display: grid;
-    gap: var(--space-3);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .boundary-list li {
-    padding: var(--space-4) var(--space-5);
-    border-left: 2px solid var(--color-accent);
-    background: var(--color-layer);
-    color: var(--color-muted);
-    line-height: 1.55;
-  }
-
-  .drift-section {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.62fr);
-    gap: var(--space-10);
-    align-items: center;
-  }
-  .drift-section .section-heading {
-    margin-bottom: 0;
-  }
-
-  .closing {
-    padding: var(--space-16) 0 var(--space-12);
-  }
-
-  .closing-band {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 300px;
-    padding: var(--space-10) var(--space-12);
-    overflow: hidden;
-    border: 1px solid var(--color-text);
-    border-radius: var(--radius-lg);
-    background:
-      radial-gradient(130% 120% at 88% 50%, color-mix(in srgb, var(--color-accent) 34%, transparent), transparent 62%),
-      var(--color-text);
-  }
-
-  .closing-band p {
-    position: relative;
-    max-width: 16ch;
-    margin: 0;
-    color: #fff;
-    font-size: clamp(1.5rem, 3.2vw, 2.4rem);
-    font-weight: 760;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-  }
-
   @media (max-width: 900px) {
-    .status-section,
-    .drift-section {
-      grid-template-columns: 1fr;
-    }
   }
 
   @media (max-width: 640px) {
@@ -916,21 +477,6 @@
     .hero-aside {
       gap: var(--space-3);
     }
-
-    .verify-cue {
-      margin-top: var(--space-5);
-      padding-top: var(--space-4);
-      font-size: 0.9rem;
-    }
-
-    .closing-band {
-      min-height: 240px;
-      padding: var(--space-8);
-    }
-
-    .closing-band p {
-      max-width: none;
-    }
   }
 
   @media (max-width: 900px) {
@@ -944,33 +490,108 @@
       padding-top: var(--space-16);
     }
 
-    .concept-list div {
+    /* Stacked, the plate would otherwise fill the whole viewport and dwarf
+       the copy — cap its height so it stays a companion, not the page. */
+    .hero-plate img {
+      aspect-ratio: auto;
+      max-height: 440px;
+      object-fit: cover;
+    }
+
+    /* Five cards can't sit side by side below the desktop width without
+       clipping their titles — wrap to two columns and drop the horizontal
+       connector tick that only reads in a single row. */
+    .cf-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-4);
+    }
+    .cf-steps li {
+      min-height: 0;
+    }
+    .cf-steps li + li::before {
+      display: none;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .cf-steps {
       grid-template-columns: 1fr;
-      gap: var(--space-2);
     }
   }
 
   @media (max-width: 640px) {
+    /* Creative mobile hero: the plate becomes a full-bleed cinematic banner
+       that dissolves into the canvas, and the title rides the fade. */
+    .hero {
+      position: relative;
+      display: block;
+      gap: 0;
+      min-height: auto;
+      padding: 0 0 var(--space-4);
+    }
+
+    .hero-aside {
+      position: absolute;
+      top: 0;
+      left: -16px;
+      right: -16px;
+      z-index: 0;
+      gap: 0;
+      pointer-events: none;
+    }
+
+    .hero-plate {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .hero-plate img {
+      aspect-ratio: auto;
+      width: 100%;
+      height: min(96vw, 420px);
+      object-fit: cover;
+      object-position: 50% 14%;
+      -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 82%);
+      mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 82%);
+    }
+
+    .hero-plate figcaption {
+      display: none;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      max-width: none;
+      padding-top: min(72vw, 300px);
+    }
+
+    .hero-copy .eyebrow {
+      background: color-mix(in srgb, var(--color-canvas) 82%, transparent);
+      border-radius: var(--radius-sm, 6px);
+      backdrop-filter: blur(2px);
+    }
+
+    h1 {
+      font-size: clamp(2.1rem, 8.5vw, 2.9rem);
+      line-height: 1.02;
+      text-shadow: 0 1px 0 var(--color-canvas), 0 2px 18px var(--color-canvas);
+    }
+
+    .hero .lead {
+      margin-top: var(--space-4);
+    }
+
     .hero-actions {
       align-items: stretch;
       flex-direction: column;
+      margin-top: var(--space-6);
     }
 
     .button {
       width: 100%;
-    }
-
-    .hero {
-      padding-bottom: 0;
-    }
-
-    .receipt-artifact {
-      gap: var(--space-2);
-      padding: var(--space-5);
-    }
-
-    .receipt-artifact p {
-      display: none;
     }
   }
 </style>

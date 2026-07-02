@@ -86,7 +86,6 @@ export type TerminalLine = { readonly kind: 'prompt' | 'output' | 'ok' | 'fail' 
 
 export const terminalSession: readonly TerminalLine[] = [
   { kind: 'prompt', text: 'bun install' },
-  { kind: 'output', text: '530 packages installed [3.05s]' },
   { kind: 'blank' },
   { kind: 'prompt', text: 'bun test' },
   { kind: 'ok', text: '29 pass' },

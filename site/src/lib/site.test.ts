@@ -20,7 +20,7 @@ describe('site content', () => {
     expect(pipeline).toHaveLength(4);
     expect(pipeline.map((step) => step.call)).toEqual([
       'deploy(candidate)',
-      'runFanout(jobs)',
+      'runFanout(jobs, slot)',
       'verifySignedProof(proof, candidate, trusted)',
       'setFeatureGate(candidate, true)',
     ]);

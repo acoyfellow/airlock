@@ -13,9 +13,9 @@
   const limits = [
     { surface: 'Fanout backend', boundary: "napkin's localFanout runs every check in the orchestrator's own process — nothing is isolated yet. terrarium, a Workflow, or a Facet backend is where untrusted checks get quarantined." },
     { surface: 'Test coverage', boundary: 'The signed proof says the fanout jobs you wired up passed, not that the candidate is correct. airlock verifies the proof; it does not judge whether your tests were the right ones.' },
-    { surface: 'Digest binding', boundary: "The core never checks the signed digest against the bytes deploy shipped; that binding is the artifacts port's job, not airlock's." },
+    { surface: 'Digest binding', boundary: 'The core trusts deploy(candidate) to serve that digest\'s bytes; if it lies, airlock cannot tell.' },
     { surface: 'Trust', boundary: 'airlock does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
-    { surface: 'Effects', boundary: 'Deploy, sign, and promote are ports the caller supplies. The pure core holds no credential and makes no network call unless a port does.' },
+    { surface: 'Effects', boundary: 'The core holds no credential; a hostile candidate can touch whatever deploy gives the dark slot.' },
   ];
 </script>
 
@@ -33,20 +33,20 @@
     <p class="lead">
       airlock is the deploy gate between a candidate build and live traffic: the candidate deploys
       to a real URL with zero traffic, gets tested there, and only goes live once a signed proof
-      says it passed. If the proof fails, the version already live keeps serving — nothing rolls
-      back, because nothing moved. <code>runPipeline</code> is the pure core, proven so far by
-      the local demo below; the Cloudflare shape is unbuilt.
+      says it passed. If the proof fails before promote, the live version keeps serving; after
+      promote, rollback is your router's job. <code>runPipeline</code> is the port-driven
+      orchestrator; the local demo below proves A goes live and B is blocked.
     </p>
   </header>
 
   <section class="section" aria-labelledby="run-it">
     <div class="section-heading">
       <p class="eyebrow">How to use it</p>
-      <h2 id="run-it">Run it without a Cloudflare account</h2>
+      <h2 id="run-it">Run it with Bun, without a Cloudflare account</h2>
       <p>
         <code>bun run napkin</code> is file-backed under <code>.data/</code> and needs no Cloudflare
-        account. It pushes a passing candidate and a failing one, prints a receipt per run, and
-        prints the in-memory signed audit log for that run. A goes live; B is blocked.
+        account. It prints receipts with candidate, evidence, admitted, promoted, and served-before/after;
+        then a signed approve/deny audit summary. A goes live; B is blocked.
       </p>
     </div>
     <ol class="command-rail">
@@ -59,7 +59,7 @@
   <section class="section" aria-labelledby="pipeline">
     <div class="section-heading">
       <p class="eyebrow">How it's built</p>
-      <h2 id="pipeline">Four steps decide whether a candidate goes live</h2>
+      <h2 id="pipeline">KeelGate decides whether a candidate goes live</h2>
       <p>A candidate is named by content. These steps decide whether it replaces the running version, in this order.</p>
     </div>
     <dl class="concept-list">
@@ -72,9 +72,9 @@
   <section class="section" aria-labelledby="cloudflare-shape">
     <div class="section-heading">
       <p class="eyebrow">Cloudflare shape</p>
-      <h2 id="cloudflare-shape">What each word maps to</h2>
+      <h2 id="cloudflare-shape">Unbuilt Cloudflare mapping</h2>
       <p>
-        The demo is local; the Cloudflare wiring below is unbuilt. The names map onto it anyway.
+        The reusable contract is the ports below; this Cloudflare mapping is only a target.
       </p>
     </div>
     <dl class="concept-list">
@@ -96,7 +96,7 @@
       </div>
       <div>
         <dt>feature gate</dt>
-        <dd>Cloudflare Flags flips only after the proof verifies for this exact candidate.</dd>
+        <dd>The promotion gate moves the served pointer only after the proof verifies for this exact candidate.</dd>
       </div>
       <div>
         <dt>after airlock</dt>
@@ -109,7 +109,7 @@
     <div class="section-heading">
       <p class="eyebrow">What you supply</p>
       <h2 id="ports">The functions airlock calls</h2>
-      <p>airlock never deploys, signs, or promotes on its own. It calls these functions, and you supply them. That is how the same core runs on files locally and on Cloudflare in production.</p>
+      <p>airlock never deploys, signs, or promotes on its own. It calls these functions, and you supply them. That is how the local demo can later swap in Cloudflare ports.</p>
     </div>
     <dl class="concept-list">
       {#each ports as p}
@@ -123,9 +123,8 @@
       <p class="eyebrow">Fanout backends</p>
       <h2 id="fanout">One fanout interface, one backend that ships</h2>
       <p>
-        runFanout has one type. Only local runs today — it's what the napkin uses. The type says
-        nothing about retries: a backend that reruns a job on failure can duplicate its line in the
-        evidence string.
+        runFanout has one type. Only local runs today: unbounded Promise.all, no retries, no queue;
+        keel verifies and promotes the signed result, but it does not schedule the work.
       </p>
     </div>
     <dl class="concept-list">
@@ -173,7 +172,7 @@
   .concept-list div:first-child, .limit-list div:first-child { border-top: 0; }
   dt { margin: 0; font-weight: 700; color: var(--color-text); }
   dd { margin: 0; color: var(--color-muted); line-height: 1.65; }
-  dd code { color: var(--color-blue); }
+  dd code { color: var(--color-blue); overflow-wrap: anywhere; }
   .step-gate dt { color: var(--color-green); }
   .step-promote dt { color: var(--color-amber); }
 

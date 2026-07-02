@@ -28,7 +28,7 @@ export const pipeline: readonly PipelineStep[] = [
   {
     index: '02',
     title: 'Fanout',
-    call: 'runFanout(jobs)',
+    call: 'runFanout(jobs, slot)',
     body: 'Test jobs run in parallel against the deployed slot and join into results. The evidence string is name=pass|fail across every job.',
     state: 'produce',
   },

@@ -20,7 +20,7 @@
 
 <svelte:head>
   <title>airlock / docs</title>
-  <meta name="description" content="airlock documentation: the pipeline, the ports, the fanout backends, how the proof is checked, and the limits." />
+  <meta name="description" content="How a candidate becomes the live version, what you have to supply, and where airlock stops deciding for you." />
 </svelte:head>
 
 <main class="shell">
@@ -28,7 +28,7 @@
 
   <header class="doc-hero">
     <p class="eyebrow">Docs</p>
-    <h1>The pipeline, the ports, and the limits.</h1>
+    <h1>How a candidate becomes the live version.</h1>
     <p class="lead">
       airlock is the deploy gate between a candidate build and live traffic. On Cloudflare, the
       usual shape is Artifacts for source, a non-serving Worker or Pages slot for the dark deploy,
@@ -40,7 +40,7 @@
   <section class="section" aria-labelledby="run-it">
     <div class="section-heading">
       <p class="eyebrow">How to use it</p>
-      <h2 id="run-it">How to use it</h2>
+      <h2 id="run-it">Run it without a Cloudflare account</h2>
       <p>
         <code>bun run napkin</code> is file-backed under <code>.data/</code> and needs no Cloudflare
         account. It pushes a passing candidate and a failing one, prints a receipt per run, and
@@ -57,7 +57,7 @@
   <section class="section" aria-labelledby="pipeline">
     <div class="section-heading">
       <p class="eyebrow">How it's built</p>
-      <h2 id="pipeline">How it's built</h2>
+      <h2 id="pipeline">Four steps decide whether a candidate goes live</h2>
       <p>A candidate is named by content. These steps decide whether it replaces the running version, in this order.</p>
     </div>
     <dl class="concept-list">
@@ -133,11 +133,11 @@
   <section class="section" aria-labelledby="gate">
     <div class="section-heading">
       <p class="eyebrow">The proof check</p>
-      <h2 id="gate">How the proof is checked</h2>
+      <h2 id="gate">What verifySignedProof actually checks</h2>
       <p>
         airlock assembles a candidate and the test evidence, then signs it. Before the live pointer
         moves, the signed proof is verified against the trusted keys, bound to the candidate that
-        was tested. That verification is the keel library airlock imports.
+        was tested.
       </p>
     </div>
     <ol class="command-rail">
@@ -148,8 +148,8 @@
   <section class="section" aria-labelledby="limits">
     <div class="section-heading">
       <p class="eyebrow">Limits</p>
-      <h2 id="limits">Limits</h2>
-      <p>These are the known edges.</p>
+      <h2 id="limits">What airlock doesn't decide for you</h2>
+      <p>Five places where a human, a key, or a different backend still has to make the call.</p>
     </div>
     <dl class="limit-list">
       {#each limits as l}

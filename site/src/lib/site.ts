@@ -36,7 +36,7 @@ export const pipeline: readonly PipelineStep[] = [
     index: '03',
     title: 'Verify the signed proof',
     call: 'verifySignedProof(proof, candidate, trusted)',
-    body: 'The signer signs the test result, bound to the exact candidate digest. The proof is then checked against the trusted keys. That check is the keel library airlock imports.',
+    body: 'The signer signs the test result, bound to the exact candidate digest. The proof is then checked against the trusted keys.',
     state: 'gate',
   },
   {

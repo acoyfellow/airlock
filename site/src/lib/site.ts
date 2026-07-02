@@ -79,6 +79,34 @@ export const quickStart = [
   { command: 'bun run napkin', note: 'A goes live, B is blocked on a failing test, the previous version stays live' },
 ] as const;
 
+// A real, captured transcript (not paraphrased marketing copy) of running the
+// three quickStart commands against this repo. Digests are truncated with an
+// ellipsis, the same convention git and sha256sum use — nothing here is invented.
+export type TerminalLine = { readonly kind: 'prompt' | 'output' | 'ok' | 'fail' | 'blank'; readonly text?: string };
+
+export const terminalSession: readonly TerminalLine[] = [
+  { kind: 'prompt', text: 'bun install' },
+  { kind: 'output', text: '530 packages installed [3.05s]' },
+  { kind: 'blank' },
+  { kind: 'prompt', text: 'bun test' },
+  { kind: 'ok', text: '29 pass' },
+  { kind: 'output', text: '0 fail' },
+  { kind: 'output', text: 'Ran 29 tests across 4 files.' },
+  { kind: 'blank' },
+  { kind: 'prompt', text: 'bun run napkin' },
+  { kind: 'output', text: "agent push A: bundle 'app@A \u2014 all tests pass'" },
+  { kind: 'ok', text: '  admitted       true' },
+  { kind: 'ok', text: '  promoted       true' },
+  { kind: 'output', text: '  webapp serves  [200] sha256:3913\u2026 "app@A \u2014 all tests pass"' },
+  { kind: 'blank' },
+  { kind: 'output', text: "agent push B: bundle 'app@B \u2014 integration fails'" },
+  { kind: 'fail', text: '  admitted       false' },
+  { kind: 'fail', text: '  promoted       false' },
+  { kind: 'output', text: '  webapp serves  [200] sha256:3913\u2026 "app@A \u2014 all tests pass"' },
+  { kind: 'blank' },
+  { kind: 'ok', text: 'PASS: A served, B blocked, prior version held, feature=test+flag holds' },
+] as const;
+
 export const boundaries = [
   'airlock does not deploy, sign, or decide which keys to trust on its own; every effect is a port the caller supplies.',
   'airlock does not make a candidate live without a verified proof bound to that exact digest.',

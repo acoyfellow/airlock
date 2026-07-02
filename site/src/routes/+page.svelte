@@ -1,7 +1,7 @@
 <script lang="ts">
   import Topbar from '$lib/Topbar.svelte';
   import Footer from '$lib/Footer.svelte';
-  import { quickStart, site } from '$lib/site';
+  import { terminalSession, site } from '$lib/site';
   import { receipt } from '$lib/receipt';
 
   // Until prod is promoted, canonicalize to the slot that actually serves this
@@ -32,7 +32,7 @@
 
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="eyebrow">airlock</p>
+      <p class="eyebrow">the deploy gate</p>
       <h1 id="hero-title">Ship only the version that passed.</h1>
       <p class="lead">
         airlock puts your new version on a URL nobody is on yet, runs its tests there, and makes it
@@ -177,14 +177,29 @@
         stays live. <a href="/docs">The docs</a> cover the ports, the proof check, and the limits.
       </p>
     </div>
-    <ol class="command-rail">
-      {#each quickStart as item}
-        <li>
-          <code>{item.command}</code>
-          <span>{item.note}</span>
-        </li>
-      {/each}
-    </ol>
+    <div class="terminal" role="img" aria-label="Terminal output of bun install, bun test, and bun run napkin">
+      <div class="terminal-bar">
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <span class="terminal-title">airlock — local</span>
+      </div>
+      <div class="terminal-body">
+        {#each terminalSession as line}
+          {#if line.kind === 'blank'}
+            <div class="t-line t-blank">&nbsp;</div>
+          {:else if line.kind === 'prompt'}
+            <div class="t-line t-prompt"><span class="t-caret">$</span> {line.text}</div>
+          {:else if line.kind === 'ok'}
+            <div class="t-line t-ok">{line.text}</div>
+          {:else if line.kind === 'fail'}
+            <div class="t-line t-fail">{line.text}</div>
+          {:else}
+            <div class="t-line t-out">{line.text}</div>
+          {/if}
+        {/each}
+      </div>
+    </div>
   </section>
 
   <Footer />
@@ -389,10 +404,9 @@
     object-fit: cover;
   }
 
-  h1,
-  h2,
-  h3,
-  p {
+  /* Zero specificity so this baseline never fights the real spacing rules in
+     primitives.css (.eyebrow, .lead, .section p) — those must always win. */
+  :where(h1, h2, h3, p) {
     margin: 0;
   }
 
@@ -455,10 +469,49 @@
     align-items: start;
   }
 
-  code {
-    color: var(--color-blue);
-    overflow-wrap: anywhere;
+  /* A real terminal, not a marketing card rail — the lines below are a
+     captured transcript (see terminalSession in site.ts), not paraphrase. */
+  .terminal {
+    overflow: hidden;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: #0a0f12;
+    box-shadow: var(--shadow-md);
   }
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid rgba(160, 205, 212, 0.13);
+    background: #0d1418;
+  }
+  .terminal-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(160, 205, 212, 0.22);
+  }
+  .terminal-title {
+    margin-left: var(--space-2);
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--color-faint);
+  }
+  .terminal-body {
+    padding: var(--space-5);
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+  .t-line { white-space: pre-wrap; word-break: break-word; }
+  .t-blank { height: 0.6em; }
+  .t-prompt { color: #f2f8f9; font-weight: 600; }
+  .t-caret { color: var(--color-accent); }
+  .t-out { color: #7c9099; }
+  .t-ok { color: var(--color-green); }
+  .t-fail { color: var(--color-red); }
 
   @media (max-width: 900px) {
   }
@@ -592,6 +645,14 @@
 
     .button {
       width: 100%;
+    }
+
+    /* The napkin transcript's longest lines (digest + quoted title) run wider
+       than a phone viewport at desktop size — shrink the type so real lines
+       fit instead of clipping at the box edge. */
+    .terminal-body {
+      padding: var(--space-4);
+      font-size: 0.68rem;
     }
   }
 </style>

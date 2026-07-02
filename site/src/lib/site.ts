@@ -20,30 +20,30 @@ export type PipelineStep = {
 export const pipeline: readonly PipelineStep[] = [
   {
     index: '01',
-    title: 'Deploy to a slot that serves no traffic',
+    title: 'Deploy',
     call: 'deploy(candidate)',
     body: 'A push names a candidate by its content digest. The candidate is deployed to a slot that serves no traffic. Deploying does not make it live.',
     state: 'produce',
   },
   {
     index: '02',
-    title: 'Run the tests in parallel',
+    title: 'Fanout',
     call: 'runFanout(jobs)',
     body: 'Test jobs run in parallel against the deployed slot and join into results. The evidence string is name=pass|fail across every job.',
     state: 'produce',
   },
   {
     index: '03',
-    title: 'Verify the signed proof',
+    title: 'Verify',
     call: 'verifySignedProof(proof, candidate, trusted)',
     body: 'The signer signs the test result, bound to the exact candidate digest. The proof is then checked against the trusted keys.',
     state: 'gate',
   },
   {
     index: '04',
-    title: 'Flip the live pointer if the proof verifies',
+    title: 'Promote',
     call: 'setFeatureGate(candidate, true)',
-    body: 'If the proof verifies, the feature gate flips the live pointer to the candidate. If it does not, the pointer stays where it is.',
+    body: 'setFeatureGate runs on both paths. If the proof verifies, it flips the live pointer to the candidate. If it does not, it still runs, with on=false, and the pointer does not move.',
     state: 'promote',
   },
 ] as const;
@@ -55,7 +55,7 @@ export type PortRow = {
 };
 
 export const ports: readonly PortRow[] = [
-  { port: 'runFanout', type: '(jobs, slot) => Promise<TestResult[]>', role: 'Runs the test jobs in parallel against the deployed slot and returns the results.' },
+  { port: 'runFanout', type: '(jobs, slot) => Promise<{ name, ok, detail }[]>', role: 'Runs the test jobs in parallel against the deployed slot; each result becomes one name=pass|fail term in the evidence string.' },
   { port: 'deploy', type: '(candidate) => Promise<DeploySlot>', role: 'Puts the candidate on a slot that serves no traffic; returns the URL it answers on.' },
   { port: 'setFeatureGate', type: '(candidate, on) => Promise<void>', role: 'Flips the live pointer. The only way a candidate goes live.' },
   { port: 'sign', type: '(candidate, evidence, pass) => SignedProof', role: 'Signs the test result, bound to the candidate.' },

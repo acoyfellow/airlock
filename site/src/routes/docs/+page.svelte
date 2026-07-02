@@ -11,10 +11,10 @@
 
   const limits = [
     { surface: 'Trust', boundary: 'airlock does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
+    { surface: 'Signing key', boundary: 'A signing key trusted and active at signing time can sign a proof for a bad candidate. airlock narrows where the key is used; it does not remove the owner key.' },
     { surface: 'Fanout backend', boundary: 'localFanout runs jobs in-process. A real terrarium, Workflow, or Facet backend is the integrator port and the place to isolate untrusted jobs.' },
     { surface: 'Effects', boundary: 'Deploy, sign, and promote are ports the caller supplies. The pure core holds no credential and makes no network call unless a port does.' },
-    { surface: 'Signing key', boundary: 'A signing key trusted and active at signing time can sign a proof for a bad candidate. airlock narrows where the key is used; it does not remove the owner key.' },
-    { surface: 'Not yet on a custom domain', boundary: 'The napkin is file-backed under .data/. The Cloudflare ports deploy to a non-serving *.workers.dev slot, but pointing airlock.coey.dev at a candidate is a human decision, not a pipeline step.' },
+    { surface: 'Concurrent candidates', boundary: 'Two candidates racing to promote resolve by compare-and-swap against the served ref each expected; the loser is refused, not overwritten. That guarantee lives in the KeelGate example, not in the bare Ports.setFeatureGate type.' },
   ];
 </script>
 
@@ -30,21 +30,22 @@
     <p class="eyebrow">Docs</p>
     <h1>How a candidate becomes the live version.</h1>
     <p class="lead">
-      airlock is the deploy gate between a candidate build and live traffic. On Cloudflare, the
-      usual shape is Artifacts for source, a non-serving Worker or Pages slot for the dark deploy,
-      Workflows or Durable Object Facets for fanout, signed proof verification, and Cloudflare Flags
-      for promotion. <code>runPipeline</code> is the pure core that joins those parts.
+      airlock is the deploy gate between a candidate build and live traffic: the candidate deploys
+      to a real URL with zero traffic, gets tested there, and only goes live once a signed proof
+      says it passed. If the proof fails, the version already live keeps serving — nothing rolls
+      back, because nothing moved. <code>runPipeline</code> is the pure core; the Cloudflare shape
+      (Artifacts, Workers/Pages, Workflows or Facets, Flags) is below.
     </p>
   </header>
 
   <section class="section" aria-labelledby="run-it">
     <div class="section-heading">
       <p class="eyebrow">How to use it</p>
-      <h2 id="run-it">Run it without a Cloudflare account</h2>
+      <h2 id="run-it">Run it without a Cloudflare account: clone github.com/acoyfellow/airlock</h2>
       <p>
         <code>bun run napkin</code> is file-backed under <code>.data/</code> and needs no Cloudflare
         account. It pushes a passing candidate and a failing one, prints a receipt per run, and
-        writes a signed audit log. A goes live; B is blocked and the previous version stays live.
+        writes a signed audit log. A goes live; B is blocked.
       </p>
     </div>
     <ol class="command-rail">
@@ -73,7 +74,6 @@
       <h2 id="cloudflare-shape">What each word maps to</h2>
       <p>
         The demo is local, but the names are chosen to map cleanly onto Cloudflare infrastructure.
-        This is the literal version of the diagram on the home page.
       </p>
     </div>
     <dl class="concept-list">
@@ -94,8 +94,8 @@
         <dd>A proof that says these checks passed for this exact digest under a trusted key.</dd>
       </div>
       <div>
-        <dt>Cloudflare Flags</dt>
-        <dd>The native feature flag flips only after the proof verifies for this exact candidate.</dd>
+        <dt>feature gate</dt>
+        <dd>Cloudflare Flags flips only after the proof verifies for this exact candidate.</dd>
       </div>
       <div>
         <dt>after airlock</dt>
@@ -120,8 +120,12 @@
   <section class="section" aria-labelledby="fanout">
     <div class="section-heading">
       <p class="eyebrow">Fanout backends</p>
-      <h2 id="fanout">Swapping the fanout backend</h2>
-      <p>runFanout has one type. The same pipeline runs against any backend that joins parallel work.</p>
+      <h2 id="fanout">One fanout interface, one backend that ships</h2>
+      <p>
+        runFanout has one type. Only local runs today — it's what the napkin uses. terrarium and
+        Cloudflare are the same interface, unbuilt, and the type says nothing about retries: a
+        backend that reruns a job on failure can duplicate its line in the evidence string.
+      </p>
     </div>
     <dl class="concept-list">
       {#each fanoutBackends as backend}
@@ -135,13 +139,12 @@
       <p class="eyebrow">The proof check</p>
       <h2 id="gate">What verifySignedProof actually checks</h2>
       <p>
-        airlock assembles a candidate and the test evidence, then signs it. Before the live pointer
-        moves, the signed proof is verified against the trusted keys, bound to the candidate that
-        was tested.
+        Before the live pointer moves, the signed proof is verified against the trusted keys, bound
+        to the tested slot — promotion repoints traffic there, it never rebuilds.
       </p>
     </div>
     <ol class="command-rail">
-      <li><code>verifySignedProof(proof, candidate, trusted)</code><span>returns whether the proof verifies, bound to the candidate digest</span></li>
+      <li><code>verifySignedProof(proof, candidate, trusted)</code><span>returns pass, or fail with a reason — untrusted key, digest mismatch, or missing evidence — check the signed audit log for that candidate first</span></li>
     </ol>
   </section>
 

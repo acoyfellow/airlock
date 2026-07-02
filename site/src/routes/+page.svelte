@@ -84,7 +84,7 @@
           <h3>Many agents, one repository.</h3>
           <p>
             airlock is built for a swarm of agents committing to the same repository at once. Each
-            one produces a candidate; airlock decides which one earns live traffic.
+            one produces a candidate; the KeelGate pattern in the docs decides which one earns live traffic.
           </p>
         </figcaption>
       </figure>
@@ -174,7 +174,7 @@
       <p>
         Three commands, no Cloudflare account and no keys. It pushes two versions: one whose tests
         pass and goes live, one with a failing test that gets blocked while the current version
-        stays live. <a href="/docs">The docs</a> cover the ports, the proof check, and the limits.
+        stays live. <a href="/docs">The docs</a> cover the ports, proof verification, and the limits.
       </p>
     </div>
     <div class="terminal" role="img" aria-label="Terminal output of bun install, bun test, and bun run napkin">

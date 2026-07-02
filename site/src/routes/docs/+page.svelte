@@ -4,17 +4,18 @@
   import { pipeline, ports, fanoutBackends } from '$lib/site';
 
   const napkinChecks = [
+    { command: 'git clone https://github.com/acoyfellow/airlock && cd airlock', note: 'no Cloudflare account needed' },
     { command: 'bun install', note: 'install the orchestration and site workspace' },
     { command: 'bun run napkin', note: 'pushes A then B through the real runPipeline; prints a receipt per run' },
     { command: 'bun test', note: '29 pass: pipeline, napkin, ports, and this site copy' },
   ];
 
   const limits = [
+    { surface: 'Fanout backend', boundary: "napkin's localFanout runs every check in the orchestrator's own process — nothing is isolated yet. terrarium, a Workflow, or a Facet backend is where untrusted checks get quarantined." },
+    { surface: 'Test coverage', boundary: 'The signed proof says the fanout jobs you wired up passed, not that the candidate is correct. airlock verifies the proof; it does not judge whether your tests were the right ones.' },
+    { surface: 'Digest binding', boundary: "The core never checks the signed digest against the bytes deploy shipped; that binding is the artifacts port's job, not airlock's." },
     { surface: 'Trust', boundary: 'airlock does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
-    { surface: 'Signing key', boundary: 'A signing key trusted and active at signing time can sign a proof for a bad candidate. airlock narrows where the key is used; it does not remove the owner key.' },
-    { surface: 'Fanout backend', boundary: 'localFanout runs jobs in-process. A real terrarium, Workflow, or Facet backend is the integrator port and the place to isolate untrusted jobs.' },
     { surface: 'Effects', boundary: 'Deploy, sign, and promote are ports the caller supplies. The pure core holds no credential and makes no network call unless a port does.' },
-    { surface: 'Concurrent candidates', boundary: 'Two candidates racing to promote resolve by compare-and-swap against the served ref each expected; the loser is refused, not overwritten. That guarantee lives in the KeelGate example, not in the bare Ports.setFeatureGate type.' },
   ];
 </script>
 
@@ -33,19 +34,19 @@
       airlock is the deploy gate between a candidate build and live traffic: the candidate deploys
       to a real URL with zero traffic, gets tested there, and only goes live once a signed proof
       says it passed. If the proof fails, the version already live keeps serving — nothing rolls
-      back, because nothing moved. <code>runPipeline</code> is the pure core; the Cloudflare shape
-      (Artifacts, Workers/Pages, Workflows or Facets, Flags) is below.
+      back, because nothing moved. <code>runPipeline</code> is the pure core, proven so far by
+      the local demo below; the Cloudflare shape is unbuilt.
     </p>
   </header>
 
   <section class="section" aria-labelledby="run-it">
     <div class="section-heading">
       <p class="eyebrow">How to use it</p>
-      <h2 id="run-it">Run it without a Cloudflare account: clone github.com/acoyfellow/airlock</h2>
+      <h2 id="run-it">Run it without a Cloudflare account</h2>
       <p>
         <code>bun run napkin</code> is file-backed under <code>.data/</code> and needs no Cloudflare
         account. It pushes a passing candidate and a failing one, prints a receipt per run, and
-        writes a signed audit log. A goes live; B is blocked.
+        prints the in-memory signed audit log for that run. A goes live; B is blocked.
       </p>
     </div>
     <ol class="command-rail">
@@ -63,7 +64,7 @@
     </div>
     <dl class="concept-list">
       {#each pipeline as step}
-        <div><dt>{step.index} {step.title}</dt><dd>{step.body} <code>{step.call}</code></dd></div>
+        <div class={`step-${step.state}`}><dt>{step.index} {step.title}</dt><dd>{step.body} <code>{step.call}</code></dd></div>
       {/each}
     </dl>
   </section>
@@ -73,7 +74,7 @@
       <p class="eyebrow">Cloudflare shape</p>
       <h2 id="cloudflare-shape">What each word maps to</h2>
       <p>
-        The demo is local, but the names are chosen to map cleanly onto Cloudflare infrastructure.
+        The demo is local; the Cloudflare wiring below is unbuilt. The names map onto it anyway.
       </p>
     </div>
     <dl class="concept-list">
@@ -87,7 +88,7 @@
       </div>
       <div>
         <dt>fanout</dt>
-        <dd>Parallel checks against the dark URL. The backend can be local promises, terrarium children, Workflows steps, Durable Object Facets, or Queues.</dd>
+        <dd>Parallel checks against the dark slot. The backend can be local promises, terrarium children, Workflows steps, Durable Object Facets, or Queues.</dd>
       </div>
       <div>
         <dt>signed proof</dt>
@@ -122,9 +123,9 @@
       <p class="eyebrow">Fanout backends</p>
       <h2 id="fanout">One fanout interface, one backend that ships</h2>
       <p>
-        runFanout has one type. Only local runs today — it's what the napkin uses. terrarium and
-        Cloudflare are the same interface, unbuilt, and the type says nothing about retries: a
-        backend that reruns a job on failure can duplicate its line in the evidence string.
+        runFanout has one type. Only local runs today — it's what the napkin uses. The type says
+        nothing about retries: a backend that reruns a job on failure can duplicate its line in the
+        evidence string.
       </p>
     </div>
     <dl class="concept-list">
@@ -132,20 +133,6 @@
         <div><dt>{backend.name}</dt><dd>{backend.body}</dd></div>
       {/each}
     </dl>
-  </section>
-
-  <section class="section" aria-labelledby="gate">
-    <div class="section-heading">
-      <p class="eyebrow">The proof check</p>
-      <h2 id="gate">What verifySignedProof actually checks</h2>
-      <p>
-        Before the live pointer moves, the signed proof is verified against the trusted keys, bound
-        to the tested slot — promotion repoints traffic there, it never rebuilds.
-      </p>
-    </div>
-    <ol class="command-rail">
-      <li><code>verifySignedProof(proof, candidate, trusted)</code><span>returns pass, or fail with a reason — untrusted key, digest mismatch, or missing evidence — check the signed audit log for that candidate first</span></li>
-    </ol>
   </section>
 
   <section class="section" aria-labelledby="limits">
@@ -187,6 +174,8 @@
   dt { margin: 0; font-weight: 700; color: var(--color-text); }
   dd { margin: 0; color: var(--color-muted); line-height: 1.65; }
   dd code { color: var(--color-blue); }
+  .step-gate dt { color: var(--color-green); }
+  .step-promote dt { color: var(--color-amber); }
 
   @media (max-width: 640px) {
     .concept-list div, .limit-list div { grid-template-columns: 1fr; gap: var(--space-2); }

@@ -22,7 +22,7 @@ export const pipeline: readonly PipelineStep[] = [
     index: '01',
     title: 'Deploy',
     call: 'deploy(candidate)',
-    body: 'A push names a candidate by its content digest. The candidate is deployed to a slot that serves no traffic. Deploying does not make it live.',
+    body: 'A push supplies a candidate label; the examples use a content digest. The candidate is deployed to a slot that serves no traffic. Deploying does not make it live.',
     state: 'produce',
   },
   {
@@ -43,7 +43,7 @@ export const pipeline: readonly PipelineStep[] = [
     index: '04',
     title: 'Promote',
     call: 'setFeatureGate(candidate, true)',
-    body: 'setFeatureGate runs on both paths. If the proof verifies, it flips the live pointer to the candidate. If it does not, it still runs, with on=false, and the pointer does not move.',
+    body: 'setFeatureGate runs on both paths, with on=true or on=false. The pointer only moves if the supplied promoter accepts that decision.',
     state: 'promote',
   },
 ] as const;
@@ -58,7 +58,7 @@ export const ports: readonly PortRow[] = [
   { port: 'runFanout', type: '(jobs, slot) => Promise<{ name, ok, detail }[]>', role: 'Runs the test jobs in parallel against the deployed slot; each result becomes one name=pass|fail term in the evidence string.' },
   { port: 'deploy', type: '(candidate) => Promise<DeploySlot>', role: 'Puts the candidate on a slot that serves no traffic; returns the URL it answers on.' },
   { port: 'setFeatureGate', type: '(candidate, on) => Promise<void>', role: 'Flips the live pointer. The only way a candidate goes live.' },
-  { port: 'sign', type: '(candidate, evidence, pass) => SignedProof', role: 'Signs the test result, bound to the candidate.' },
+  { port: 'sign', type: '(candidate, evidence, pass) => SignedProof — sync, private key in-process', role: 'Signs the result. No async signer (KMS/HSM); the key must be resident here.' },
   { port: 'trusted', type: 'TrustedKeys', role: 'The set of keys a proof is checked against.' },
 ] as const;
 

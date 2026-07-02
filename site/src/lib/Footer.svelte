@@ -1,6 +1,6 @@
 <footer class="footer">
   <p>MIT licensed. Version 0.0.1. An extracted primitive, kept small.</p>
-  <p>Illustrations are AI-generated. Source: <a href="https://github.com/acoyfellow/airlock">github.com/acoyfellow/airlock</a>.</p>
+  <p>Source: <a href="https://github.com/acoyfellow/airlock">github.com/acoyfellow/airlock</a>.</p>
 </footer>
 
 <style>

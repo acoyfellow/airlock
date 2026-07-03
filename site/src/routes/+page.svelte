@@ -32,7 +32,7 @@
 
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="eyebrow">an extracted primitive, kept small</p>
+      <p class="eyebrow">v0.0.1, real end to end</p>
       <h1 id="hero-title">Ship only the build of your app that passed.</h1>
       <p class="lead">
         airlock is a deploy gate for a web app, Worker, or site. It puts your candidate build on a
@@ -45,9 +45,11 @@
         bound to the exact bytes it tested, checked on a URL nothing user-facing can reach.
       </p>
       <p class="lead lead-caveat">
-        Today's shipped check runner doesn't isolate that push either — it runs in the same
-        process as everything else, so the proof is real but the sandbox isn't yet. <a
-          href="/docs#fanout">What's actually built vs. planned</a>.
+        This page is the proof: it was itself deployed dark, tested by two real terrarium checks
+        against that dark URL, admitted by a real ed25519-signed proof, and promoted here by hand.
+        <a href="https://github.com/acoyfellow/airlock/blob/main/experiments/dogfood/RECEIPT.json">The
+        receipt</a> is public and the candidate digest on this exact page matches it — check it
+        yourself in the page source.
       </p>
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
@@ -73,23 +75,24 @@
 
   <section class="section" aria-labelledby="flow-title">
     <div class="section-heading compact-heading">
-      <p class="eyebrow">ADLC — the agentic development lifecycle</p>
+      <p class="eyebrow">a small adjustment for agent-written code</p>
       <h2 id="flow-title">One candidate build, from source to live traffic.</h2>
       <p>
         A human SDLC trusts a green check because a human is accountable for writing it. An agentic
-        one cannot: the same agent can write the test and the code it tests. ADLC is that
+        one cannot: the same agent can write the test and the code it tests. This is that
         adjustment — verify a signed proof bound to the exact bytes, not a claim that CI passed.
         Nothing reaches user traffic until the proof verifies.
       </p>
     </div>
 
     <p class="cf-path-caveat">
-      The five steps below are the target shape on Cloudflare. Only <b>Artifacts</b> (as a content
-      digest) and the dark-URL deploy actually ship today; fanout, signing, and promotion ship as a
-      local demo, not this Cloudflare wiring — see <a href="/docs#fanout">Fanout backends</a> for
-      what's real.
+      This exact page shipped through steps 1, 2, 4, and 5 for real: a Worker deploy, a real
+      terrarium fanout, a real signed proof, a human promotion — <a
+        href="https://github.com/acoyfellow/airlock/blob/main/experiments/dogfood/RECEIPT.json">receipt
+        here</a>. Step 3 (fanout on Workflows/DO/Queues instead of terrarium) is the one box below
+      that's still a target, not shipped — see <a href="/docs#fanout">Fanout backends</a>.
     </p>
-    <div class="cf-path" aria-label="Cloudflare-native airlock path for one candidate (target architecture, not yet built)">
+    <div class="cf-path" aria-label="The airlock path for one candidate, mostly real, one target box marked below">
       <figure class="before-band" aria-label="Before airlock: each push creates a candidate">
         <img
           src="/airlock-agents.jpg"
@@ -148,8 +151,8 @@
             </svg>
           </span>
           <div>
-            <h3>Workflows / DO / Queues</h3>
-            <p>Checks fan out against the dark URL and join into one result.</p>
+            <h3>Workflows / DO / Queues <span class="target-inline">target</span></h3>
+            <p>Checks fan out against the dark URL and join into one result. On this page, terrarium did that fanout instead — for real.</p>
           </div>
         </li>
         <li>
@@ -387,6 +390,20 @@
   .cf-logo.fanout { color: var(--color-accent); }
   .cf-logo.proof { color: var(--color-green); }
   .cf-logo.promote { color: var(--color-amber); }
+
+  .target-inline {
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.05rem 0.35rem;
+    border-radius: 4px;
+    color: var(--color-muted);
+    background: var(--color-border);
+    vertical-align: middle;
+    margin-left: var(--space-2);
+  }
   .cf-steps h3 {
     margin: 0 0 var(--space-2);
     font-size: 0.92rem;

@@ -1,0 +1,375 @@
+{
+  "experiment": "swarm",
+  "ranAt": "2026-07-03T20:05:57.589Z",
+  "registryUrl": "https://airlock-swarm-registry.coy.workers.dev",
+  "agentCount": 20,
+  "elapsedMs": 856,
+  "admittedCount": 1,
+  "refusedCount": 19,
+  "finalServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+  "finalVersion": 1,
+  "casHeld": true,
+  "verdict": "CAS HELD — 1/20 agents admitted, each to a distinct version, no double-admits under real concurrent load",
+  "registryLog": [
+    {
+      "at": "2026-07-03T20:05:57.052Z",
+      "agent": "agent-5",
+      "candidate": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 0,
+      "outcome": "admitted"
+    },
+    {
+      "at": "2026-07-03T20:05:57.052Z",
+      "agent": "agent-19",
+      "candidate": "sha256:91cc2740857a3f7b2beb744204444958d961a1d4d345b599b865268763929a55",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.052Z",
+      "agent": "agent-6",
+      "candidate": "sha256:7651003976582f98a6963389c232dc4ae9a8c7f7118a211ed8cd311f8a456026",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.052Z",
+      "agent": "agent-16",
+      "candidate": "sha256:89851895eb985b40a87c51b7289632b4ee53b98cb352eb37ba09048db3056323",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.060Z",
+      "agent": "agent-1",
+      "candidate": "sha256:7de133e948458e207129cb9369963c1afe382dcf2a699a88d6ac300ec3f6aa7a",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.062Z",
+      "agent": "agent-2",
+      "candidate": "sha256:3f5a3c8108965a08221c58c550ed4685ecc89e2348c1867c70e294b6755e2976",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.067Z",
+      "agent": "agent-15",
+      "candidate": "sha256:1a08eab4aa3fa02a7c04e1b4a964b6f10db7483a72ca0f82d661e3ed4856ee94",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.070Z",
+      "agent": "agent-11",
+      "candidate": "sha256:95469d2354033be91b5524d8b4e329852cceb842dc26e3a7edec696399d9cbce",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-3",
+      "candidate": "sha256:8d33acb1ae2e4c536e85feef35693aeb7d0b5f11d7d7586654af871658163d39",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-13",
+      "candidate": "sha256:dc89d962d36636ff6d920911692d7a7a456a17c6b813e8c4742d705d4885e838",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-7",
+      "candidate": "sha256:d78d246ba8f9934fa3bacfd08a0fc4e2337dde880af3e6bbbda2529d8335423c",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-8",
+      "candidate": "sha256:17a8245e8b893d21fe1281b9e9d4da4d70c48b2050fe750004d199df314c44e4",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-17",
+      "candidate": "sha256:d76d1239c58650042868d53ce0f8b8fa75cf1cf706a08504fe96cc6d5e2da381",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-14",
+      "candidate": "sha256:95255fab2dffbbe48977cabe76c36d3189c81641f07faefab90e1fb322dfad43",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-18",
+      "candidate": "sha256:9594904060e2c33662bae731fed888b799e47594bed431a8811cf3d9f415165d",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-9",
+      "candidate": "sha256:cffb372034755cd350ca999e1ef1c79c2150c6198dae36bd4ecf7682292c986a",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-12",
+      "candidate": "sha256:ffe0a415347c518e201deca37349ec298993af77af334e09be4e63acc39b0735",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-10",
+      "candidate": "sha256:c696468340237d089498f7646817a9902a9be5a8cf76c43b7b6632bd01a9f7e1",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.073Z",
+      "agent": "agent-20",
+      "candidate": "sha256:f5754b1e87f827127128ef26ee9de9ef187e050d8f97091f1b375269d610f16c",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    },
+    {
+      "at": "2026-07-03T20:05:57.089Z",
+      "agent": "agent-4",
+      "candidate": "sha256:3a4db1999403dc663c42f7de5e98aa23250d1a74139a02475f321cee4ff6ea4b",
+      "expectedVersion": 0,
+      "currentVersionAtCheck": 1,
+      "outcome": "refused-stale-version"
+    }
+  ],
+  "agentResults": [
+    {
+      "agent": "agent-1",
+      "candidate": "sha256:7de133e948458e207129cb9369963c1afe382dcf2a699a88d6ac300ec3f6aa7a",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-2",
+      "candidate": "sha256:3f5a3c8108965a08221c58c550ed4685ecc89e2348c1867c70e294b6755e2976",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-3",
+      "candidate": "sha256:8d33acb1ae2e4c536e85feef35693aeb7d0b5f11d7d7586654af871658163d39",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-4",
+      "candidate": "sha256:3a4db1999403dc663c42f7de5e98aa23250d1a74139a02475f321cee4ff6ea4b",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-5",
+      "candidate": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": true,
+      "version": 1
+    },
+    {
+      "agent": "agent-6",
+      "candidate": "sha256:7651003976582f98a6963389c232dc4ae9a8c7f7118a211ed8cd311f8a456026",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-7",
+      "candidate": "sha256:d78d246ba8f9934fa3bacfd08a0fc4e2337dde880af3e6bbbda2529d8335423c",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-8",
+      "candidate": "sha256:17a8245e8b893d21fe1281b9e9d4da4d70c48b2050fe750004d199df314c44e4",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-9",
+      "candidate": "sha256:cffb372034755cd350ca999e1ef1c79c2150c6198dae36bd4ecf7682292c986a",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-10",
+      "candidate": "sha256:c696468340237d089498f7646817a9902a9be5a8cf76c43b7b6632bd01a9f7e1",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-11",
+      "candidate": "sha256:95469d2354033be91b5524d8b4e329852cceb842dc26e3a7edec696399d9cbce",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-12",
+      "candidate": "sha256:ffe0a415347c518e201deca37349ec298993af77af334e09be4e63acc39b0735",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-13",
+      "candidate": "sha256:dc89d962d36636ff6d920911692d7a7a456a17c6b813e8c4742d705d4885e838",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-14",
+      "candidate": "sha256:95255fab2dffbbe48977cabe76c36d3189c81641f07faefab90e1fb322dfad43",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-15",
+      "candidate": "sha256:1a08eab4aa3fa02a7c04e1b4a964b6f10db7483a72ca0f82d661e3ed4856ee94",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-16",
+      "candidate": "sha256:89851895eb985b40a87c51b7289632b4ee53b98cb352eb37ba09048db3056323",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-17",
+      "candidate": "sha256:d76d1239c58650042868d53ce0f8b8fa75cf1cf706a08504fe96cc6d5e2da381",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-18",
+      "candidate": "sha256:9594904060e2c33662bae731fed888b799e47594bed431a8811cf3d9f415165d",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-19",
+      "candidate": "sha256:91cc2740857a3f7b2beb744204444958d961a1d4d345b599b865268763929a55",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    },
+    {
+      "agent": "agent-20",
+      "candidate": "sha256:f5754b1e87f827127128ef26ee9de9ef187e050d8f97091f1b375269d610f16c",
+      "proofVerified": true,
+      "observedVersionBeforeRace": 0,
+      "admitted": false,
+      "reason": "stale-version",
+      "currentServed": "sha256:ce7a186ea74ab9ec50e18aebd6819094bd1686762454a2a8578fb4a40e37659e",
+      "currentVersion": 1
+    }
+  ]
+}

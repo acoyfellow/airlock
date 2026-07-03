@@ -155,7 +155,7 @@
             </svg>
           </span>
           <div>
-            <h3>Cloudflare Flags</h3>
+            <h3>Promotion gate</h3>
             <p>If the proof verifies, the caller flips the flag for this candidate. If not, users stay on the current build.</p>
           </div>
         </li>

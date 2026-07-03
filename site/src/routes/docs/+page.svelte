@@ -31,11 +31,10 @@
     <p class="eyebrow">Docs</p>
     <h1>How a candidate build reaches live traffic.</h1>
     <p class="lead">
-      airlock is the deploy gate between a candidate build of your app and live traffic: the
-      candidate gets tested on a real URL with no live traffic, and only goes live once
-      a signed proof says it passed. If the proof fails before promote, the live build keeps serving;
-      after promote, rollback is your router's job. <code>runPipeline</code> is the port-driven
-      orchestrator; the local demo below proves A goes live and B is blocked.
+      airlock is a deploy gate for a candidate build of your web app, Worker, or site. It tests
+      that build on a real URL with no live traffic, then makes it live only after a signed proof
+      says it passed. Before promote, failure leaves the live pointer alone; candidate side effects
+      and rollback are yours.
     </p>
   </header>
 
@@ -69,47 +68,11 @@
     </dl>
   </section>
 
-  <section class="section" aria-labelledby="cloudflare-shape">
-    <div class="section-heading">
-      <p class="eyebrow">Cloudflare shape</p>
-      <h2 id="cloudflare-shape">Unbuilt Cloudflare mapping</h2>
-      <p>
-        The reusable contract is the ports below; this Cloudflare mapping is only a target.
-      </p>
-    </div>
-    <dl class="concept-list">
-      <div>
-        <dt>candidate</dt>
-        <dd>Source in a Cloudflare Artifacts repo, named by a digest of the tree airlock is about to test.</dd>
-      </div>
-      <div>
-        <dt>dark slot</dt>
-        <dd>A deployed Worker or Pages build with a URL, held away from live traffic.</dd>
-      </div>
-      <div>
-        <dt>fanout</dt>
-        <dd>Parallel checks against the dark slot. The backend can be local promises, terrarium children, Workflows steps, Durable Object Facets, or Queues.</dd>
-      </div>
-      <div>
-        <dt>signed proof</dt>
-        <dd>A proof that says these checks passed for this exact digest under a trusted key.</dd>
-      </div>
-      <div>
-        <dt>promotion gate</dt>
-        <dd>The served pointer moves only after the proof verifies for this exact candidate.</dd>
-      </div>
-      <div>
-        <dt>after airlock</dt>
-        <dd>Traffic and observability. Logs, analytics, traces, alerts, and pulse can inspect the build that was allowed through.</dd>
-      </div>
-    </dl>
-  </section>
-
   <section class="section" aria-labelledby="ports">
     <div class="section-heading">
       <p class="eyebrow">What you supply</p>
       <h2 id="ports">The functions airlock calls</h2>
-      <p>airlock never deploys, signs, or promotes on its own. It calls these functions, and you supply them. That is how the local demo can later swap in Cloudflare ports.</p>
+      <p>airlock only calls these supplied functions. If one throws, the run rejects. Swapping them moves the demo to new backends.</p>
     </div>
     <dl class="concept-list">
       {#each ports as p}
@@ -123,8 +86,8 @@
       <p class="eyebrow">Fanout backends</p>
       <h2 id="fanout">One fanout interface, one backend that ships</h2>
       <p>
-        runFanout has one type. Only local runs today: unbounded Promise.all, no retries, no queue;
-        keel verifies and promotes the signed result, but it does not schedule the work.
+        runFanout has one type. The Bun demo uses unbounded Promise.all: no retries, no queue.
+        The gate verifies the proof and calls your promotion port; it does not schedule checks.
       </p>
     </div>
     <dl class="concept-list">

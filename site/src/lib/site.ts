@@ -57,7 +57,7 @@ export type PortRow = {
 export const ports: readonly PortRow[] = [
   { port: 'runFanout', type: '(jobs, slot) => Promise<{ name, ok, detail }[]>', role: 'Runs the test jobs in parallel against the deployed slot; each result becomes one name=pass|fail term in the evidence string.' },
   { port: 'deploy', type: '(candidate) => Promise<DeploySlot>', role: 'Puts the candidate on a slot that serves no traffic; returns the URL it answers on.' },
-  { port: 'setFeatureGate', type: '(candidate, on) => Promise<void>', role: 'Flips the live pointer. The only way a candidate goes live.' },
+  { port: 'setFeatureGate', type: '(candidate, on) => Promise<void>', role: 'Receives the decision; caller-owned code moves traffic.' },
   { port: 'sign', type: '(candidate, evidence, pass) => SignedProof — sync, private key in-process', role: 'Signs the result. No async signer (KMS/HSM); the key must be resident here.' },
   { port: 'trusted', type: 'TrustedKeys', role: 'The set of keys a proof is checked against.' },
 ] as const;
@@ -69,7 +69,7 @@ export type FanoutBackend = {
 
 export const fanoutBackends: readonly FanoutBackend[] = [
   { name: 'local', body: 'A Promise.all that records a thrown test as a failure instead of crashing. This is localFanout, the backend the napkin uses.' },
-  { name: 'terrarium', body: 'Each test is a bounded child agent run, joined when they finish.' },
+  { name: 'terrarium', body: 'Prototype: each test starts a child agent immediately and joins when they finish; no queue, retries, or concurrency cap.' },
   { name: 'cloudflare', body: 'Workflow steps, or Durable Object Facets, one per test, joined back into the results.' },
 ] as const;
 

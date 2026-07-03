@@ -55,6 +55,29 @@
     </ol>
   </section>
 
+  <section class="section" aria-labelledby="define-gate">
+    <div class="section-heading">
+      <p class="eyebrow">Define the gate</p>
+      <h2 id="define-gate">Your project chooses the checks</h2>
+      <p>
+        airlock has no default test suite. The gate is the <code>jobs</code> list you pass to
+        <code>runPipeline</code>: named checks against the dark URL. Each returns
+        <code>{'{ name, ok, detail }'}</code>; promotion only becomes possible when every check is
+        <code>ok</code> and the proof verifies.
+      </p>
+    </div>
+    <dl class="concept-list">
+      <div>
+        <dt>Greenfield</dt>
+        <dd>Start with one dark-URL smoke check. Add one critical user path after it blocks a bad build.</dd>
+      </div>
+      <div>
+        <dt>Brownfield</dt>
+        <dd>Start shadow-only: run dark-URL checks and print receipts; keep promotion denied. Move traffic only when receipts match CI and the alerts you already page on.</dd>
+      </div>
+    </dl>
+  </section>
+
   <section class="section" aria-labelledby="pipeline">
     <div class="section-heading">
       <p class="eyebrow">How it's built</p>
@@ -72,7 +95,7 @@
     <div class="section-heading">
       <p class="eyebrow">What you supply</p>
       <h2 id="ports">The functions airlock calls</h2>
-      <p>airlock only calls these supplied functions. If one throws, the run rejects. Swapping them moves the demo to new backends.</p>
+      <p>You supply the checks and the effects. If a supplied function throws, the run rejects. Swapping these ports moves the demo to new backends.</p>
     </div>
     <dl class="concept-list">
       {#each ports as p}

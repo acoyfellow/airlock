@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://new-sdlc.coey.dev/sitemap.xml
+Sitemap: https://airlock.coey.dev/sitemap.xml

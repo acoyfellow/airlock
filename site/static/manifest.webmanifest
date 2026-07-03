@@ -1,7 +1,7 @@
 {
-  "name": "new-sdlc",
-  "short_name": "new-sdlc",
-  "description": "Deploy, fan out tests, and promote only when keel admits a signed proof bound to the candidate.",
+  "name": "airlock",
+  "short_name": "airlock",
+  "description": "A deploy gate for a web app, Worker, or site: test a candidate build on a dark URL and make it live only after a signed proof says it passed.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -29,12 +29,12 @@
 
   <header class="doc-hero">
     <p class="eyebrow">Docs</p>
-    <h1>How a candidate becomes the live version.</h1>
+    <h1>How a candidate build becomes the live app.</h1>
     <p class="lead">
-      airlock is the deploy gate between a candidate build and live traffic: the candidate deploys
-      to a real URL with zero traffic, gets tested there, and only goes live once a signed proof
-      says it passed. If the proof fails before promote, the live version keeps serving; after
-      promote, rollback is your router's job. <code>runPipeline</code> is the port-driven
+      airlock is the deploy gate between a candidate build of your app and live traffic: the
+      candidate deploys to a real URL with zero traffic, gets tested there, and only goes live once
+      a signed proof says it passed. If the proof fails before promote, the live build keeps serving;
+      after promote, rollback is your router's job. <code>runPipeline</code> is the port-driven
       orchestrator; the local demo below proves A goes live and B is blocked.
     </p>
   </header>

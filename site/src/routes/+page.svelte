@@ -33,10 +33,11 @@
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
       <p class="eyebrow">the deploy gate</p>
-      <h1 id="hero-title">Ship only the version that passed.</h1>
+      <h1 id="hero-title">Ship only the build of your app that passed.</h1>
       <p class="lead">
-        airlock puts your new version on a URL nobody is on yet, runs its tests there, and makes it
-        live only if they pass. If a test fails, everyone stays on the current version.
+        airlock is a deploy gate for a web app, Worker, or site. It puts your candidate build on a
+        URL nobody is on yet, runs its tests there, and makes that build live only if they pass. If
+        a test fails, everyone stays on the current build.
       </p>
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
@@ -155,7 +156,7 @@
           </span>
           <div>
             <h3>Cloudflare Flags</h3>
-            <p>If the proof verifies, the caller flips the flag for this candidate. If not, users stay on the current version.</p>
+            <p>If the proof verifies, the caller flips the flag for this candidate. If not, users stay on the current build.</p>
           </div>
         </li>
       </ol>
@@ -173,7 +174,7 @@
       <h2>Run it locally</h2>
       <p>
         Three commands, no Cloudflare account and no keys. It pushes two versions: one whose tests
-        pass and goes live, one with a failing test that gets blocked while the current version
+        pass and goes live, one with a failing test that gets blocked while the current build
         stays live. <a href="/docs">The docs</a> cover the ports, proof verification, and the limits.
       </p>
     </div>

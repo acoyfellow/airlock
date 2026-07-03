@@ -1,8 +1,8 @@
 export const site = {
   name: 'airlock',
-  title: 'airlock: a new version stays dark until its tests pass',
+  title: 'airlock: your app stays dark until its tests pass',
   description:
-    'A small pipeline. You push a candidate version, it deploys to a slot that serves no traffic, runs the tests in parallel, and makes that version live only if a signed proof says the tests passed.',
+    'A small pipeline for a web app, Worker, or site. You push a candidate build, it deploys to a slot that serves no traffic, runs the tests in parallel, and makes that build live only if a signed proof says the tests passed.',
   url: 'https://airlock.coey.dev',
 } as const;
 
@@ -22,7 +22,7 @@ export const pipeline: readonly PipelineStep[] = [
     index: '01',
     title: 'Deploy',
     call: 'deploy(candidate)',
-    body: 'A push supplies a candidate label; the examples use a content digest. The candidate is deployed to a slot that serves no traffic. Deploying does not make it live.',
+    body: 'A push supplies a candidate build of your app; the examples label it with a content digest. The candidate is deployed to a slot that serves no traffic. Deploying does not make it live.',
     state: 'produce',
   },
   {

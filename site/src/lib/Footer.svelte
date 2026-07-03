@@ -1,5 +1,5 @@
 <footer class="footer">
-  <p>MIT licensed. Version 0.0.1. An extracted primitive, kept small.</p>
+  <p>MIT licensed. Version 0.0.1, kept small on purpose.</p>
   <p>Source: <a href="https://github.com/acoyfellow/airlock">github.com/acoyfellow/airlock</a>.</p>
 </footer>
 

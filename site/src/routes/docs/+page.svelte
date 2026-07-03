@@ -53,9 +53,10 @@
       <p class="eyebrow">How to use it</p>
       <h2 id="run-it">Run it with Bun, without a Cloudflare account</h2>
       <p>
-        <code>bun run napkin</code> is file-backed under <code>.data/</code> and needs no Cloudflare
-        account. It prints candidate, evidence, reason, admitted, promoted, served-before/after, and
-        approve/deny audit. A goes live; B is blocked.
+        Requires <a href="https://bun.sh">Bun</a>. <code>bun run napkin</code> is called that because
+        it's a rough sketch, not the finished build: file-backed under <code>.data/</code>, no
+        Cloudflare account needed. It prints candidate, evidence, reason, admitted, promoted,
+        served-before/after, and approve/deny audit. A goes live; B is blocked.
       </p>
     </div>
     <ol class="command-rail">
@@ -83,9 +84,24 @@
       </div>
       <div>
         <dt>Brownfield</dt>
-        <dd>Start shadow-only: run dark-URL checks and print receipts; keep promotion denied. Move traffic only when receipts match CI and the alerts you already page on.</dd>
+        <dd>Run the checks, print the receipt, but wire <code>setFeatureGate</code> to only log the decision — never actually flip anything. Once the receipts agree with what your existing CI and alerts already say, replace the log with a real flip.</dd>
       </div>
     </dl>
+    <div class="code-block">
+      <p class="code-block-label">A real (minimal) <code>deploy</code> port — not a type signature, an implementation:</p>
+      <pre><code>{`function darkWorkerName(candidate: string): string {
+  const hex = candidate.replace(/^sha256:/, '').toLowerCase();
+  return \`app-dark-\${hex.slice(0, 24)}\`; // one Worker per candidate digest
+}
+
+async function deploy(candidate: string): Promise<DeploySlot> {
+  const name = darkWorkerName(candidate);
+  const out = execFileSync('wrangler', ['deploy', '--name', name], { encoding: 'utf8' });
+  const url = out.match(/https:\\/\\/[^\\s]+\\.workers\\.dev/)?.[0];
+  if (!url) throw new Error('deploy: no workers.dev URL in wrangler output');
+  return { url }; // this is the dark slot; nothing routes live traffic to it yet
+}`}</code></pre>
+    </div>
   </section>
 
   <section class="section" aria-labelledby="pipeline">
@@ -121,11 +137,12 @@
       <p>
         runFanout has one type. The Bun demo uses unbounded Promise.all: no retries, no queue.
         The gate verifies the proof and calls your promotion port; it does not schedule checks.
+        These are not equal options — only one ships today.
       </p>
     </div>
     <dl class="concept-list">
       {#each fanoutBackends as backend}
-        <div><dt>{backend.name}</dt><dd>{backend.body}</dd></div>
+        <div><dt>{backend.name} <span class="status-tag status-{backend.status}">{backend.status}</span></dt><dd>{backend.body}</dd></div>
       {/each}
     </dl>
   </section>
@@ -171,6 +188,38 @@
   dd code { color: var(--color-blue); overflow-wrap: anywhere; }
   .step-gate dt { color: var(--color-green); }
   .step-promote dt { color: var(--color-amber); }
+
+  .code-block { margin-top: var(--space-6); }
+  .code-block-label { margin: 0 0 var(--space-3); color: var(--color-muted); font-size: 0.9rem; }
+  .code-block pre {
+    margin: 0;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-layer);
+    overflow-x: auto;
+  }
+  .code-block code {
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    white-space: pre;
+  }
+
+  .status-tag {
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .status-ships { color: var(--color-green); background: var(--color-green-soft); }
+  .status-prototype { color: var(--color-amber); background: var(--color-amber-soft); }
+  .status-target { color: var(--color-muted); background: var(--color-border); }
 
   @media (max-width: 640px) {
     .concept-list div, .limit-list div { grid-template-columns: 1fr; gap: var(--space-2); }

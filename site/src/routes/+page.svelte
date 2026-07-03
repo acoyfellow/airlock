@@ -32,12 +32,17 @@
 
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="eyebrow">the deploy gate</p>
+      <p class="eyebrow">an extracted primitive, kept small</p>
       <h1 id="hero-title">Ship only the build of your app that passed.</h1>
       <p class="lead">
         airlock is a deploy gate for a web app, Worker, or site. It puts your candidate build on a
         URL nobody is on yet, runs its tests there, and makes that build live only if they pass. If
         a test fails, everyone stays on the current build.
+      </p>
+      <p class="lead lead-secondary">
+        Written for a world where the push is as likely to come from an agent as from you: a green
+        check is a claim, not a fact, so airlock never trusts it. It only trusts a signed proof,
+        bound to the exact bytes it tested, checked on a URL nothing user-facing can reach.
       </p>
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
@@ -63,11 +68,14 @@
 
   <section class="section" aria-labelledby="flow-title">
     <div class="section-heading compact-heading">
-      <p class="eyebrow">ADLC / the agentic development lifecycle</p>
+      <p class="eyebrow">ADLC — the agentic development lifecycle</p>
       <h2 id="flow-title">One candidate build, from source to live traffic.</h2>
       <p>
-        The same five steps, mapped to target Cloudflare parts. Nothing reaches user traffic until
-        the proof verifies.
+        A human SDLC trusts a green check because a human is accountable for writing it. An agentic
+        one cannot: the same agent can write the test and the code it tests. ADLC is that
+        adjustment — verify a signed proof bound to the exact bytes, not a claim that CI passed.
+        The same five steps below, mapped to target Cloudflare parts. Nothing reaches user traffic
+        until the proof verifies.
       </p>
     </div>
 
@@ -173,9 +181,11 @@
       <p class="eyebrow">How to use it</p>
       <h2>Run it locally</h2>
       <p>
-        Three commands, no Cloudflare account and no keys. It pushes two candidate builds: one whose tests
-        pass and goes live, one with a failing test that gets blocked while the current build
-        stays live. <a href="/docs">The docs</a> cover the ports, proof verification, and the limits.
+        Requires <a href="https://bun.sh">Bun</a>. Three commands, no Cloudflare account and no keys.
+        The last one runs the "napkin" — a rough sketch, not the finished build — which pushes two
+        candidate builds: one whose tests pass and goes live, one with a failing test that gets
+        blocked while the current build stays live. <a href="/docs">The docs</a> cover the ports,
+        proof verification, and the limits.
       </p>
     </div>
     <div class="terminal" role="img" aria-label="Terminal output of bun install, bun test, and bun run napkin">
@@ -390,6 +400,10 @@
 
   .hero-copy {
     max-width: 760px;
+  }
+
+  .lead-secondary {
+    margin-top: var(--space-4);
   }
 
   .hero-aside {

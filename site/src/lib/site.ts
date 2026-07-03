@@ -62,15 +62,18 @@ export const ports: readonly PortRow[] = [
   { port: 'trusted', type: 'TrustedKeys', role: 'The set of keys a proof is checked against.' },
 ] as const;
 
+export type FanoutStatus = 'ships' | 'prototype' | 'target';
+
 export type FanoutBackend = {
   readonly name: string;
+  readonly status: FanoutStatus;
   readonly body: string;
 };
 
 export const fanoutBackends: readonly FanoutBackend[] = [
-  { name: 'local', body: 'A Promise.all that records a thrown test as a failure instead of crashing. This is localFanout, the backend the napkin uses.' },
-  { name: 'terrarium', body: 'Prototype: each test starts a child agent immediately and joins when they finish; no queue, retries, or concurrency cap.' },
-  { name: 'cloudflare', body: 'Workflow steps, or Durable Object Facets, one per test, joined back into the results.' },
+  { name: 'local', status: 'ships', body: 'A Promise.all that records a thrown test as a failure instead of crashing. This is localFanout, the backend the napkin uses. Nothing is isolated: a hostile check runs in your process.' },
+  { name: 'terrarium', status: 'prototype', body: 'Each test is a bounded child process, joined when they finish. Real local containment exists (Docker-based, tested) as an upgrade from local. Cloud-hosted isolation is terrarium\'s roadmap, not shipped — do not assume it runs untrusted code for you today.' },
+  { name: 'cloudflare', status: 'target', body: 'Workflow steps, or Durable Object Facets, one per test, joined back into the results. Described, not built: no code ships for this backend yet.' },
 ] as const;
 
 export const quickStart = [

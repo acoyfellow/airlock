@@ -22,6 +22,16 @@
 <svelte:head>
   <title>airlock / docs</title>
   <meta name="description" content="How a candidate build reaches live traffic, what you have to supply, and where airlock stops deciding for you." />
+  <link rel="canonical" href="https://airlock.coey.dev/docs" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="airlock / docs" />
+  <meta property="og:description" content="How a candidate build reaches live traffic, what you have to supply, and where airlock stops deciding for you." />
+  <meta property="og:url" content="https://airlock.coey.dev/docs" />
+  <meta property="og:image" content="https://airlock.coey.dev/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="airlock / docs" />
+  <meta name="twitter:description" content="How a candidate build reaches live traffic, what you have to supply, and where airlock stops deciding for you." />
+  <meta name="twitter:image" content="https://airlock.coey.dev/og.png" />
 </svelte:head>
 
 <main class="shell">

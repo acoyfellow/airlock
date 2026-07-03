@@ -45,11 +45,15 @@
         bound to the exact bytes it tested, checked on a URL nothing user-facing can reach.
       </p>
       <p class="lead lead-caveat">
-        This page is the proof: it was itself deployed dark, tested by two real terrarium checks
-        against that dark URL, admitted by a real ed25519-signed proof, and promoted here by hand.
-        <a href="https://github.com/acoyfellow/airlock/blob/main/experiments/dogfood/RECEIPT.json">The
-        receipt</a> is public and the candidate digest on this exact page matches it — check it
-        yourself in the page source.
+        This page is the proof: it was itself deployed dark, tested by two real <b>terrarium</b>
+        checks against that dark URL — terrarium on purpose, because it isolates each check in its
+        own process, unlike the simpler <code>local</code> backend most projects start with —
+        admitted by a real ed25519-signed proof, and promoted here by hand.
+      </p>
+      <p class="lead lead-caveat">
+        <a class="receipt-link" href="https://github.com/acoyfellow/airlock/blob/main/experiments/dogfood/RECEIPT.json">
+          View the signed receipt for this exact page
+        </a>
       </p>
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
@@ -87,10 +91,12 @@
 
     <p class="cf-path-caveat">
       This exact page shipped through steps 1, 2, 4, and 5 for real: a Worker deploy, a real
-      terrarium fanout, a real signed proof, a human promotion — <a
-        href="https://github.com/acoyfellow/airlock/blob/main/experiments/dogfood/RECEIPT.json">receipt
-        here</a>. Step 3 (fanout on Workflows/DO/Queues instead of terrarium) is the one box below
-      that's still a target, not shipped — see <a href="/docs#fanout">Fanout backends</a>.
+      isolated terrarium fanout, a real signed proof, a human promotion — <a
+        class="receipt-link"
+        href="https://github.com/acoyfellow/airlock/blob/main/experiments/dogfood/RECEIPT.json">
+        view the signed receipt</a>. Step 3 (fanout on Workflows/DO/Queues instead of terrarium)
+      is the one box below that's still a target, not shipped — see <a href="/docs#fanout">Fanout
+      backends</a>.
     </p>
     <div class="cf-path" aria-label="The airlock path for one candidate, mostly real, one target box marked below">
       <figure class="before-band" aria-label="Before airlock: each push creates a candidate">
@@ -439,6 +445,15 @@
     color: var(--color-faint);
   }
   .lead-caveat a { color: var(--color-blue); text-decoration: underline; text-underline-offset: 2px; }
+  .receipt-link {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-accent) !important;
+    text-decoration: none !important;
+  }
+  .receipt-link:hover { text-decoration: underline !important; }
 
   .cf-path-caveat {
     max-width: 720px;

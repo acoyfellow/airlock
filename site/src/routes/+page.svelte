@@ -64,15 +64,15 @@
   <section class="section" aria-labelledby="flow-title">
     <div class="section-heading compact-heading">
       <p class="eyebrow">ADLC / the agentic development lifecycle</p>
-      <h2 id="flow-title">One version, from source to live traffic.</h2>
+      <h2 id="flow-title">One candidate build, from source to live traffic.</h2>
       <p>
-        The same five steps, named for the Cloudflare parts they run on. Nothing reaches users until
+        The same five steps, mapped to target Cloudflare parts. Nothing reaches user traffic until
         the proof verifies.
       </p>
     </div>
 
     <div class="cf-path" aria-label="Cloudflare-native airlock path for one candidate">
-      <figure class="before-band" aria-label="Before airlock: many agents commit to the same repository at once">
+      <figure class="before-band" aria-label="Before airlock: each push creates a candidate">
         <img
           src="/airlock-agents.jpg"
           alt="A swarm of operators crossing a horizon toward a tall teal repository monolith"
@@ -82,10 +82,10 @@
         />
         <figcaption class="before-overlay">
           <span class="edge-k">before airlock</span>
-          <h3>Many agents, one repository.</h3>
+          <h3>Each push, one candidate.</h3>
           <p>
-            airlock is built for a swarm of agents committing to the same repository at once. Each
-            one produces a candidate; the KeelGate pattern in the docs decides which one earns live traffic.
+            airlock admits a candidate only after its proof verifies. Scheduling a swarm of pushes
+            is outside this demo.
           </p>
         </figcaption>
       </figure>
@@ -114,7 +114,7 @@
           </span>
           <div>
             <h3>Workers or Pages</h3>
-            <p>The candidate deploys to a dark URL. Tests can fetch it; users cannot reach it.</p>
+            <p>The candidate deploys to a dark URL. Tests fetch it; live traffic does not.</p>
           </div>
         </li>
         <li>
@@ -173,7 +173,7 @@
       <p class="eyebrow">How to use it</p>
       <h2>Run it locally</h2>
       <p>
-        Three commands, no Cloudflare account and no keys. It pushes two versions: one whose tests
+        Three commands, no Cloudflare account and no keys. It pushes two candidate builds: one whose tests
         pass and goes live, one with a failing test that gets blocked while the current build
         stays live. <a href="/docs">The docs</a> cover the ports, proof verification, and the limits.
       </p>

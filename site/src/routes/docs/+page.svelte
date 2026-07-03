@@ -21,7 +21,7 @@
 
 <svelte:head>
   <title>airlock / docs</title>
-  <meta name="description" content="How a candidate becomes the live version, what you have to supply, and where airlock stops deciding for you." />
+  <meta name="description" content="How a candidate build reaches live traffic, what you have to supply, and where airlock stops deciding for you." />
 </svelte:head>
 
 <main class="shell">
@@ -29,10 +29,10 @@
 
   <header class="doc-hero">
     <p class="eyebrow">Docs</p>
-    <h1>How a candidate build becomes the live app.</h1>
+    <h1>How a candidate build reaches live traffic.</h1>
     <p class="lead">
       airlock is the deploy gate between a candidate build of your app and live traffic: the
-      candidate deploys to a real URL with zero traffic, gets tested there, and only goes live once
+      candidate gets tested on a real URL with no live traffic, and only goes live once
       a signed proof says it passed. If the proof fails before promote, the live build keeps serving;
       after promote, rollback is your router's job. <code>runPipeline</code> is the port-driven
       orchestrator; the local demo below proves A goes live and B is blocked.
@@ -45,8 +45,8 @@
       <h2 id="run-it">Run it with Bun, without a Cloudflare account</h2>
       <p>
         <code>bun run napkin</code> is file-backed under <code>.data/</code> and needs no Cloudflare
-        account. It prints receipts with candidate, evidence, admitted, promoted, and served-before/after;
-        then a signed approve/deny audit summary. A goes live; B is blocked.
+        account. It prints candidate, evidence, reason, admitted, promoted, served-before/after, and
+        approve/deny audit. A goes live; B is blocked.
       </p>
     </div>
     <ol class="command-rail">
@@ -59,8 +59,8 @@
   <section class="section" aria-labelledby="pipeline">
     <div class="section-heading">
       <p class="eyebrow">How it's built</p>
-      <h2 id="pipeline">KeelGate decides whether a candidate goes live</h2>
-      <p>A candidate is named by content. These steps decide whether it replaces the running version, in this order.</p>
+      <h2 id="pipeline">The gate decides whether a candidate goes live</h2>
+      <p>A candidate build is named by content. These steps decide whether it reaches live traffic, in this order.</p>
     </div>
     <dl class="concept-list">
       {#each pipeline as step}
@@ -84,7 +84,7 @@
       </div>
       <div>
         <dt>dark slot</dt>
-        <dd>A deployed Worker or Pages version with a URL, held away from user traffic.</dd>
+        <dd>A deployed Worker or Pages build with a URL, held away from live traffic.</dd>
       </div>
       <div>
         <dt>fanout</dt>
@@ -95,12 +95,12 @@
         <dd>A proof that says these checks passed for this exact digest under a trusted key.</dd>
       </div>
       <div>
-        <dt>feature gate</dt>
-        <dd>The promotion gate moves the served pointer only after the proof verifies for this exact candidate.</dd>
+        <dt>promotion gate</dt>
+        <dd>The served pointer moves only after the proof verifies for this exact candidate.</dd>
       </div>
       <div>
         <dt>after airlock</dt>
-        <dd>Traffic and observability. Logs, analytics, traces, alerts, and pulse can inspect the version that was allowed through.</dd>
+        <dd>Traffic and observability. Logs, analytics, traces, alerts, and pulse can inspect the build that was allowed through.</dd>
       </div>
     </dl>
   </section>

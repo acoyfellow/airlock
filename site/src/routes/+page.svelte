@@ -44,6 +44,11 @@
         check is a claim, not a fact, so airlock never trusts it. It only trusts a signed proof,
         bound to the exact bytes it tested, checked on a URL nothing user-facing can reach.
       </p>
+      <p class="lead lead-caveat">
+        Today's shipped check runner doesn't isolate that push either — it runs in the same
+        process as everything else, so the proof is real but the sandbox isn't yet. <a
+          href="/docs#fanout">What's actually built vs. planned</a>.
+      </p>
       <div class="hero-actions" aria-label="Primary actions">
         <a class="button primary" href="/docs">Read the docs</a>
       </div>
@@ -74,12 +79,17 @@
         A human SDLC trusts a green check because a human is accountable for writing it. An agentic
         one cannot: the same agent can write the test and the code it tests. ADLC is that
         adjustment — verify a signed proof bound to the exact bytes, not a claim that CI passed.
-        The same five steps below, mapped to target Cloudflare parts. Nothing reaches user traffic
-        until the proof verifies.
+        Nothing reaches user traffic until the proof verifies.
       </p>
     </div>
 
-    <div class="cf-path" aria-label="Cloudflare-native airlock path for one candidate">
+    <p class="cf-path-caveat">
+      The five steps below are the target shape on Cloudflare. Only <b>Artifacts</b> (as a content
+      digest) and the dark-URL deploy actually ship today; fanout, signing, and promotion ship as a
+      local demo, not this Cloudflare wiring — see <a href="/docs#fanout">Fanout backends</a> for
+      what's real.
+    </p>
+    <div class="cf-path" aria-label="Cloudflare-native airlock path for one candidate (target architecture, not yet built)">
       <figure class="before-band" aria-label="Before airlock: each push creates a candidate">
         <img
           src="/airlock-agents.jpg"
@@ -405,6 +415,25 @@
   .lead-secondary {
     margin-top: var(--space-4);
   }
+
+  .lead-caveat {
+    margin-top: var(--space-4);
+    font-size: 0.95rem;
+    color: var(--color-faint);
+  }
+  .lead-caveat a { color: var(--color-blue); text-decoration: underline; text-underline-offset: 2px; }
+
+  .cf-path-caveat {
+    max-width: 720px;
+    margin: 0 0 var(--space-8);
+    padding: var(--space-4) var(--space-5);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-md);
+    color: var(--color-muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .cf-path-caveat a { color: var(--color-blue); }
 
   .hero-aside {
     display: grid;

@@ -1,0 +1,29 @@
+{
+  "experiment": "isolation-proof",
+  "ranAt": "2026-07-03T19:52:47.307Z",
+  "checkrunnerUrl": "https://airlock-checkrunner.coy.workers.dev",
+  "claim": "docs say: local backend does not isolate (hostile check runs in your process); cloudflare backend (Durable Object per check) does isolate.",
+  "findings": [
+    {
+      "backend": "local",
+      "check": "read-orchestrator-secret",
+      "leaked": true,
+      "detail": "LEAKED: read the real orchestrator secret via process.env (sk_live_do_n…)"
+    },
+    {
+      "backend": "cloudflare",
+      "check": "read-orchestrator-secret-or-any-binding",
+      "leaked": false,
+      "detail": "orchestrator env/bindings not reachable from inside this isolate (0ms, isolate=001c261e1e7c…)"
+    },
+    {
+      "backend": "cloudflare",
+      "check": "storage-not-shared-across-two-different-jobs-in-one-fanout-call",
+      "leaked": false,
+      "detail": "jobA: storage empty on first read (fresh isolate, no cross-job leakage) (3ms, isolate=e2d1f80fdb8f…) | jobB: storage empty on first read (fresh isolate, no cross-job leakage) (3ms, isolate=d47f85f192b3…)"
+    }
+  ],
+  "localLeakedAsExpected": true,
+  "cloudflareLeaked": false,
+  "verdict": "CLAIM HOLDS — local leaked exactly as documented, cloudflare did not leak in any of the tested checks"
+}

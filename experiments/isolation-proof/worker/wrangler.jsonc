@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "airlock-checkrunner",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "durable_objects": {
+    "bindings": [
+      { "name": "CHECK_RUNNER", "class_name": "CheckRunner" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_classes": ["CheckRunner"] }
+  ],
+  "observability": { "enabled": true }
+}

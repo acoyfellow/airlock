@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "airlock-live-demo",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "durable_objects": {
+    "bindings": [
+      { "name": "BROADCAST", "class_name": "Broadcast" },
+      { "name": "LIVE_POINTER", "class_name": "LivePointer" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_classes": ["Broadcast", "LivePointer"] }
+  ],
+  "observability": { "enabled": true }
+}

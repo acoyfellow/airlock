@@ -15,6 +15,7 @@
     "gate": "node experiments/dogfood/gate.mjs",
     "isolation-proof": "bun run experiments/isolation-proof/run.ts",
     "swarm": "bun run experiments/swarm/run.ts",
+    "live-demo": "bun run experiments/live-demo/run.ts",
     "typecheck": "tsc --noEmit",
     "site:dev": "bun run --cwd site dev",
     "site:build": "bun run --cwd site build",

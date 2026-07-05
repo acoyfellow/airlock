@@ -1,7 +1,21 @@
 <script lang="ts">
   import Topbar from '$lib/Topbar.svelte';
   import Footer from '$lib/Footer.svelte';
+  import CodeBlock from '$lib/CodeBlock.svelte';
   import { pipeline, ports, fanoutBackends, experiments } from '$lib/site';
+
+  const deployPortSnippet = `function darkWorkerName(candidate: string): string {
+  const hex = candidate.replace(/^sha256:/, '').toLowerCase();
+  return \`app-dark-\${hex.slice(0, 24)}\`; // one Worker per candidate digest
+}
+
+async function deploy(candidate: string): Promise<DeploySlot> {
+  const name = darkWorkerName(candidate);
+  const out = execFileSync('wrangler', ['deploy', '--name', name], { encoding: 'utf8' });
+  const url = out.match(/https:\\/\\/[^\\s]+\\.workers\\.dev/)?.[0];
+  if (!url) throw new Error('deploy: no workers.dev URL in wrangler output');
+  return { url }; // this is the dark slot; nothing routes live traffic to it yet
+}`;
 
   const napkinChecks = [
     { command: 'git clone https://github.com/acoyfellow/airlock && cd airlock', note: 'no Cloudflare account needed' },
@@ -87,21 +101,9 @@
         <dd>Run the checks, print the receipt, but wire <code>setFeatureGate</code> to only log the decision — never actually flip anything. Once the receipts agree with what your existing CI and alerts already say, replace the log with a real flip.</dd>
       </div>
     </dl>
-    <div class="code-block">
-      <p class="code-block-label">A real (minimal) <code>deploy</code> port — not a type signature, an implementation:</p>
-      <pre><code>{`function darkWorkerName(candidate: string): string {
-  const hex = candidate.replace(/^sha256:/, '').toLowerCase();
-  return \`app-dark-\${hex.slice(0, 24)}\`; // one Worker per candidate digest
-}
-
-async function deploy(candidate: string): Promise<DeploySlot> {
-  const name = darkWorkerName(candidate);
-  const out = execFileSync('wrangler', ['deploy', '--name', name], { encoding: 'utf8' });
-  const url = out.match(/https:\\/\\/[^\\s]+\\.workers\\.dev/)?.[0];
-  if (!url) throw new Error('deploy: no workers.dev URL in wrangler output');
-  return { url }; // this is the dark slot; nothing routes live traffic to it yet
-}`}</code></pre>
-    </div>
+    <CodeBlock code={deployPortSnippet}>
+      <svelte:fragment slot="label">A real (minimal) <code>deploy</code> port — not a type signature, an implementation:</svelte:fragment>
+    </CodeBlock>
   </section>
 
   <section class="section" aria-labelledby="pipeline">
@@ -212,24 +214,6 @@ async function deploy(candidate: string): Promise<DeploySlot> {
   dd code { color: var(--color-blue); overflow-wrap: anywhere; }
   .step-gate dt { color: var(--color-green); }
   .step-promote dt { color: var(--color-amber); }
-
-  .code-block { margin-top: var(--space-6); }
-  .code-block-label { margin: 0 0 var(--space-3); color: var(--color-muted); font-size: 0.9rem; }
-  .code-block pre {
-    margin: 0;
-    padding: var(--space-5);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-layer);
-    overflow-x: auto;
-  }
-  .code-block code {
-    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.82rem;
-    line-height: 1.6;
-    color: var(--color-text);
-    white-space: pre;
-  }
 
   .status-tag {
     font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;

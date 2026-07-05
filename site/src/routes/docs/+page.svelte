@@ -25,7 +25,7 @@ async function deploy(candidate: string): Promise<DeploySlot> {
   ];
 
   const limits = [
-    { surface: 'Fanout backend', boundary: "napkin's localFanout runs every check in the orchestrator's own process — nothing is isolated yet. A real Durable-Object-per-check backend exists and is proven isolated (see Fanout backends below); terrarium and a Workflow backend are still where the rest of untrusted-check isolation gets built out." },
+    { surface: 'Fanout backend', boundary: "The Cloudflare Durable-Object-per-check backend is deployed and proven isolated (see Fanout backends above). The napkin's default localFanout runs every check in the orchestrator's own process and isolates nothing; terrarium and a Workflow backend are where the rest of untrusted-check isolation gets built out." },
     { surface: 'Test coverage', boundary: 'The signed proof says the fanout jobs you wired up passed, not that the candidate is correct. airlock verifies the proof; it does not judge whether your tests were the right ones.' },
     { surface: 'Digest binding', boundary: 'The core trusts deploy(candidate) to serve that digest\'s bytes; if it lies, airlock cannot tell.' },
     { surface: 'Trust', boundary: 'airlock does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
@@ -65,7 +65,7 @@ async function deploy(candidate: string): Promise<DeploySlot> {
   <section class="section" aria-labelledby="run-it">
     <div class="section-heading">
       <p class="eyebrow">How to use it</p>
-      <h2 id="run-it">Run it with Bun, without a Cloudflare account</h2>
+      <h2 id="run-it">Run the whole gate locally with Bun</h2>
       <p>
         Requires <a href="https://bun.sh">Bun</a>. <code>bun run napkin</code> is called that because
         it's a rough sketch, not the finished build: file-backed under <code>.data/</code>, no
@@ -135,17 +135,17 @@ async function deploy(candidate: string): Promise<DeploySlot> {
   <section class="section" aria-labelledby="fanout">
     <div class="section-heading">
       <p class="eyebrow">Fanout backends</p>
-      <h2 id="fanout">One fanout interface, one backend that isolates</h2>
+      <h2 id="fanout">One fanout interface, one backend proven isolated</h2>
       <p>
         runFanout has one type. The gate verifies the proof and calls your promotion port; it does
         not schedule checks. These are not equal options — the Cloudflare backend is real, deployed,
-        and isolation-proven (narrower: a fixed set of check kinds, not arbitrary code); local ships
-        but isolates nothing; terrarium is still a prototype.
+        and the only one whose isolation is proven (narrower: a fixed set of check kinds, not
+        arbitrary code); local ships but isolates nothing; terrarium is still a prototype.
       </p>
     </div>
     <dl class="concept-list">
       {#each fanoutBackends as backend}
-        <div><dt>{backend.name} <span class="status-tag status-{backend.status}">{backend.status}</span></dt><dd>{backend.body}</dd></div>
+        <div><dt>{backend.name} <span class="status-tag status-{backend.status}">{backend.status}</span></dt><dd>{backend.body}{#if backend.run} <a class="exp-link" href={backend.run.href}><code>{backend.run.command}</code></a>{/if}</dd></div>
       {/each}
     </dl>
   </section>

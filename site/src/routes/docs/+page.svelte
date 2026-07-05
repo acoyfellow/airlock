@@ -22,7 +22,7 @@ async function deploy(candidate: string): Promise<DeploySlot> {
     { command: 'bun install', note: 'install the orchestration and site workspace' },
     { command: 'bun run napkin', note: 'pushes A then B through the real runPipeline; prints a receipt per run' },
     { command: 'bun run isolation-proof', note: 'hits the already-deployed Cloudflare check-runner — still no account — and shows a planted secret leak through local but not through the Durable Object' },
-    { command: 'bun test', note: '29 pass: pipeline, napkin, ports, and this site copy' },
+    { command: 'bun test', note: '30 pass: pipeline, napkin, ports, and this site copy' },
   ];
 
   const limits = [

@@ -29,7 +29,7 @@ is the pipeline around it. Nothing else to clone.
 
 ```sh
 bun install
-bun test       # 29 pass: pipeline, napkin, ports, site copy
+bun test       # 30 pass: pipeline, napkin, ports, site copy
 bun run napkin # pushes two candidates through runPipeline
 ```
 

@@ -79,7 +79,7 @@ export const fanoutBackends: readonly FanoutBackend[] = [
 
 export const quickStart = [
   { command: 'bun install', note: 'install the orchestration and site workspace' },
-  { command: 'bun test', note: '29 pass: pipeline, napkin, ports, and site copy' },
+  { command: 'bun test', note: '30 pass: pipeline, napkin, ports, and site copy' },
   { command: 'bun run napkin', note: 'A goes live, B is blocked on a failing test, the previous version stays live' },
 ] as const;
 
@@ -92,9 +92,9 @@ export const terminalSession: readonly TerminalLine[] = [
   { kind: 'prompt', text: 'bun install' },
   { kind: 'blank' },
   { kind: 'prompt', text: 'bun test' },
-  { kind: 'ok', text: '29 pass' },
+  { kind: 'ok', text: '30 pass' },
   { kind: 'output', text: '0 fail' },
-  { kind: 'output', text: 'Ran 29 tests across 4 files.' },
+  { kind: 'output', text: 'Ran 30 tests across 4 files.' },
   { kind: 'blank' },
   { kind: 'prompt', text: 'bun run napkin' },
   { kind: 'output', text: "agent push A: bundle 'app@A \u2014 all tests pass'" },

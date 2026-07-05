@@ -5,7 +5,7 @@ from a terminal, and watch each real step land in the tab as it happens —
 then watch the same tab's embedded "live app" flip to the new candidate the
 instant a real promotion occurs. No canned transcript, no replay.
 
-**Watch it:** https://airlock-live-demo.coy.workers.dev
+**Watch it:** https://airlock-live.coey.dev
 
 ## What's real here
 
@@ -28,7 +28,7 @@ instant a real promotion occurs. No canned transcript, no replay.
 
 ## Reproduce it yourself
 
-1. Open https://airlock-live-demo.coy.workers.dev in a browser.
+1. Open https://airlock-live.coey.dev in a browser.
 2. In a terminal:
    ```sh
    bun run live-demo
@@ -36,6 +36,11 @@ instant a real promotion occurs. No canned transcript, no replay.
 3. Watch the page. Every line printed to your terminal also lands in the
    browser tab within the same network round trip, and the embedded "live
    app" iframe reloads the instant the real promotion happens.
+
+(If `airlock-live.coey.dev` doesn't resolve from your machine right after it's
+first created, that's local DNS-cache lag, not the Worker: confirm with
+`dig airlock-live.coey.dev` or `curl --resolve airlock-live.coey.dev:443:<ip>
+https://airlock-live.coey.dev/`.)
 
 Run the deliberate failure path to see a real refusal instead:
 

@@ -13,7 +13,7 @@ what actually happened, not what's supposed to happen.
 ## What's real here
 
 - `worker/` is a real, deployed Cloudflare Worker + Durable Object
-  (`https://airlock-checkrunner.coy.workers.dev`, account `Coeyman@gmail.com's
+  (`https://airlock-checkrunner.coey.dev`, account `Coeyman@gmail.com's
   Account`). Every check job gets a fresh `newUniqueId()` DO instance — a
   separate V8 isolate — never shared across jobs or calls.
 - `src/ports/cloudflare-fanout.ts` is the real `RunFanout` port implementation

@@ -21,7 +21,7 @@ import { loadVerifier } from "../../src/ports/keys.ts";
 import { join } from "node:path";
 
 const REPO_ROOT = join(import.meta.dir, "../..");
-const REGISTRY_URL = process.env.REGISTRY_URL ?? "https://airlock-swarm-registry.coy.workers.dev";
+const REGISTRY_URL = process.env.REGISTRY_URL ?? "https://airlock-swarm.coey.dev";
 const AGENT_ID = process.env.SWARM_AGENT_ID ?? "unknown-agent";
 
 async function main() {

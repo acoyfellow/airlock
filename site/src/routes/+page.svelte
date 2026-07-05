@@ -32,7 +32,7 @@
 
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <p class="eyebrow">v0.0.1, real end to end</p>
+      <p class="eyebrow">v0.0.1</p>
       <h1 id="hero-title">Ship only the build of your app that passed.</h1>
       <p class="lead">
         airlock is a deploy gate for a web app, Worker, or site. It puts your candidate build on a

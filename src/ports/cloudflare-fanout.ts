@@ -15,7 +15,7 @@
 import { localFanout, type RunFanout, type TestJob, type TestResult } from "../pipeline.ts";
 
 export type CloudflareFanoutConfig = {
-  checkrunnerUrl: string; // e.g. https://airlock-checkrunner.coy.workers.dev
+  checkrunnerUrl: string; // e.g. https://airlock-checkrunner.coey.dev
 };
 
 export type CloudflareCheckKind = "http-200" | "read-do-storage" | "read-global-env";

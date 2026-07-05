@@ -1,7 +1,7 @@
 // LIVE DEMO RUNNER: runs the REAL airlock pipeline end to end and reports
 // every real step to the live broadcast Worker as it happens. Nothing here is
 // staged or replayed — a viewer with the demo page open
-// (https://airlock-live-demo.coy.workers.dev) sees each event the instant
+// (https://airlock-live.coey.dev) sees each event the instant
 // this script actually does the thing.
 //
 //   1. produce a real content-addressed candidate
@@ -25,8 +25,8 @@ import { makeCloudflareFanout, type CloudflareJob } from "../../src/ports/cloudf
 import { join } from "node:path";
 
 const REPO_ROOT = join(import.meta.dir, "../..");
-const BROADCAST_URL = process.env.BROADCAST_URL ?? "https://airlock-live-demo.coy.workers.dev";
-const REGISTRY_URL = process.env.REGISTRY_URL ?? "https://airlock-swarm-registry.coy.workers.dev";
+const BROADCAST_URL = process.env.BROADCAST_URL ?? "https://airlock-live.coey.dev";
+const REGISTRY_URL = process.env.REGISTRY_URL ?? "https://airlock-swarm.coey.dev";
 const SLOT_URL = "https://airlock.coey.dev"; // real reachable URL the fanout check hits
 
 const shouldFail = process.argv.includes("--fail");
@@ -59,7 +59,7 @@ async function main() {
   await emit("sign", `ed25519 proof signed by ${verifier.keyId}`);
 
   // 3. real fanout against the real Durable Object checkrunner
-  const fanout = makeCloudflareFanout({ checkrunnerUrl: "https://airlock-checkrunner.coy.workers.dev" });
+  const fanout = makeCloudflareFanout({ checkrunnerUrl: "https://airlock-checkrunner.coey.dev" });
   const jobs: CloudflareJob[] = shouldFail
     ? [{ name: "http-200-but-checking-wrong-url", backend: "cloudflare", kind: "http-200" }]
     : [{ name: "http-200", backend: "cloudflare", kind: "http-200" }];
@@ -101,7 +101,7 @@ async function main() {
     body: JSON.stringify({ candidate, label: `promoted by live-demo run, registry version ${admitResult.version}` }),
   });
   await emit("promoted", `live app now serving ${candidate} (registry version ${admitResult.version})`, true);
-  console.log("\nPROMOTED — open https://airlock-live-demo.coy.workers.dev to have watched it happen");
+  console.log("\nPROMOTED — open https://airlock-live.coey.dev to have watched it happen");
 }
 
 main().catch(async (e) => {

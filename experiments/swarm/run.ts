@@ -21,7 +21,7 @@ import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const REGISTRY_URL = process.env.REGISTRY_URL ?? "https://airlock-swarm-registry.coy.workers.dev";
+const REGISTRY_URL = process.env.REGISTRY_URL ?? "https://airlock-swarm.coey.dev";
 const N = Number(process.argv[2] ?? 12);
 const REPO_ROOT = join(import.meta.dir, "../..");
 

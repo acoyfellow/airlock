@@ -9,7 +9,7 @@ a real, repeatable, adversarial test.
 ## What's real here
 
 - `registry-worker/` is a real, deployed Cloudflare Worker + Durable Object
-  (`https://airlock-swarm-registry.coy.workers.dev`). `/admit` does a real
+  (`https://airlock-swarm.coey.dev`). `/admit` does a real
   compare-and-swap inside `state.storage.transaction`, relying on the
   Cloudflare runtime's guarantee that one DO instance processes one request
   at a time — not a lock this repo implements itself.

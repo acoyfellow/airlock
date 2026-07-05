@@ -135,12 +135,12 @@ async function deploy(candidate: string): Promise<DeploySlot> {
   <section class="section" aria-labelledby="fanout">
     <div class="section-heading">
       <p class="eyebrow">Fanout backends</p>
-      <h2 id="fanout">One fanout interface, one backend that ships</h2>
+      <h2 id="fanout">One fanout interface, one backend that isolates</h2>
       <p>
-        runFanout has one type. The Bun demo uses unbounded Promise.all: no retries, no queue.
-        The gate verifies the proof and calls your promotion port; it does not schedule checks.
-        These are not equal options — one ships, one is real and isolation-proven but narrower, one
-        is still a prototype.
+        runFanout has one type. The gate verifies the proof and calls your promotion port; it does
+        not schedule checks. These are not equal options — the Cloudflare backend is real, deployed,
+        and isolation-proven (narrower: a fixed set of check kinds, not arbitrary code); local ships
+        but isolates nothing; terrarium is still a prototype.
       </p>
     </div>
     <dl class="concept-list">

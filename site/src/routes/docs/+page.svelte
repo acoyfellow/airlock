@@ -138,10 +138,9 @@ async function deploy(candidate: string): Promise<DeploySlot> {
       <p class="eyebrow">Fanout backends</p>
       <h2 id="fanout">One fanout interface, one backend proven isolated</h2>
       <p>
-        runFanout has one type. The gate verifies the proof and calls your promotion port; it does
-        not schedule checks. These are not equal options — the Cloudflare backend is real, deployed,
-        and the only one whose isolation is proven (narrower: a fixed set of check kinds, not
-        arbitrary code); local ships but isolates nothing; terrarium is still a prototype.
+        runFanout has one type. These are not equal options — the Cloudflare backend is real,
+        deployed, and the only one whose isolation is proven (narrower: a fixed set of check kinds,
+        not arbitrary code); local ships but isolates nothing; terrarium is still a prototype.
       </p>
     </div>
     <dl class="concept-list">
@@ -227,9 +226,9 @@ async function deploy(candidate: string): Promise<DeploySlot> {
     border-radius: 4px;
     vertical-align: middle;
   }
-  .status-ships { color: var(--color-green); background: var(--color-green-soft); }
+  .status-proven { color: var(--color-green); background: var(--color-green-soft); }
   .status-prototype { color: var(--color-amber); background: var(--color-amber-soft); }
-  .status-proven { color: var(--color-blue); background: var(--color-accent-soft); }
+  .status-ships { color: var(--color-muted); background: var(--color-border); }
   .status-target { color: var(--color-muted); background: var(--color-border); }
 
   .experiment-list dd { display: flex; flex-direction: column; gap: var(--space-2); }

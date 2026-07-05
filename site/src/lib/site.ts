@@ -130,7 +130,7 @@ export type ExperimentLink = {
 export const experiments: readonly ExperimentLink[] = [
   {
     name: 'isolation-proof',
-    claim: 'local does not isolate a hostile check; a real Durable Object per check does.',
+    claim: 'local runs a check in the orchestrator\'s process; a Durable Object per check isolates the kinds Workers can run.',
     result: 'Confirmed live: a planted orchestrator secret leaked through local, did not leak through the Cloudflare backend, and storage was not shared across two different jobs in one fanout call.',
     href: 'https://github.com/acoyfellow/airlock/tree/main/experiments/isolation-proof',
   },

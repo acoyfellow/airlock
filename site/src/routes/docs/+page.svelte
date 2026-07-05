@@ -21,11 +21,12 @@ async function deploy(candidate: string): Promise<DeploySlot> {
     { command: 'git clone https://github.com/acoyfellow/airlock && cd airlock', note: 'no Cloudflare account needed' },
     { command: 'bun install', note: 'install the orchestration and site workspace' },
     { command: 'bun run napkin', note: 'pushes A then B through the real runPipeline; prints a receipt per run' },
+    { command: 'bun run isolation-proof', note: 'hits the already-deployed Cloudflare check-runner — still no account — and shows a planted secret leak through local but not through the Durable Object' },
     { command: 'bun test', note: '29 pass: pipeline, napkin, ports, and this site copy' },
   ];
 
   const limits = [
-    { surface: 'Fanout backend', boundary: "The Cloudflare Durable-Object-per-check backend is deployed and proven isolated (see Fanout backends above). The napkin's default localFanout runs every check in the orchestrator's own process and isolates nothing; terrarium and a Workflow backend are where the rest of untrusted-check isolation gets built out." },
+    { surface: 'Fanout backend', boundary: "The Cloudflare Durable-Object-per-check backend is deployed and proven to isolate a check from the orchestrator's state and other jobs (see Fanout backends above) — not from the network: a check can still fetch out. A job that matches no supported kind falls back to unisolated local. The napkin's default localFanout isolates nothing." },
     { surface: 'Test coverage', boundary: 'The signed proof says the fanout jobs you wired up passed, not that the candidate is correct. airlock verifies the proof; it does not judge whether your tests were the right ones.' },
     { surface: 'Digest binding', boundary: 'The core trusts deploy(candidate) to serve that digest\'s bytes; if it lies, airlock cannot tell.' },
     { surface: 'Trust', boundary: 'airlock does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
@@ -155,8 +156,9 @@ async function deploy(candidate: string): Promise<DeploySlot> {
       <p class="eyebrow">Proven, not asserted</p>
       <h2 id="experiments">Every claim above with a receipt</h2>
       <p>
-        These aren't demos of a demo. Each one is a real, rerunnable script against real deployed
-        Cloudflare infrastructure. <code>bun run &lt;name&gt;</code> reproduces it yourself.
+        These aren't demos of a demo. Each one is a real, rerunnable script that hits
+        already-deployed Cloudflare Workers over the network — no account, nothing to stand up.
+        <code>bun run &lt;name&gt;</code> reproduces it yourself.
       </p>
     </div>
     <dl class="concept-list experiment-list">

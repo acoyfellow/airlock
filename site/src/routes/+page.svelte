@@ -94,11 +94,14 @@
       isolated terrarium fanout, a real signed proof, a human promotion — <a
         class="receipt-link"
         href="https://github.com/acoyfellow/airlock/blob/main/experiments/dogfood/RECEIPT.json">
-        view the signed receipt</a>. Step 3 (fanout on Workflows/DO/Queues instead of terrarium)
-      is the one box below that's still a target, not shipped — see <a href="/docs#fanout">Fanout
-      backends</a>.
+        view the signed receipt</a>. Step 3's Durable Object path is now real too — deployed, and
+      its isolation empirically proven, not just described — but narrower than shown: Workers
+      block eval, so a check is one of a small fixed set of kinds today, not arbitrary code. See
+      <a href="/docs#fanout">Fanout backends</a> and <a
+        href="https://github.com/acoyfellow/airlock/tree/main/experiments/isolation-proof">the
+        isolation-proof experiment</a>.
     </p>
-    <div class="cf-path" aria-label="The airlock path for one candidate, mostly real, one target box marked below">
+    <div class="cf-path" aria-label="The airlock path for one candidate, mostly real, Durable Object isolation proven and one box narrower than shown">
       <figure class="before-band" aria-label="Before airlock: each push creates a candidate">
         <img
           src="/airlock-agents.jpg"
@@ -157,8 +160,8 @@
             </svg>
           </span>
           <div>
-            <h3>Workflows / DO / Queues <span class="target-inline">target</span></h3>
-            <p>Checks fan out against the dark URL and join into one result. On this page, terrarium did that fanout instead — for real.</p>
+            <h3>Workflows / DO / Queues <span class="target-inline">proven, narrower</span></h3>
+            <p>Checks fan out against the dark URL and join into one result. A real Durable-Object-per-check backend ships and is isolation-proven; on this page, terrarium did the fanout instead — both for real.</p>
           </div>
         </li>
         <li>

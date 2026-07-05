@@ -1,7 +1,7 @@
 <script lang="ts">
   import Topbar from '$lib/Topbar.svelte';
   import Footer from '$lib/Footer.svelte';
-  import { pipeline, ports, fanoutBackends } from '$lib/site';
+  import { pipeline, ports, fanoutBackends, experiments } from '$lib/site';
 
   const napkinChecks = [
     { command: 'git clone https://github.com/acoyfellow/airlock && cd airlock', note: 'no Cloudflare account needed' },
@@ -11,7 +11,7 @@
   ];
 
   const limits = [
-    { surface: 'Fanout backend', boundary: "napkin's localFanout runs every check in the orchestrator's own process — nothing is isolated yet. terrarium, a Workflow, or a Facet backend is where untrusted checks get quarantined." },
+    { surface: 'Fanout backend', boundary: "napkin's localFanout runs every check in the orchestrator's own process — nothing is isolated yet. A real Durable-Object-per-check backend exists and is proven isolated (see Fanout backends below); terrarium and a Workflow backend are still where the rest of untrusted-check isolation gets built out." },
     { surface: 'Test coverage', boundary: 'The signed proof says the fanout jobs you wired up passed, not that the candidate is correct. airlock verifies the proof; it does not judge whether your tests were the right ones.' },
     { surface: 'Digest binding', boundary: 'The core trusts deploy(candidate) to serve that digest\'s bytes; if it lies, airlock cannot tell.' },
     { surface: 'Trust', boundary: 'airlock does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
@@ -137,12 +137,36 @@ async function deploy(candidate: string): Promise<DeploySlot> {
       <p>
         runFanout has one type. The Bun demo uses unbounded Promise.all: no retries, no queue.
         The gate verifies the proof and calls your promotion port; it does not schedule checks.
-        These are not equal options — only one ships today.
+        These are not equal options — one ships, one is real and isolation-proven but narrower, one
+        is still a prototype.
       </p>
     </div>
     <dl class="concept-list">
       {#each fanoutBackends as backend}
         <div><dt>{backend.name} <span class="status-tag status-{backend.status}">{backend.status}</span></dt><dd>{backend.body}</dd></div>
+      {/each}
+    </dl>
+  </section>
+
+  <section class="section" aria-labelledby="experiments">
+    <div class="section-heading">
+      <p class="eyebrow">Proven, not asserted</p>
+      <h2 id="experiments">Every claim above with a receipt</h2>
+      <p>
+        These aren't demos of a demo. Each one is a real, rerunnable script against real deployed
+        Cloudflare infrastructure. <code>bun run &lt;name&gt;</code> reproduces it yourself.
+      </p>
+    </div>
+    <dl class="concept-list experiment-list">
+      {#each experiments as exp}
+        <div>
+          <dt><code>bun run {exp.name}</code></dt>
+          <dd>
+            <span class="exp-claim">{exp.claim}</span>
+            <span class="exp-result">{exp.result}</span>
+            <a class="exp-link" href={exp.href}>experiments/{exp.name}</a>
+          </dd>
+        </div>
       {/each}
     </dl>
   </section>
@@ -219,7 +243,20 @@ async function deploy(candidate: string): Promise<DeploySlot> {
   }
   .status-ships { color: var(--color-green); background: var(--color-green-soft); }
   .status-prototype { color: var(--color-amber); background: var(--color-amber-soft); }
+  .status-proven { color: var(--color-blue); background: var(--color-accent-soft); }
   .status-target { color: var(--color-muted); background: var(--color-border); }
+
+  .experiment-list dd { display: flex; flex-direction: column; gap: var(--space-2); }
+  .exp-claim { color: var(--color-text); }
+  .exp-result { color: var(--color-muted); font-size: 0.92rem; }
+  .exp-link {
+    font-family: 'IBM Plex Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.82rem;
+    color: var(--color-accent);
+    text-decoration: none;
+    width: fit-content;
+  }
+  .exp-link:hover { text-decoration: underline; }
 
   @media (max-width: 640px) {
     .concept-list div, .limit-list div { grid-template-columns: 1fr; gap: var(--space-2); }

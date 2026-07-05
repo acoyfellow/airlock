@@ -62,7 +62,7 @@ export const ports: readonly PortRow[] = [
   { port: 'trusted', type: 'TrustedKeys', role: 'The set of keys a proof is checked against.' },
 ] as const;
 
-export type FanoutStatus = 'ships' | 'prototype' | 'target';
+export type FanoutStatus = 'ships' | 'prototype' | 'proven' | 'target';
 
 export type FanoutBackend = {
   readonly name: string;
@@ -73,7 +73,7 @@ export type FanoutBackend = {
 export const fanoutBackends: readonly FanoutBackend[] = [
   { name: 'local', status: 'ships', body: 'A Promise.all that records a thrown test as a failure instead of crashing. This is localFanout, the backend the napkin uses. Nothing is isolated: a hostile check runs in your process.' },
   { name: 'terrarium', status: 'prototype', body: 'Each test is a bounded child process, joined when they finish. Real local containment exists (Docker-based, tested) as an upgrade from local. Cloud-hosted isolation is terrarium\'s roadmap, not shipped — do not assume it runs untrusted code for you today.' },
-  { name: 'cloudflare', status: 'target', body: 'Workflow steps, or Durable Object Facets, one per test, joined back into the results. Described, not built: no code ships for this backend yet.' },
+  { name: 'cloudflare', status: 'proven', body: 'A real Durable Object per check — deployed, and isolation empirically proven, not just described: a planted orchestrator secret leaked through local, and did not leak through this backend. Narrower than local or terrarium today: Workers block eval/new Function, so a check is one of a small fixed set of kinds, not arbitrary code. See experiments/isolation-proof.' },
 ] as const;
 
 export const quickStart = [
@@ -114,4 +114,35 @@ export const boundaries = [
   'airlock does not make a candidate live without a verified proof bound to that exact digest.',
   'localFanout runs the test jobs in-process; isolating untrusted jobs is the job of a different backend.',
   'The napkin is file-backed under .data/, not a real deployment; airlock.coey.dev is not pointed at a pipeline-promoted candidate.',
+] as const;
+
+export type ExperimentLink = {
+  readonly name: string;
+  readonly claim: string;
+  readonly result: string;
+  readonly href: string;
+};
+
+// Real, rerunnable, receipt-backed experiments in this repo. Each row is a
+// claim this page makes elsewhere, tested against real deployed Cloudflare
+// infrastructure — not asserted, run. `bun run <name>` reproduces it.
+export const experiments: readonly ExperimentLink[] = [
+  {
+    name: 'isolation-proof',
+    claim: 'local does not isolate a hostile check; a real Durable Object per check does.',
+    result: 'Confirmed live: a planted orchestrator secret leaked through local, did not leak through the Cloudflare backend, and storage was not shared across two different jobs in one fanout call.',
+    href: 'https://github.com/acoyfellow/airlock/tree/main/experiments/isolation-proof',
+  },
+  {
+    name: 'swarm',
+    claim: 'a real swarm of agents pushing at once resolves by compare-and-swap; the loser is refused, not overwritten.',
+    result: 'Three independent live runs (12, 25, 20 real concurrent OS processes): exactly one admitted each time, everyone else refused with stale-version, zero double-admits.',
+    href: 'https://github.com/acoyfellow/airlock/tree/main/experiments/swarm',
+  },
+  {
+    name: 'live-demo',
+    claim: 'the real pipeline can be watched happening live, not read about after the fact.',
+    result: 'Verified with an independent WebSocket listener: every real step (candidate, sign, fanout, verify, promoted) arrived live, in order, matching the terminal exactly — including the real failure path.',
+    href: 'https://github.com/acoyfellow/airlock/tree/main/experiments/live-demo',
+  },
 ] as const;

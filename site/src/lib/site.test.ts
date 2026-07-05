@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { boundaries, fanoutBackends, pipeline, ports, quickStart, site } from './site';
+import { boundaries, experiments, fanoutBackends, pipeline, ports, quickStart, site } from './site';
 
 const bannedFragments = [
   "In today's rapidly evolving landscape",
@@ -37,6 +37,15 @@ describe('site content', () => {
 
   test('Given the fanout backends When listed Then terrarium, cloudflare, and local are present', () => {
     expect(fanoutBackends.map((b) => b.name).sort()).toEqual(['cloudflare', 'local', 'terrarium']);
+  });
+
+  test('Given the experiments When listed Then each links into the real experiments directory', () => {
+    expect(experiments.length).toBeGreaterThan(0);
+    for (const exp of experiments) {
+      expect(exp.href).toContain(`experiments/${exp.name}`);
+      expect(exp.claim.length).toBeGreaterThan(10);
+      expect(exp.result.length).toBeGreaterThan(10);
+    }
   });
 
   test('Given the quick start When read Then it matches the README carrier commands', () => {

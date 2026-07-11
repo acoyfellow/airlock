@@ -7,6 +7,21 @@ Terra worker receives one sealed idea and works in one isolated worktree. Determ
 supervisor code owns timing, conservation, integration, checking, proof, and preview
 verification.
 
+## Metered worker invocation
+
+`pi-meter.mjs` is supervisor-only measurement code. A measured invocation requires the
+supervisor-provided `--run-id` and an absolute `--usage-output` path outside the candidate
+working directory, in a non-group/world-writable supervisor directory. The meter creates
+that path once with exclusive, no-follow semantics and writes the canonical raw JSON usage
+record only there; existing paths and symlinks are refused. The record binds the supervisor
+run id, sealed provider/model identity, every attempt and continuation, validated finite
+usage totals, budget verdict, terminal status, and timestamps. Child prose and stdout do
+not establish authority (an explicitly conflicting child run id is a refusal).
+
+Use `--preflight` with the sealed provider/model and budget flags to validate meter
+configuration without starting Pi or writing a usage record. It intentionally cannot be
+combined with `--run-id` or `--usage-output`.
+
 ## Why this comes before eight agents
 
 A fleet speedup has no meaning without a reproducible serial denominator. The future

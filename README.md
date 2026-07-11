@@ -31,8 +31,9 @@ is the pipeline around it. Nothing else to clone.
 bun install
 bun test       # 30 pass: pipeline, napkin, ports, site copy
 bun run napkin       # pushes two candidates through runPipeline
-bun run launch-proof # one success + three refusals across Airlock and real Keel APIs
-bun run fleet        # five worker commits, forced collision, reconcile/block, signed gate
+bun run launch-proof   # one success + three refusals across Airlock and real Keel APIs
+bun run new-sdlc:oracle # control green; fake-fleet mutations must turn red
+bun run fleet          # five worker commits, forced collision, reconcile/block, signed gate
 ```
 
 `bun run napkin` is file-backed under `.data/` and needs no Cloudflare account.
@@ -88,6 +89,7 @@ examples/         hello-world, napkin, self-deliver (airlock shipping itself)
 experiments/dogfood   the honesty gate: decides by LOOKING (re-derives digest, re-verifies proof)
 experiments/fleet     multi-process commit/collision protocol spike with a verifiable receipt
 experiments/launch-proof  one Airlock + Keel receipt for the launch claims
+experiments/new-ai-sdlc   idea-to-verified-preview experiments, starting with the claim oracle
 site/             the airlock.coey.dev site (light, AX-flavored)
 ```
 

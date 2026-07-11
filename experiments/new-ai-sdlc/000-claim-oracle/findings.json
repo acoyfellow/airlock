@@ -1,0 +1,30 @@
+{
+  "schema": "new-ai-sdlc/findings@1",
+  "experiment": "000-claim-oracle",
+  "status": "proven-in-synthetic-control",
+  "finding": "The oracle accepts its complete control and rejects all 19 permanent fake-fleet or missing-evidence mutations.",
+  "reviewers": [
+    {
+      "runId": "ter_20260711152703907_9w64ia",
+      "finding": "Completion after proof but before preview needed an independent mutation.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711153520106_1kdtib",
+      "finding": "Unknown event types were accepted despite the fail-closed contract.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711153734918_4zrwe9",
+      "finding": "The fixed 19-mutation oracle supports its narrow claim.",
+      "status": "accepted"
+    }
+  ],
+  "limits": [
+    "No real model fleet is measured.",
+    "No Cloudflare deployment is measured.",
+    "The mutation corpus is permanent but not complete.",
+    "The Terrarium startup heartbeat remains a local wrapper hotfix."
+  ],
+  "next": "Build the strongest frozen single-agent baseline only after the remaining runtime hotfix is made publicly reproducible."
+}

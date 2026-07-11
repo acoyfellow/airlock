@@ -18,6 +18,7 @@
     "live-demo": "bun run experiments/live-demo/run.ts",
     "launch-proof": "bun run experiments/launch-proof/run.ts",
     "launch-proof:verify": "bun run experiments/launch-proof/verify.ts",
+    "new-sdlc:oracle": "bun run experiments/new-ai-sdlc/000-claim-oracle/verify.ts",
     "fleet": "bun run experiments/fleet/run.ts",
     "fleet:verify": "bun run experiments/fleet/verify.ts",
     "typecheck": "tsc --noEmit",

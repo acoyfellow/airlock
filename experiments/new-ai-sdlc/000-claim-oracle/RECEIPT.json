@@ -1,0 +1,176 @@
+{
+  "schema": "new-ai-sdlc/claim-oracle-verification@1",
+  "generatedAt": "2026-07-11T15:38:22.554Z",
+  "control": {
+    "ok": true,
+    "comparison": {
+      "schema": "new-ai-sdlc/claim-oracle@1",
+      "baseline": {
+        "runId": "oracle-baseline",
+        "mode": "baseline",
+        "acceptanceHash": "sha256:acceptance-v1",
+        "startCommit": "0123456789abcdef0123456789abcdef01234567",
+        "advertisedWorkers": 1,
+        "qualifyingWorkers": 1,
+        "terminalWorkers": 1,
+        "commitsProduced": 1,
+        "commitsDispositioned": 1,
+        "collisionsDetected": 0,
+        "collisionsResolved": 0,
+        "checksPassed": 1,
+        "sourceDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "previewUrl": "local://preview/baseline",
+        "elapsedMs": 1000,
+        "retryMs": 10,
+        "computeMs": 100,
+        "finalEventDigest": "4e0eb5d5db2a8b6f5b08d68de186572f0bd76af3072e4562d491dab95b3d4b56",
+        "claim": "baseline reached verified preview in 1000ms with 1/1 qualifying workers"
+      },
+      "fleet": {
+        "runId": "oracle-fleet",
+        "mode": "fleet",
+        "acceptanceHash": "sha256:acceptance-v1",
+        "startCommit": "0123456789abcdef0123456789abcdef01234567",
+        "advertisedWorkers": 2,
+        "qualifyingWorkers": 2,
+        "terminalWorkers": 2,
+        "commitsProduced": 2,
+        "commitsDispositioned": 2,
+        "collisionsDetected": 1,
+        "collisionsResolved": 1,
+        "checksPassed": 1,
+        "sourceDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "previewUrl": "local://preview/fleet",
+        "elapsedMs": 100,
+        "retryMs": 20,
+        "computeMs": 200,
+        "finalEventDigest": "3e5ae6e7175694ccc4516dc0446796f1ad1fa75b2ca4288b95554d855d2f97b7",
+        "claim": "fleet reached verified preview in 100ms with 2/2 qualifying workers"
+      },
+      "speedup": 10,
+      "claim": "fleet reached an equivalent verified preview 10.00x faster than baseline"
+    }
+  },
+  "mutations": [
+    {
+      "name": "event deletion breaks chain",
+      "ok": true,
+      "expected": "sequence mismatch",
+      "observed": "event chain: sequence mismatch"
+    },
+    {
+      "name": "unknown event type fails closed",
+      "ok": true,
+      "expected": "event type: unknown unknown.event",
+      "observed": "event type: unknown unknown.event"
+    },
+    {
+      "name": "advertised workers must match receipts",
+      "ok": true,
+      "expected": "advertised count differs",
+      "observed": "worker conservation: advertised count differs from spawned receipts"
+    },
+    {
+      "name": "scripts cannot count as model workers",
+      "ok": true,
+      "expected": "deterministic script",
+      "observed": "worker qualification: deterministic script counted as model worker"
+    },
+    {
+      "name": "duplicate worker receipt rejected",
+      "ok": true,
+      "expected": "duplicate identity",
+      "observed": "worker.terminal: duplicate identity"
+    },
+    {
+      "name": "omitted terminal worker rejected",
+      "ok": true,
+      "expected": "every spawn needs one terminal receipt",
+      "observed": "worker conservation: every spawn needs one terminal receipt"
+    },
+    {
+      "name": "timed-out worker cannot count as qualifying",
+      "ok": true,
+      "expected": "advertised count differs from qualifying receipts",
+      "observed": "worker qualification: advertised count differs from qualifying receipts"
+    },
+    {
+      "name": "acceptance contract drift rejected",
+      "ok": true,
+      "expected": "acceptance contracts differ",
+      "observed": "comparison fairness: acceptance contracts differ"
+    },
+    {
+      "name": "initial commit drift rejected",
+      "ok": true,
+      "expected": "initial commits differ",
+      "observed": "comparison fairness: initial commits differ"
+    },
+    {
+      "name": "hidden human product write rejected",
+      "ok": true,
+      "expected": "hidden human product write",
+      "observed": "measurement contamination: hidden human product write"
+    },
+    {
+      "name": "undispositioned commit rejected",
+      "ok": true,
+      "expected": "produced commit missing final disposition",
+      "observed": "commit conservation: produced commit missing final disposition"
+    },
+    {
+      "name": "accepted behavior loss rejected",
+      "ok": true,
+      "expected": "accepted behavior silently lost",
+      "observed": "behavior conservation: accepted behavior silently lost"
+    },
+    {
+      "name": "unresolved collision rejected",
+      "ok": true,
+      "expected": "collision has no resolution",
+      "observed": "collision conservation: collision has no resolution"
+    },
+    {
+      "name": "proof digest mismatch rejected",
+      "ok": true,
+      "expected": "proof does not admit",
+      "observed": "proof binding: proof does not admit candidate source-tree digest"
+    },
+    {
+      "name": "missing preview rejected",
+      "ok": true,
+      "expected": "preview.verified: expected exactly one",
+      "observed": "preview.verified: expected exactly one event, got 0"
+    },
+    {
+      "name": "completion before proof rejected",
+      "ok": true,
+      "expected": "clock stopped before proof",
+      "observed": "completion time: clock stopped before proof and preview verification"
+    },
+    {
+      "name": "completion after proof but before preview rejected",
+      "ok": true,
+      "expected": "clock stopped before proof and preview",
+      "observed": "completion time: clock stopped before proof and preview verification"
+    },
+    {
+      "name": "omitted retry accounting rejected",
+      "ok": true,
+      "expected": "retry or compute totals omitted",
+      "observed": "resource accounting: retry or compute totals omitted"
+    },
+    {
+      "name": "receipt prose cannot drift from events",
+      "ok": true,
+      "expected": "claim or derived values differ",
+      "observed": "receipt integrity: claim or derived values differ from events"
+    }
+  ],
+  "status": "pass",
+  "limits": [
+    "The control ledger is synthetic; no model fleet is claimed.",
+    "The first mutation corpus is necessary but not complete.",
+    "Local preview evidence does not prove a Cloudflare deployment."
+  ]
+}

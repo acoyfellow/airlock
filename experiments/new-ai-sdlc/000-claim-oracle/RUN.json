@@ -1,0 +1,31 @@
+{
+  "schema": "new-ai-sdlc/run@1",
+  "experiment": "000-claim-oracle",
+  "controlRepo": "https://github.com/acoyfellow/airlock",
+  "controlBaseCommit": "8a2c826bd2870f4b8a78a5eb16f3ce5e1d808d87",
+  "oracle": {
+    "kind": "synthetic-control-and-mutation-corpus",
+    "baselineWorkers": 1,
+    "fleetWorkers": 2,
+    "mutations": 19
+  },
+  "runtimePreflight": {
+    "provider": "opencode.cloudflare.dev",
+    "model": "gpt-5.6-terra",
+    "modelAuthority": "Terrarium supervisor sealed invocation",
+    "successfulRuns": [
+      "ter_20260711152522100_06up6m",
+      "ter_20260711152703907_9w64ia"
+    ],
+    "failedStartupRuns": [
+      "ter_20260711152157841_ffpp85",
+      "ter_20260711152157841_liud0t"
+    ],
+    "hotfix": "A local Pi wrapper emits an immediate startup heartbeat; a clean public Terrarium fix remains required."
+  },
+  "limits": [
+    "The oracle streams are synthetic.",
+    "The runtime hotfix is local and not yet a clean public Terrarium commit.",
+    "Historical Terrarium doctor corruption remains outside the clean run-scoped evidence."
+  ]
+}

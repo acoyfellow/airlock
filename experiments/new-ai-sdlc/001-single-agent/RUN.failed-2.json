@@ -1,0 +1,33 @@
+{
+  "schema": "new-ai-sdlc/single-agent-run@1",
+  "status": "inconclusive",
+  "runId": "ter_20260711171312620_mnsnzz",
+  "seal": "SEAL.v2.json",
+  "startingCommit": "8daad83cbede1628a0acf35e6050bf99d86884fe",
+  "startedAt": "2026-07-11T17:13:12.808Z",
+  "finishedAt": "2026-07-11T17:14:38.816Z",
+  "elapsedMs": 86008,
+  "provider": "opencode.cloudflare.dev",
+  "model": "gpt-5.6-terra",
+  "providerModelIdentityOk": true,
+  "exitCode": 0,
+  "taskContractStatus": "missing",
+  "workerProcesses": 1,
+  "retryCount": 0,
+  "usage": {
+    "input": 27,
+    "output": 7113,
+    "cacheRead": 224427,
+    "cacheWrite": 45731,
+    "totalTokens": 277298,
+    "costUsd": 0.305778625,
+    "assistantMessages": 11
+  },
+  "failure": "The provider stream ended before a terminal response event after writing two uncommitted files. No task receipt or commit was produced.",
+  "partialPatch": "/Users/jcoeyman/.terrarium/runs/ter_20260711171312620_mnsnzz.patch",
+  "partialPatchBytes": 9172,
+  "disposition": "rejected-uncommitted-partial",
+  "candidateCommit": null,
+  "previewUrl": null,
+  "qualifies": false
+}

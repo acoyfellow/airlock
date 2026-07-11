@@ -1,12 +1,12 @@
 # Next intake
 
-Do not start the eight-agent tier.
+Experiment 000 is complete. Do not start the eight-agent tier.
 
-## Remaining 000 stop gates
+## 001 is unlocked
 
-1. Preserve the observed 15-second startup-watchdog failures as machine-readable challenge fixtures.
-2. Land a clean, public Terrarium startup-watchdog fix; the local wrapper is only a hotfix.
-3. Re-run the complete Airlock check and fresh-clone oracle after experiment 000 lands.
+Build the strongest frozen single-agent baseline against a sealed idea and acceptance
+contract. The baseline must consume this oracle and produce the event schema that later
+fleet tiers inherit without policy edits.
 
 Completed intake:
 
@@ -14,7 +14,11 @@ Completed intake:
 - the second reviewer added an independent completion-after-proof/before-preview mutation;
 - model identity is taken from the supervisor's sealed invocation, not child self-report;
 - seven focused Terrarium runtime tests passed for cancel, timeout, orphan/crash recovery,
-  finish-before-subscribe, launcher exit, single callback, and callback linkage.
+  finish-before-subscribe, launcher exit, single callback, and callback linkage;
+- public Terrarium commit `befd22c` makes the startup watchdog configurable and defaults it
+  to 60 seconds; 40/40 focused core tests passed;
+- public Airlock commit `61fa039` reproduced from a fresh clone: 19/19 mutations red and
+  the full Airlock check green.
 
 ## Hammer produced
 

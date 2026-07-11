@@ -24,7 +24,8 @@
     "No real model fleet is measured.",
     "No Cloudflare deployment is measured.",
     "The mutation corpus is permanent but not complete.",
-    "The Terrarium startup heartbeat remains a local wrapper hotfix."
+    "The active local MCP process still uses the startup heartbeat wrapper until it reloads the public Terrarium fix."
   ],
-  "next": "Build the strongest frozen single-agent baseline only after the remaining runtime hotfix is made publicly reproducible."
+  "next": "Build the strongest frozen single-agent baseline; do not start the eight-agent tier."
+
 }

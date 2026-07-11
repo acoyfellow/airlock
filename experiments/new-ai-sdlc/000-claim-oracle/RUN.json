@@ -21,7 +21,7 @@
       "ter_20260711152157841_ffpp85",
       "ter_20260711152157841_liud0t"
     ],
-    "hotfix": "A local Pi wrapper emits an immediate startup heartbeat; a clean public Terrarium fix remains required."
+    "hotfix": "Public Terrarium commit befd22c defaults the configurable startup watchdog to 60 seconds. The active local MCP process retains the heartbeat wrapper until reload."
   },
   "limits": [
     "The oracle streams are synthetic.",

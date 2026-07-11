@@ -1,6 +1,6 @@
 {
   "candidate": "sha256:e7ab3959eb089c63cbb0672077a23ea2f5dbc081c23458a4ecaf6852342f390f",
-  "darkUrl": "https://airlock-dark-e7ab3959eb089c63cbb06720.coy.workers.dev",
+  "previewUrl": "https://airlock-dark-e7ab3959eb089c63cbb06720.coy.workers.dev",
   "requestedAt": "2026-06-30T15:41:51.570Z",
   "note": "keel admitted this candidate. Promotion to airlock.coey.dev is human-gated; prod route left unchanged."
 }

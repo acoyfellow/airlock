@@ -1,8 +1,8 @@
 // The DEPLOY node of the napkin: stage a candidate to a NON-serving slot.
 // Deploying records the candidate in a "staged" slot — it does NOT change what
 // the webapp serves. Only the gate (gate.ts) flips the served slot, and only
-// for an admitted candidate. So "deploy" is observable-but-dark: tests can hit
-// the staged slot; users still see the previously promoted version.
+// for an admitted candidate. Tests can reach the staged candidate; users still
+// see the previously promoted version.
 //
 // Local backend: a single JSON file under .data/ (gitignored) holding both
 // slots. Cloud-portable: the same { served, staged } record lives in KV/DO.
@@ -13,10 +13,10 @@ import type { DeploySlot } from "./pipeline.ts";
 
 type Slots = {
   served: string | null; // candidate currently answering production traffic
-  staged: string | null; // candidate deployed dark, awaiting the gate
+  staged: string | null; // candidate deployed for testing, awaiting the gate
 };
 
-/** A file-backed two-slot model: one served, one staged (dark). */
+/** A file-backed two-slot model: one served, one staged for testing. */
 export class SlotStore {
   #path: string;
   constructor(path: string) {
@@ -35,7 +35,7 @@ export class SlotStore {
     writeFileSync(tmp, JSON.stringify(s, null, 2));
     renameSync(tmp, this.#path);
   }
-  /** Stage a candidate to the dark slot. Does NOT touch the served slot. */
+  /** Stage a candidate for testing. Does NOT touch the served slot. */
   stage(candidate: string): void {
     const s = this.#read();
     s.staged = candidate;
@@ -56,11 +56,11 @@ export class SlotStore {
 }
 
 /**
- * A `deploy` port (matches Ports.deploy) that stages the candidate to the dark
- * slot and returns a slot URL addressed by the candidate. Staging never changes
+ * A `deploy` port (matches Ports.deploy) that stages the candidate for testing
+ * and returns a URL addressed by the candidate. Staging never changes
  * the served version.
  */
-export function makeLocalDeployer(slots: SlotStore, baseUrl = "local://dark") {
+export function makeLocalDeployer(slots: SlotStore, baseUrl = "local://preview") {
   return async (candidate: string): Promise<DeploySlot> => {
     slots.stage(candidate);
     return { url: `${baseUrl}/${candidate.replace(/^sha256:/, "")}`, detail: "staged (non-serving)" };

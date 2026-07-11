@@ -7,7 +7,7 @@ dependency (github:acoyfellow/keel), not a sibling clone.
 
 ## What airlock is
 The deploy airlock for software that ships itself: a candidate is held in a
-non-serving dark slot until a signed proof of its tests (checked by keel) flips
+preview URL with no live traffic until a signed proof of its tests (checked by keel) flips
 its feature flags live. feature = test + flag; a flag is on only if its test
 passed in the exact version currently served. keel is the proof-check building
 block; airlock is the pipeline.
@@ -29,7 +29,7 @@ block; airlock is the pipeline.
   gone; repo map added; deleted 10M of evidence screenshots and stale logs;
   receipts kept in portable JSON/MD.
 - **Dillon Mulroy (systems/Artifacts fit):** sign-off. Content-addressed
-  candidate, dark slot, ports for terrarium/Workflows/Facets behind one type.
+  candidate, preview URL, ports for terrarium/Workflows/Facets behind one type.
 - **Ana Foppa (blast radius):** sign-off with residual. Private verifier key is
   gitignored; prod promote is human-held. Residual: the signing key is env-loaded
   and the dogfood trusts it at signing time.
@@ -60,11 +60,11 @@ airlock no longer reads as a keel clone. Its own identity, AX-informed combo:
 - Texture: faint grid + soft teal bloom (the "chamber"), vs keel's flat white.
 - Mark: an airlock porthole/hatch (img-gen), distinct from keel's diamond; derived
   into favicon + icons + og.
-- Closing band: a charcoal "dark slot" with a teal bloom — the band IS the dark
-  ("Deploy to the dark. Prove it. Then, and only then, go live.").
+- Closing band: a charcoal preview stage with a teal bloom — the band shows the
+  candidate before live traffic reaches it.
 - Deleted the decorative dali photo plates (overdone) and the amber photo band.
-- Diagram of truth: a clean IBM Plex Mono ASCII flow (push -> artifacts -> dark
-  slot -> fanout -> signed proof (keel) -> flag LIVE / hold).
+- Diagram of truth: a clean IBM Plex Mono ASCII flow (push -> artifacts -> preview
+  URL -> fanout -> signed proof (keel) -> flag LIVE / hold).
 
 ### Verdicts
 - **Kevin Kipp:** sign-off. Minimal, consistent, every state intentional; color
@@ -72,10 +72,10 @@ airlock no longer reads as a keel clone. Its own identity, AX-informed combo:
   CANDIDATE label color fix is deployed and propagating at the edge.
 - **Nick Downie:** sign-off. Copy plain, no clever riddles.
 - **Tom Bremer:** sign-off. Decorative photos and amber cruft deleted; the page
-  is the diagram, the receipt, and the dark band.
+  is the diagram, the receipt, and the preview band.
 - **Dane Knecht:** sign-off. The page proves itself with a live signed receipt;
   honest, not marketing fluff.
 - **Sam Rhea:** sign-off. Cohesive whole — porthole + teal + grid + mono receipt
-  + dark-slot band read as one identity.
+  + preview band read as one identity.
 
 Live: https://airlock.coey.dev/ (200). airlock 24 tests + keel 75 tests green.

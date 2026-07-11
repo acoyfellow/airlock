@@ -30,7 +30,9 @@ is the pipeline around it. Nothing else to clone.
 ```sh
 bun install
 bun test       # 30 pass: pipeline, napkin, ports, site copy
-bun run napkin # pushes two candidates through runPipeline
+bun run napkin       # pushes two candidates through runPipeline
+bun run launch-proof # one success + three refusals across Airlock and real Keel APIs
+bun run fleet        # five worker commits, forced collision, reconcile/block, signed gate
 ```
 
 `bun run napkin` is file-backed under `.data/` and needs no Cloudflare account.
@@ -67,10 +69,10 @@ Understand the whole thing from the layout, not by reading every line:
 ```text
 src/
   pipeline.ts     the pure core: runPipeline(candidate, jobs, ports)
-                  candidate -> deploy(dark) -> fanout tests -> proof -> promote|hold.
+                  candidate -> deploy preview -> fanout tests -> proof -> promote|hold.
                   no side effects of its own; everything real is a port.
   ports/          the only place real things happen (inject these):
-    deploy.ts       lands a candidate on a non-serving dark slot, returns its URL
+    deploy.ts       puts a candidate at a preview URL with no live traffic
     fanout.ts       runs the test jobs (local; terrarium / Workflow / Facet behind same type)
     sign.ts         signs the result, bound to the digest (the only key use)
     keys.ts         the trusted keys a proof is checked against
@@ -79,11 +81,13 @@ src/
   serve.ts        the webapp: serves only the candidate the gate cleared.
                   feature = test + flag; a flag is on iff its test passed in the served candidate.
   artifacts.ts    content-addressed store: exact bytes by digest
-  deploy.ts       dark-slot deploy helper
+  deploy.ts       preview deploy helper
   gate.ts         promote-gate wiring
   napkin.ts       the end-to-end demo, fully file-backed
 examples/         hello-world, napkin, self-deliver (airlock shipping itself)
 experiments/dogfood   the honesty gate: decides by LOOKING (re-derives digest, re-verifies proof)
+experiments/fleet     multi-process commit/collision protocol spike with a verifiable receipt
+experiments/launch-proof  one Airlock + Keel receipt for the launch claims
 site/             the airlock.coey.dev site (light, AX-flavored)
 ```
 
@@ -138,25 +142,25 @@ delivering *itself* to a live (but non-serving) Cloudflare slot — is
 `bun run self-deliver`, and `bun run gate` is the independent verifier.
 
 ```sh
-# self-deliver deploys a dark slot on a REAL Cloudflare account and fans tests
+# self-deliver deploys a preview Worker on a REAL Cloudflare account and fans tests
 # out through a local terra CLI, so both must be set explicitly (no defaults):
 export CLOUDFLARE_ACCOUNT_ID=<your account id>
 export TERRA_CLI=/path/to/terrarium/src/cli.js
-bun run self-deliver   # build -> dark deploy -> fanout -> sign -> RECEIPT.json
+bun run self-deliver   # build -> preview deploy -> fanout -> sign -> RECEIPT.json
 
-bun run gate           # independently verifies the dark slot by LOOKING
+bun run gate           # independently verifies the preview Worker by LOOKING
 ```
 
 `experiments/dogfood/gate.mjs` recomputes the source digest, refuses a dirty
-worktree, derives the expected dark-slot URL from the digest, curls `/` and
+worktree, derives the expected preview Worker URL from the digest, curls `/` and
 `/docs` for 200 carrying that digest, and re-verifies the ed25519 proof against
 the **pinned** public key in `experiments/dogfood/trusted-keys.json` (not the
 keyring carried in the receipt). It exits non-zero on any red. The receipt it
 checks is `experiments/dogfood/RECEIPT.json`.
 
-On a corporate network the dark `*.workers.dev` slot is reached through the
+On a corporate network the preview `*.workers.dev` URL is reached through the
 Cloudflare WARP TLS proxy; the gate self-configures that CA (system store +
-known WARP bundle) with TLS verification left on. Off-corp, that exact slot may
+known WARP bundle) with TLS verification left on. Off-corp, that exact URL may
 be unreachable — the local checks (digest recompute, proof verify against the
 pin, receipt binding) still run.
 

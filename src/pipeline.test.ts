@@ -11,7 +11,7 @@ function ports(): { ports: Ports; gate: () => string } {
     gate: () => live,
     ports: {
       runFanout: localFanout,
-      deploy: async (c) => ({ url: `https://dark.example/${c}` }),
+      deploy: async (c) => ({ url: `https://preview.example/${c}` }),
       setFeatureGate: async (c, on) => { if (on) live = c; },
       sign: (candidate, evidence, pass) =>
         signProof(makeProof({ artifactDigest: candidate, verifier: owner.keyId, policy: "t@1", result: pass ? "pass" : "fail", evidence }), owner.keyId, owner.privatePem),

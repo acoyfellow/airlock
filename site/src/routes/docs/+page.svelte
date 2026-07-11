@@ -4,17 +4,17 @@
   import CodeBlock from '$lib/CodeBlock.svelte';
   import { pipeline, ports, fanoutBackends, experiments } from '$lib/site';
 
-  const deployPortSnippet = `function darkWorkerName(candidate: string): string {
+  const deployPortSnippet = `function candidateWorkerName(candidate: string): string {
   const hex = candidate.replace(/^sha256:/, '').toLowerCase();
-  return \`app-dark-\${hex.slice(0, 24)}\`; // one Worker per candidate digest
+  return \`app-candidate-\${hex.slice(0, 24)}\`; // one Worker per candidate digest
 }
 
 async function deploy(candidate: string): Promise<DeploySlot> {
-  const name = darkWorkerName(candidate);
+  const name = candidateWorkerName(candidate);
   const out = execFileSync('wrangler', ['deploy', '--name', name], { encoding: 'utf8' });
   const url = out.match(/https:\\/\\/[^\\s]+\\.workers\\.dev/)?.[0];
   if (!url) throw new Error('deploy: no workers.dev URL in wrangler output');
-  return { url }; // this is the dark slot; nothing routes live traffic to it yet
+  return { url }; // this preview URL receives no live traffic yet
 }`;
 
   const napkinChecks = [
@@ -30,7 +30,7 @@ async function deploy(candidate: string): Promise<DeploySlot> {
     { surface: 'Test coverage', boundary: 'The signed proof says the fanout jobs you wired up passed, not that the candidate is correct. airlock verifies the proof; it does not judge whether your tests were the right ones.' },
     { surface: 'Digest binding', boundary: 'The core trusts deploy(candidate) to serve that digest\'s bytes; if it lies, airlock cannot tell.' },
     { surface: 'Trust', boundary: 'airlock does not decide which keys to trust. The signed proof is checked against the trusted keys; the caller decides which keys those are.' },
-    { surface: 'Effects', boundary: 'The core holds no credential; a hostile candidate can touch whatever deploy gives the dark slot.' },
+    { surface: 'Effects', boundary: 'The core holds no credential; a hostile candidate can touch whatever the deploy function lets it reach.' },
   ];
 </script>
 
@@ -87,7 +87,7 @@ async function deploy(candidate: string): Promise<DeploySlot> {
       <h2 id="define-gate">Your project chooses the checks</h2>
       <p>
         airlock has no default test suite. The gate is the <code>jobs</code> list you pass to
-        <code>runPipeline</code>: named checks against the dark URL. Each returns
+        <code>runPipeline</code>: named checks against the preview URL. Each returns
         <code>{'{ name, ok, detail }'}</code>; promotion only becomes possible when every check is
         <code>ok</code> and the proof verifies.
       </p>
@@ -95,7 +95,7 @@ async function deploy(candidate: string): Promise<DeploySlot> {
     <dl class="concept-list">
       <div>
         <dt>Greenfield</dt>
-        <dd>Start with one dark-URL smoke check. Add one critical user path after it blocks a bad build.</dd>
+        <dd>Start with one smoke check against the preview URL. Add one critical user path after it blocks a bad build.</dd>
       </div>
       <div>
         <dt>Brownfield</dt>

@@ -4,7 +4,7 @@
 
 export type Receipt = {
   candidate: string;
-  darkUrl: string | null;
+  previewUrl: string | null;
   evidence: string;
   admitted: boolean;
   promotedToProd: boolean;
@@ -17,7 +17,7 @@ export type Receipt = {
 
 export const receipt: Receipt = {
   "candidate": "sha256:e7ab3959eb089c63cbb0672077a23ea2f5dbc081c23458a4ecaf6852342f390f",
-  "darkUrl": "https://airlock-dark-e7ab3959eb089c63cbb06720.coy.workers.dev",
+  "previewUrl": "https://airlock-dark-e7ab3959eb089c63cbb06720.coy.workers.dev",
   "evidence": "home-200=pass,docs-200=pass",
   "admitted": true,
   "promotedToProd": true,

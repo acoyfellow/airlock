@@ -92,7 +92,7 @@ a promotion request and never flips the `airlock.coey.dev` route).
 
 A worker's self-report is not the evidence. `experiments/dogfood/gate.mjs`
 decides by looking: it recomputes the candidate digest from source, curls the
-dark URL for `200`, reads the digest the served page carries, and re-verifies
+preview URL for `200`, reads the digest the served page carries, and re-verifies
 the ed25519 signed proof against that recomputed digest. A claim that cannot be
 re-derived from the artifact is marked failed.
 

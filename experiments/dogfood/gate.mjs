@@ -4,10 +4,10 @@
 // It trusts nothing it is told — INCLUDING the receipt. It:
 //   1. recomputes the candidate digest from the source tree itself, and
 //      requires the worktree to be clean so the digest is reproducible from HEAD,
-//   2. derives the EXPECTED dark slot name from that digest and refuses to be
+//   2. derives the EXPECTED Worker name from that digest and refuses to be
 //      pointed at any URL that does not match it (the receipt cannot redirect
-//      the gate to an attacker-controlled slot),
-//   3. curls the dark URL and requires HTTP 200 on / and /docs,
+//      the gate to an attacker-controlled Worker),
+//   3. curls the preview URL and requires HTTP 200 on / and /docs,
 //   4. reads the source digest the served pages actually carry and matches it
 //      on BOTH routes, and checks the served evidence/verifier meta matches the
 //      receipt (so the page cannot visually lie about its own proof),
@@ -35,13 +35,13 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // ── TLS self-configuration ────────────────────────────────────────────────────
-// The gate must verify dark-URL liveness ITSELF, and on a corp network the dark
-// *.workers.dev slot is reached through the Cloudflare WARP TLS proxy, whose root
+// The gate must verify preview-URL liveness ITSELF. On a corp network the
+// *.workers.dev URL is reached through the Cloudflare WARP TLS proxy, whose root
 // is not in Node's bundled CA set. Rather than trust the caller to have exported
 // NODE_EXTRA_CA_CERTS (and rather than ever disabling verification), the gate
 // re-execs itself ONCE with the system CA store enabled and a known corp root
 // bundle as NODE_EXTRA_CA_CERTS. This keeps real TLS verification on: if the
-// dark cert genuinely cannot be validated, fetch still throws and the liveness
+// preview certificate genuinely cannot be validated, fetch still throws and the liveness
 // check fails closed.
 function ensureCorpTls() {
   if (process.env.__GATE_TLS_READY === "1") return;
@@ -119,10 +119,10 @@ function metaContent(body, name) {
   return re.exec(body)?.[1] ?? null;
 }
 
-// Derive the dark slot worker name from a digest, identical to
-// src/ports/deploy.ts darkWorkerName(). The gate uses this to refuse any URL
-// that is not the slot this exact digest would deploy to.
-function darkWorkerName(digest) {
+// Derive the candidate Worker name from a digest, identical to
+// src/ports/deploy.ts candidateWorkerName(). The gate uses this to refuse any URL
+// that is not the Worker this exact digest would deploy to.
+function candidateWorkerName(digest) {
   const hex = digest.replace(/^sha256:/, "").toLowerCase();
   return `airlock-dark-${hex.slice(0, 24)}`;
 }
@@ -178,7 +178,7 @@ async function main() {
     record("read-receipt", false, `RECEIPT.json unreadable: ${e?.message ?? e}`);
     return finish();
   }
-  record("read-receipt", true, `darkUrl=${receipt.darkUrl}`);
+  record("read-receipt", true, `previewUrl=${receipt.previewUrl}`);
 
   record(
     "receipt-binds-recomputed-digest",
@@ -186,34 +186,34 @@ async function main() {
     `receipt=${receipt.candidate} recomputed=${digest}`,
   );
 
-  // 3. the dark URL must be the slot THIS digest deploys to — derived, not trusted.
+  // 3. the preview URL must be the Worker THIS digest deploys to — derived, not trusted.
   // Anchor the worker name to the hostname's LEFTMOST LABEL (not a substring), so
   // a host like airlock-dark-<hex>-attacker.<...>.workers.dev cannot slip past.
-  const darkUrl = receipt.darkUrl;
-  const expectedName = darkWorkerName(digest);
+  const previewUrl = receipt.previewUrl;
+  const expectedName = candidateWorkerName(digest);
   let urlHostOk = false;
-  let urlDetail = `darkUrl=${darkUrl}`;
+  let urlDetail = `previewUrl=${previewUrl}`;
   try {
-    const u = new URL(darkUrl);
+    const u = new URL(previewUrl);
     const firstLabel = u.hostname.split(".")[0];
     urlHostOk =
       u.protocol === "https:" &&
       u.hostname.endsWith(".workers.dev") &&
       firstLabel === expectedName;
-    urlDetail = `darkUrl host first-label=${firstLabel} expected=${expectedName} (.workers.dev)`;
+    urlDetail = `previewUrl host first-label=${firstLabel} expected=${expectedName} (.workers.dev)`;
   } catch (e) {
-    urlDetail = `darkUrl unparseable: ${e?.message ?? e}`;
+    urlDetail = `previewUrl unparseable: ${e?.message ?? e}`;
   }
-  record("dark-url-matches-digest", urlHostOk, urlDetail);
-  if (!darkUrl) return finish();
+  record("preview-url-matches-digest", urlHostOk, urlDetail);
+  if (!previewUrl) return finish();
 
-  // 4. LOOK at the dark slot: key routes must answer 200.
-  const base = darkUrl.replace(/\/$/, "");
+  // 4. LOOK at the preview Worker: key routes must answer 200.
+  const base = previewUrl.replace(/\/$/, "");
   const home = await fetchStatus(base + "/");
-  record("dark-home-200", home.status === 200, `GET / -> ${home.status}${home.error ? " " + home.error : ""}`);
+  record("preview-home-200", home.status === 200, `GET / -> ${home.status}${home.error ? " " + home.error : ""}`);
 
   const docs = await fetchStatus(base + "/docs");
-  record("dark-docs-200", docs.status === 200, `GET /docs -> ${docs.status}${docs.error ? " " + docs.error : ""}`);
+  record("preview-docs-200", docs.status === 200, `GET /docs -> ${docs.status}${docs.error ? " " + docs.error : ""}`);
 
   // 5. BOTH served routes must carry the exact recomputed source digest.
   const servedHomeDigest = metaContent(home.body, "candidate-digest");
@@ -286,7 +286,7 @@ async function main() {
 
   // 8. prod must agree with the receipt's CLAIMED promotion state. Until the
   // owner promotes (promotedToProd:false) prod must NOT serve this candidate
-  // (deploying a dark slot is not promoting). Once the owner promotes
+  // (deploying a preview Worker is not promoting). Once the owner promotes
   // (promotedToProd:true) prod MUST serve exactly this proven candidate. Either
   // way the gate refuses a prod state that disagrees with the receipt.
   const prod = await fetchStatus(PROD_URL + "/");
@@ -299,7 +299,7 @@ async function main() {
     prod.status === 0
       ? `prod ${PROD_URL} unreachable: ${prod.error ?? ""}${promoted ? " (receipt claims PROMOTED)" : " (not promoted)"}`
       : prod.status === 200
-        ? `prod reachable, serves digest=${prodDigest} (candidate ${prodServesCandidate ? "IS" : "is NOT"} on prod; receipt claims ${promoted ? "PROMOTED" : "dark/awaiting-owner"})`
+        ? `prod reachable, serves digest=${prodDigest} (candidate ${prodServesCandidate ? "IS" : "is NOT"} on prod; receipt claims ${promoted ? "PROMOTED" : "preview/awaiting-owner"})`
         : `prod ${PROD_URL} -> HTTP ${prod.status}`,
   );
 
@@ -318,7 +318,7 @@ function finish(promoted = false) {
   console.log(
     promoted
       ? "GREEN — proven candidate promoted by the owner and serving on prod."
-      : "GREEN — dark candidate proven by looking. Prod promotion remains owner-held.",
+      : "GREEN — preview candidate proven by looking. Prod promotion remains owner-held.",
   );
   process.exit(0);
 }

@@ -1,0 +1,147 @@
+{
+  "experiment": "airlock/fleet-spike@1",
+  "startedAt": "2026-07-06T13:39:16.959Z",
+  "finishedAt": "2026-07-06T13:39:17.608Z",
+  "status": "pass",
+  "claim": "Independent worker processes committed from one shared base; a real textual collision was observed; compatible task contracts were reconciled; incompatible contracts were explicitly blocked; the combined candidate passed a signed airlock gate.",
+  "limits": [
+    "Workers are deterministic scripts, not autonomous model agents.",
+    "Reconciliation handles declared key/value task contracts, not arbitrary program semantics.",
+    "The preview is local and file-backed; this run does not deploy a fleet-built application to Cloudflare.",
+    "A passing receipt proves only the declared task contracts and checks."
+  ],
+  "base": "72147111e1c26ca990f0136e173355aa0634f81c",
+  "agents": [
+    {
+      "task": "banner",
+      "pid": 4535,
+      "commit": "a16634647bf4d86fc986f91ef29fd614411f528d",
+      "parent": "72147111e1c26ca990f0136e173355aa0634f81c",
+      "changedFiles": [
+        "app.json",
+        "proposals/banner.json"
+      ],
+      "patch": "diff --git a/app.json b/app.json\nindex 5c0a639..938d0cb 100644\n--- a/app.json\n+++ b/app.json\n@@ -1 +1 @@\n-{\"banner\":\"checkout\",\"currency\":\"USD\",\"checkoutTimeoutMs\":10000}\n+{\"banner\":\"fleet-ready\",\"currency\":\"USD\",\"checkoutTimeoutMs\":10000}\ndiff --git a/proposals/banner.json b/proposals/banner.json\nnew file mode 100644\nindex 0000000..9be46af\n--- /dev/null\n+++ b/proposals/banner.json\n@@ -0,0 +1,7 @@\n+{\n+  \"id\": \"banner\",\n+  \"description\": \"Change the checkout banner to fleet-ready.\",\n+  \"writes\": {\n+    \"banner\": \"fleet-ready\"\n+  }\n+}"
+    },
+    {
+      "task": "currency",
+      "pid": 4539,
+      "commit": "9d7c6cb8d74a97750231715f2d0f27125077bc09",
+      "parent": "72147111e1c26ca990f0136e173355aa0634f81c",
+      "changedFiles": [
+        "app.json",
+        "proposals/currency.json"
+      ],
+      "patch": "diff --git a/app.json b/app.json\nindex 5c0a639..eb16a2c 100644\n--- a/app.json\n+++ b/app.json\n@@ -1 +1 @@\n-{\"banner\":\"checkout\",\"currency\":\"USD\",\"checkoutTimeoutMs\":10000}\n+{\"banner\":\"checkout\",\"currency\":\"EUR\",\"checkoutTimeoutMs\":10000}\ndiff --git a/proposals/currency.json b/proposals/currency.json\nnew file mode 100644\nindex 0000000..8ff49e8\n--- /dev/null\n+++ b/proposals/currency.json\n@@ -0,0 +1,7 @@\n+{\n+  \"id\": \"currency\",\n+  \"description\": \"Change the displayed currency to EUR.\",\n+  \"writes\": {\n+    \"currency\": \"EUR\"\n+  }\n+}"
+    },
+    {
+      "task": "docs",
+      "pid": 4543,
+      "commit": "8bf94a4f5a4836bbd6dabbdbedd9aacd59d19369",
+      "parent": "72147111e1c26ca990f0136e173355aa0634f81c",
+      "changedFiles": [
+        "README.md",
+        "proposals/docs.json"
+      ],
+      "patch": "diff --git a/README.md b/README.md\nindex 85860b1..e36e82d 100644\n--- a/README.md\n+++ b/README.md\n@@ -1 +1,2 @@\n # Fleet checkout fixture\n+Checkout changes are reconciled before release.\ndiff --git a/proposals/docs.json b/proposals/docs.json\nnew file mode 100644\nindex 0000000..6846165\n--- /dev/null\n+++ b/proposals/docs.json\n@@ -0,0 +1,5 @@\n+{\n+  \"id\": \"docs\",\n+  \"description\": \"Document that checkout changes are reconciled before release.\",\n+  \"appendReadme\": \"Checkout changes are reconciled before release.\"\n+}"
+    },
+    {
+      "task": "timeout-fast",
+      "pid": 4553,
+      "commit": "6a85e76c6b5c3625f7aa0f6484c049baedd1676c",
+      "parent": "72147111e1c26ca990f0136e173355aa0634f81c",
+      "changedFiles": [
+        "app.json",
+        "proposals/timeout-fast.json"
+      ],
+      "patch": "diff --git a/app.json b/app.json\nindex 5c0a639..9210865 100644\n--- a/app.json\n+++ b/app.json\n@@ -1 +1 @@\n-{\"banner\":\"checkout\",\"currency\":\"USD\",\"checkoutTimeoutMs\":10000}\n+{\"banner\":\"checkout\",\"currency\":\"USD\",\"checkoutTimeoutMs\":5000}\ndiff --git a/proposals/timeout-fast.json b/proposals/timeout-fast.json\nnew file mode 100644\nindex 0000000..0b707cb\n--- /dev/null\n+++ b/proposals/timeout-fast.json\n@@ -0,0 +1,7 @@\n+{\n+  \"id\": \"timeout-fast\",\n+  \"description\": \"Require checkout to time out after 5 seconds.\",\n+  \"writes\": {\n+    \"checkoutTimeoutMs\": 5000\n+  }\n+}"
+    },
+    {
+      "task": "timeout-slow",
+      "pid": 4569,
+      "commit": "a59d33ca4367df0fd64a86ebe120c63e420f8ff9",
+      "parent": "72147111e1c26ca990f0136e173355aa0634f81c",
+      "changedFiles": [
+        "app.json",
+        "proposals/timeout-slow.json"
+      ],
+      "patch": "diff --git a/app.json b/app.json\nindex 5c0a639..0f61adf 100644\n--- a/app.json\n+++ b/app.json\n@@ -1 +1 @@\n-{\"banner\":\"checkout\",\"currency\":\"USD\",\"checkoutTimeoutMs\":10000}\n+{\"banner\":\"checkout\",\"currency\":\"USD\",\"checkoutTimeoutMs\":30000}\ndiff --git a/proposals/timeout-slow.json b/proposals/timeout-slow.json\nnew file mode 100644\nindex 0000000..1d60e04\n--- /dev/null\n+++ b/proposals/timeout-slow.json\n@@ -0,0 +1,7 @@\n+{\n+  \"id\": \"timeout-slow\",\n+  \"description\": \"Require checkout to time out after 30 seconds.\",\n+  \"writes\": {\n+    \"checkoutTimeoutMs\": 30000\n+  }\n+}"
+    }
+  ],
+  "textCollision": {
+    "observed": true,
+    "conflictedFiles": [
+      "app.json"
+    ],
+    "first": "banner",
+    "second": "currency"
+  },
+  "accepted": [
+    "banner",
+    "currency",
+    "docs"
+  ],
+  "blocked": [
+    {
+      "task": "timeout-fast",
+      "reason": "incompatible values for checkoutTimeoutMs: timeout-fast=5000, timeout-slow=30000"
+    },
+    {
+      "task": "timeout-slow",
+      "reason": "incompatible values for checkoutTimeoutMs: timeout-fast=5000, timeout-slow=30000"
+    }
+  ],
+  "integration": {
+    "commit": "2a1dc78e0e215a2e7abb18ec598721027a722a6d",
+    "candidate": "sha256:851331c78505290c33b9e7d8d1bbafb6673666d61838b4cae1e045a5b92a3859",
+    "app": {
+      "banner": "fleet-ready",
+      "currency": "EUR",
+      "checkoutTimeoutMs": 10000
+    },
+    "readme": "# Fleet checkout fixture\nCheckout changes are reconciled before release."
+  },
+  "pipeline": {
+    "previewUrl": "file:///Users/jcoeyman/cloudflare/airlock/.data/fleet-run/worktrees/integration",
+    "evidence": "banner=pass,currency=pass,docs=pass,blocked-conflict-left-base-intact=pass",
+    "results": [
+      {
+        "name": "banner",
+        "ok": true,
+        "detail": "task contract retained"
+      },
+      {
+        "name": "currency",
+        "ok": true,
+        "detail": "task contract retained"
+      },
+      {
+        "name": "docs",
+        "ok": true,
+        "detail": "task contract retained"
+      },
+      {
+        "name": "blocked-conflict-left-base-intact",
+        "ok": true,
+        "detail": "checkoutTimeoutMs=10000"
+      }
+    ],
+    "admitted": true,
+    "promoted": true,
+    "served": "sha256:851331c78505290c33b9e7d8d1bbafb6673666d61838b4cae1e045a5b92a3859",
+    "proof": {
+      "proof": {
+        "artifactDigest": "sha256:851331c78505290c33b9e7d8d1bbafb6673666d61838b4cae1e045a5b92a3859",
+        "verifier": "03e9dc8bffce410e",
+        "policy": "airlock/fleet-spike@1",
+        "result": "pass",
+        "evidence": "banner=pass,currency=pass,docs=pass,blocked-conflict-left-base-intact=pass"
+      },
+      "keyId": "03e9dc8bffce410e",
+      "signature": "L13z2dmHnKjMZSmpDeP1SEo6wPK+zmoMw2pSkpdUnVnPujAuNaOhm76fsVXfQ/e8lzGBGGdYNisxSDF9/w2HAg=="
+    },
+    "trusted": {
+      "03e9dc8bffce410e": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAPJziimyXSkC9ie10nYg/Xqk9H9CvRaGLog3JRNnYV9I=\n-----END PUBLIC KEY-----\n"
+    }
+  }
+}

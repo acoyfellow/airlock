@@ -1,13 +1,13 @@
-// self-deliver: run THIS repo through its own pipeline to a DARK Cloudflare slot.
+// self-deliver: run THIS repo through its own pipeline on a Cloudflare preview Worker.
 //
 //   compute candidate digest (content-addressed source)
 //     -> embed it in the site (receipt the page will carry)
 //     -> build
-//     -> deploy to a non-serving slot (dark URL)
-//     -> fanout^x tests on terrarium against the dark URL
+//     -> deploy to a preview URL with no live traffic
+//     -> fanout^x tests on terrarium against the preview URL
 //     -> keel admits a signed proof bound to the exact digest
 //     -> record the promotion REQUEST (prod flip is human-gated; we STOP)
-//     -> re-embed the full receipt + redeploy the same dark slot
+//     -> re-embed the full receipt + redeploy the same preview Worker
 //     -> write RECEIPT.json
 //
 // This does NOT promote to airlock.coey.dev. Promotion is owner-held. The
@@ -49,7 +49,7 @@ function requireEnv(name: string, hint: string): string {
 
 const ACCOUNT_ID = requireEnv(
   "CLOUDFLARE_ACCOUNT_ID",
-  "export CLOUDFLARE_ACCOUNT_ID=<your Cloudflare account id> (the dark slot deploys here)",
+  "export CLOUDFLARE_ACCOUNT_ID=<your Cloudflare account id> (the preview Worker deploys here)",
 );
 const TERRA_CLI = requireEnv(
   "TERRA_CLI",
@@ -69,7 +69,7 @@ function sh(bin: string, args: string[], cwd: string, env: NodeJS.ProcessEnv = {
 
 type ReceiptShape = {
   candidate: string;
-  darkUrl: string | null;
+  previewUrl: string | null;
   evidence: string;
   admitted: boolean;
   promotedToProd: boolean;
@@ -88,7 +88,7 @@ function writeReceipt(r: ReceiptShape) {
 
 export type Receipt = {
   candidate: string;
-  darkUrl: string | null;
+  previewUrl: string | null;
   evidence: string;
   admitted: boolean;
   promotedToProd: boolean;
@@ -121,11 +121,11 @@ async function main() {
   const { verifier, trusted, source } = loadVerifier(REPO_ROOT);
   console.log(`verifier key     : ${verifier.keyId} (${source})`);
 
-  // phase 1: embed the digest so the dark slot carries its own identity
+  // phase 1: embed the digest so the preview Worker carries its own identity
   const builtAt = new Date().toISOString();
   writeReceipt({
     candidate,
-    darkUrl: null,
+    previewUrl: null,
     evidence: "pending",
     admitted: false,
     promotedToProd: false,
@@ -133,7 +133,7 @@ async function main() {
     policy: "airlock/self-deliver-fanout@1",
     signature: "",
     builtAt,
-    status: "dark candidate — verification in progress",
+    status: "candidate deployed for verification",
   });
   console.log("build            : phase 1 (identity embedded)…");
   buildSite();
@@ -159,7 +159,7 @@ async function main() {
       assertStableDigest(candidate);
       const slot = await deploy(c);
       slotUrl = slot.url;
-      console.log(`dark deploy      : ${slot.url} (${slot.detail ?? ""})`);
+      console.log(`preview deploy   : ${slot.url} (${slot.detail ?? ""})`);
       return slot;
     },
     runFanout: makeTerrariumFanout({
@@ -169,11 +169,11 @@ async function main() {
       timeoutMs: 220_000,
     }),
     sign: makeSigner(verifier),
-    setFeatureGate: makeHumanGate({ repoRoot: REPO_ROOT, darkUrl: () => slotUrl }),
+    setFeatureGate: makeHumanGate({ repoRoot: REPO_ROOT, previewUrl: () => slotUrl }),
     trusted,
   };
 
-  // fanout: terrarium route probes that each fetch the dark slot and confirm the
+  // fanout: terrarium route probes that each fetch the preview URL and confirm the
   // route is 200 AND the served body carries the exact candidate digest. Every
   // job is a real observation of the deployed slot — no tautological in-process
   // jobs that merely restate a value we already hold.
@@ -182,7 +182,7 @@ async function main() {
     { name: "docs-200", backend: "terra", route: "/docs", marker: candidate } as FanoutJob,
   ];
 
-  console.log("fanout^x         : terrarium child runs against the dark slot…");
+  console.log("fanout^x         : terrarium child runs against the preview URL…");
   const receipt = await runPipeline(
     { repo: "airlock", candidate },
     jobs as TestJob[],
@@ -193,16 +193,16 @@ async function main() {
   console.log(`keel admitted    : ${receipt.admitted} (${receipt.reason})`);
 
   if (!receipt.admitted) {
-    console.error("NOT ADMITTED — leaving the dark slot up, not promoting. STOP.");
+    console.error("NOT ADMITTED — leaving the preview Worker up, not promoting. STOP.");
     writeReceiptArtifact(receipt, verifier, candidate, slotUrl ?? null, false);
     process.exit(1);
   }
 
-  // phase 2: re-embed the full, signed receipt and redeploy the SAME dark slot
+  // phase 2: re-embed the full, signed receipt and redeploy the SAME preview Worker
   // so the served page shows the real receipt for the digest it serves.
   writeReceipt({
     candidate,
-    darkUrl: receipt.slot.url,
+    previewUrl: receipt.slot.url,
     evidence: receipt.evidence,
     admitted: true,
     promotedToProd: false,
@@ -216,12 +216,12 @@ async function main() {
   buildSite();
   assertStableDigest(candidate);
   const finalSlot = await deploy(candidate);
-  console.log(`dark redeploy    : ${finalSlot.url}`);
+  console.log(`preview redeploy : ${finalSlot.url}`);
 
   writeReceiptArtifact(receipt, verifier, candidate, finalSlot.url, true);
 
-  console.log("\n=== STOP: dark candidate admitted, prod gate human-held ===");
-  console.log(`dark URL   : ${finalSlot.url}`);
+  console.log("\n=== STOP: candidate verified, prod gate human-held ===");
+  console.log(`preview URL: ${finalSlot.url}`);
   console.log(`digest     : ${candidate}`);
   console.log(`proof      : ${verifier.keyId} ${receipt.proof.signature.slice(0, 24)}…`);
   console.log("next       : run experiments/dogfood/gate.mjs to verify by looking.");
@@ -231,12 +231,12 @@ function writeReceiptArtifact(
   receipt: Awaited<ReturnType<typeof runPipeline>>,
   verifier: { keyId: string; publicPem: string },
   candidate: string,
-  darkUrl: string | null,
+  previewUrl: string | null,
   admitted: boolean,
 ) {
   const artifact = {
     candidate,
-    darkUrl,
+    previewUrl,
     admitted,
     promotedToProd: false,
     promotion: {
@@ -254,7 +254,7 @@ function writeReceiptArtifact(
     trusted: { [verifier.keyId]: verifier.publicPem },
     coverage: {
       "what-this-dogfood-proves":
-        "source content-address (digest) + ed25519 signed admission proof bound to it + real dark-slot deploy + both routes served 200 carrying the digest. Verified by experiments/dogfood/gate.mjs against a pinned key.",
+        "source content-address (digest) + ed25519 signed admission proof bound to it + real preview Worker deploy + both routes served 200 carrying the digest. Verified by experiments/dogfood/gate.mjs against a pinned key.",
       "served-ref-cas":
         "the promote/CAS feature-gate flip is exercised by src/napkin.test.ts (local file-backed), NOT end-to-end in this dogfood run; prod promotion is the owner-held keel step.",
       "digest-scope":

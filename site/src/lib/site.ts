@@ -1,6 +1,6 @@
 export const site = {
   name: 'airlock',
-  title: 'airlock: your app stays dark until its tests pass',
+  title: 'airlock: your app stays off live traffic until its tests pass',
   description:
     'A small pipeline for a web app, Worker, or site. You push a candidate build, it deploys to a slot that serves no traffic, runs the tests in parallel, and makes that build live only if a signed proof says the tests passed.',
   url: 'https://airlock.coey.dev',
@@ -128,6 +128,18 @@ export type ExperimentLink = {
 // claim this page makes elsewhere, tested against real deployed Cloudflare
 // infrastructure — not asserted, run. `bun run <name>` reproduces it.
 export const experiments: readonly ExperimentLink[] = [
+  {
+    name: 'launch-proof',
+    claim: 'the exact Airlock and Keel launch claims can be reproduced from one command and checked without trusting its PASS lines.',
+    result: 'One integrated receipt exercises Airlock runPipeline plus the pinned Keel dependency: a passing candidate is selected; a failed check leaves the prior candidate selected; a cryptographically valid signature from a revoked key is refused; and a stale promotion cannot overwrite a newer baseline. The independent verifier checks 18/18 conditions.',
+    href: 'https://github.com/acoyfellow/airlock/tree/main/experiments/launch-proof',
+  },
+  {
+    name: 'fleet',
+    claim: 'independent workers can commit from one base, surface collisions, retain compatible task contracts, and block incompatible ones before one candidate is admitted.',
+    result: 'Protocol spike confirmed locally: five distinct OS processes made five commits from one base; naive integration hit a real app.json conflict; three compatible contracts survived; two incompatible timeout contracts were explicitly blocked; the combined candidate passed 15 independent receipt checks. The workers are deterministic scripts, not autonomous model agents.',
+    href: 'https://github.com/acoyfellow/airlock/tree/main/experiments/fleet',
+  },
   {
     name: 'isolation-proof',
     claim: 'local runs a check in the orchestrator\'s process; a Durable Object per check isolates the kinds Workers can run.',

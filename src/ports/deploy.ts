@@ -1,6 +1,6 @@
-// The deploy port: push the built site to a NON-serving Cloudflare slot,
-// addressed by the candidate digest. The slot is a standalone Worker named for
-// the digest (airlock-dark-<hex>) on a *.workers.dev URL. It serves the
+// The deploy port: push the built site to a Cloudflare Worker that receives no
+// production traffic. The Worker is addressed by the candidate digest
+// (the existing hostname prefix is `airlock-dark-`) on a *.workers.dev URL. It serves the
 // candidate so tests and the gate can look at it, but it is NOT wired to the
 // production custom domain (airlock.coey.dev). Deploying is not promoting.
 //
@@ -21,10 +21,10 @@ export type DeployConfig = {
 
 const SITE_DIR = "site";
 const BUILD_DIR = ".svelte-kit/cloudflare"; // adapter-cloudflare output
-const DARK_CONFIG = ".dark.wrangler.jsonc";
+const PREVIEW_CONFIG = ".preview.wrangler.jsonc";
 
 /** A worker name derived from the candidate digest: stable, dns-safe, <= 63 ch. */
-export function darkWorkerName(candidate: string): string {
+export function candidateWorkerName(candidate: string): string {
   const hex = candidate.replace(/^sha256:/, "").toLowerCase();
   return `airlock-dark-${hex.slice(0, 24)}`;
 }
@@ -34,13 +34,13 @@ function wrangler(cfg: DeployConfig): string {
 }
 
 /**
- * Deploy the already-built site to the dark slot for `candidate`.
+ * Deploy the already-built site to a preview Worker for `candidate`.
  * Requires `site/.svelte-kit/cloudflare` to exist (run the build first).
  */
 export function makeDeployer(cfg: DeployConfig) {
   return async (candidate: string): Promise<DeploySlot> => {
     const siteDir = join(cfg.repoRoot, SITE_DIR);
-    const name = darkWorkerName(candidate);
+    const name = candidateWorkerName(candidate);
 
     // @sveltejs/adapter-cloudflare (pinned 7.2.9 in site/package.json) emits
     // _worker.js / _routes.json / _headers into the assets dir; tell wrangler not
@@ -53,7 +53,7 @@ export function makeDeployer(cfg: DeployConfig) {
 
     const out = execFileSync(
       wrangler(cfg),
-      ["deploy", "--config", DARK_CONFIG, "--name", name],
+      ["deploy", "--config", PREVIEW_CONFIG, "--name", name],
       {
         cwd: siteDir,
         encoding: "utf8",

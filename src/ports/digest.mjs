@@ -1,7 +1,7 @@
 // Candidate digest: a content address for THIS repo's deliverable source tree.
 //
 // The digest is computed identically by the deploy path (to name + bind the
-// dark slot) and by the honesty gate (to independently recompute and verify the
+// preview Worker) and by the honesty gate (to independently recompute and verify the
 // keel proof binds the exact same bytes). It must therefore be deterministic and
 // depend only on tracked source, never on build artifacts, secrets, or the
 // generated receipt it later carries.

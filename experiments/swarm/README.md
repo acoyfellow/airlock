@@ -59,9 +59,9 @@ this script.
   dogfood bootstrap key) to isolate the concurrency question from the trust
   question. A hostile agent forging a bad proof is a different, already-
   covered case (see `src/ports/ports.test.ts` sign-port tests).
-- This does not deploy N real dark Cloudflare Workers per run (that would
+- This does not deploy N real preview Cloudflare Workers per run (that would
   cost real time/quota per agent for no additional signal on the CAS
   question). The candidate produced by each agent is real and unique
-  content-addressed data; only the "deploy a dark slot" step is skipped here
+  content-addressed data; only the "deploy a preview Worker" step is skipped here
   because it's already covered by `examples/self-deliver` and
   `experiments/isolation-proof`.

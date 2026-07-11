@@ -24,7 +24,7 @@ export type TestResult = { name: string; ok: boolean; detail: string };
 // (e.g. a terrarium route probe) need not carry an in-process function.
 export type TestJob = { name: string; run?: () => Promise<TestResult> | TestResult };
 
-// The fanout port. Receives the dark slot so integration tests can hit it.
+// The fanout port. Receives the preview URL so integration tests can hit it.
 // Default is local Promise.all; swap for terrarium or Facets.
 export type RunFanout = (jobs: TestJob[], slot: DeploySlot) => Promise<TestResult[]>;
 
@@ -42,12 +42,12 @@ export const localFanout: RunFanout = (jobs) =>
 
 export type PushEvent = { repo: string; candidate: string };
 
-// A dark slot: where the candidate is now served WITHOUT taking prod traffic.
+// The URL where the candidate is served without receiving production traffic.
 export type DeploySlot = { url: string; detail?: string };
 
 export type Ports = {
   runFanout: RunFanout;
-  // deploy to a NON-serving slot; returns the dark URL the slot now answers on
+  // deploy without production traffic; returns the preview URL
   deploy: (candidate: string) => Promise<DeploySlot>;
   setFeatureGate: (candidate: string, on: boolean) => Promise<void>;
   // the owner/verifier signs what the fanout observed, bound to the candidate
@@ -70,7 +70,7 @@ export async function runPipeline(event: PushEvent, jobs: TestJob[], ports: Port
   // 1. deploy the candidate to a slot that serves no traffic yet
   const slot = await ports.deploy(event.candidate);
 
-  // 2. fanout^x tests (run against the dark slot)
+  // 2. fanout^x tests (run against the preview URL)
   const results = await ports.runFanout(jobs, slot);
   const passed = results.every((r) => r.ok);
   const evidence = results.map((r) => `${r.name}=${r.ok ? "pass" : "fail"}`).join(",");

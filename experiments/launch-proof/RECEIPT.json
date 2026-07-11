@@ -1,0 +1,156 @@
+{
+  "schema": "airlock+keel/launch-proof@1",
+  "generatedAt": "2026-07-11T10:45:19.035Z",
+  "claim": "One integrated run uses Airlock's runPipeline and the pinned Keel dependency to show one admitted candidate and three fail-closed refusals.",
+  "provenance": {
+    "dependency": "github:acoyfellow/keel",
+    "resolvedCommit": "7e187f4",
+    "importedApis": [
+      "Keyring",
+      "RefStore",
+      "makeKeyPair",
+      "makeProof",
+      "promote",
+      "signProof"
+    ]
+  },
+  "limits": [
+    "The preview is file-backed and receives no live traffic; this run does not deploy to Cloudflare.",
+    "The Airlock success candidate is the source-tree digest computed by src/ports/digest.mjs; the Keel compare-and-swap case uses deterministic synthetic candidate digests.",
+    "The selected pointer is local demo state; production promotion remains caller-owned.",
+    "This proves these fixed cases, not production readiness, universal test isolation, or agent safety at scale."
+  ],
+  "trust": {
+    "verifierKeyId": "6d62caf8d9bcb4ad",
+    "trusted": {
+      "6d62caf8d9bcb4ad": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEANb1w4OQxa4l2fnNXiCrJEHg0BKFr44ZN8+0/rq4cWLQ=\n-----END PUBLIC KEY-----\n"
+    }
+  },
+  "success": {
+    "candidate": "sha256:869a70ed923d2816a036c0523c4d8fa502390a3715f3b1eb65ebcbe52b0b34a4",
+    "previewUrl": "local://preview/869a70ed923d2816a036c0523c4d8fa502390a3715f3b1eb65ebcbe52b0b34a4",
+    "evidence": "unit=pass,preview-smoke=pass",
+    "results": [
+      {
+        "name": "unit",
+        "ok": true,
+        "detail": "declared unit check passed"
+      },
+      {
+        "name": "preview-smoke",
+        "ok": true,
+        "detail": "preview returned expected marker"
+      }
+    ],
+    "proof": {
+      "proof": {
+        "artifactDigest": "sha256:869a70ed923d2816a036c0523c4d8fa502390a3715f3b1eb65ebcbe52b0b34a4",
+        "verifier": "6d62caf8d9bcb4ad",
+        "policy": "airlock/launch-proof@1",
+        "result": "pass",
+        "evidence": "unit=pass,preview-smoke=pass"
+      },
+      "keyId": "6d62caf8d9bcb4ad",
+      "signature": "DmW/auYJm1U4GgCjqlpTO5kkLl9K2czVjpFne0LuPoEyE2TuWRN6OVBzNuadHGeizjheTIwhirsbiSw19dZ9Dw=="
+    },
+    "admitted": true,
+    "promoted": true,
+    "selectedBefore": "sha256:93c41e3993292983d81f206fcd0aa0dc135196ca35e58911f42a9e54a824447a",
+    "selectedAfter": "sha256:869a70ed923d2816a036c0523c4d8fa502390a3715f3b1eb65ebcbe52b0b34a4"
+  },
+  "refusals": {
+    "failedAirlockCheck": {
+      "candidate": "sha256:522b55933274a748678b2d24b7426729177cd9490a15727baf6981fb0f146b24",
+      "previewUrl": "local://preview/522b55933274a748678b2d24b7426729177cd9490a15727baf6981fb0f146b24",
+      "evidence": "unit=pass,preview-smoke=fail",
+      "results": [
+        {
+          "name": "unit",
+          "ok": true,
+          "detail": "declared unit check passed"
+        },
+        {
+          "name": "preview-smoke",
+          "ok": false,
+          "detail": "injected preview failure"
+        }
+      ],
+      "proof": {
+        "proof": {
+          "artifactDigest": "sha256:522b55933274a748678b2d24b7426729177cd9490a15727baf6981fb0f146b24",
+          "verifier": "6d62caf8d9bcb4ad",
+          "policy": "airlock/launch-proof@1",
+          "result": "fail",
+          "evidence": "unit=pass,preview-smoke=fail"
+        },
+        "keyId": "6d62caf8d9bcb4ad",
+        "signature": "XPUFi2JpBW8sahinHuQ/4PrYx6xFS6xg2PUhd0ym9BU71/ApUWeDXfSzCsNOI8eZaBw/5hBVkTXdSNVno4RiBg=="
+      },
+      "admitted": false,
+      "promoted": false,
+      "selectedBefore": "sha256:869a70ed923d2816a036c0523c4d8fa502390a3715f3b1eb65ebcbe52b0b34a4",
+      "selectedAfter": "sha256:869a70ed923d2816a036c0523c4d8fa502390a3715f3b1eb65ebcbe52b0b34a4",
+      "reason": "verifier reported failure"
+    },
+    "revokedKey": {
+      "keyId": "6ce5de5fc43b56bc",
+      "publicPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAH4S/TBhnBjjEwjmEvB78gK6vid8c6Y4U5ybi+3RQ9vk=\n-----END PUBLIC KEY-----\n",
+      "messageBase64": "YWlybG9jaytrZWVsIGxhdW5jaCBwcm9vZjogcmV2b2tlZCBrZXk=",
+      "signatureBase64": "CJsoIermUgOnmKINz+jKJ2PbA/qSzZ29Sg29RHPMhOZ/NFBUECF6NlXLN4MMJ586JKJ+sQ21OdRlqzhkwwpgDQ==",
+      "keyAddedAt": 1000,
+      "revokedAt": 2000,
+      "checkedAt": 3000,
+      "cryptographicallyValid": true,
+      "keelDecision": {
+        "trusted": false,
+        "reason": "key revoked"
+      }
+    },
+    "staleBaseline": {
+      "repo": "launch-proof/repo",
+      "expectedBaseline": "sha256:68a062642cdccedf86d9d1c70c1b3e6fbf59ce5c280934ac5b38fe0886e0a14e",
+      "newerCandidate": "sha256:9777d10b807f9697875a477d0494ffa0a376b7037e0dfa88a4740096cbe91cb8",
+      "staleCandidate": "sha256:fbfb88304d3f7da7a96066d68fa43d039dd63d712442b6961e2731b35626d339",
+      "token": {
+        "repo": "launch-proof/repo",
+        "scope": "write",
+        "expiresAt": 1060000
+      },
+      "checkedAt": 1000000,
+      "trusted": {
+        "f34c1668cebb3e9c": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAwcocW2lRy7XsaMjJ5M5i+tA/U7Iyy76OchrrwmUwbAY=\n-----END PUBLIC KEY-----\n"
+      },
+      "newerProof": {
+        "proof": {
+          "artifactDigest": "sha256:9777d10b807f9697875a477d0494ffa0a376b7037e0dfa88a4740096cbe91cb8",
+          "verifier": "f34c1668cebb3e9c",
+          "policy": "airlock/launch-proof-cas@1",
+          "result": "pass",
+          "evidence": "checks=pass"
+        },
+        "keyId": "f34c1668cebb3e9c",
+        "signature": "5jbbcElH/w4I6DfLL91Jzxz9J2RZRDqIXt7MUTWxtgJ2qRUalLctDF9ttTCzkx3mgs5dLFZaA+0nAV9rMySvDQ=="
+      },
+      "staleProof": {
+        "proof": {
+          "artifactDigest": "sha256:fbfb88304d3f7da7a96066d68fa43d039dd63d712442b6961e2731b35626d339",
+          "verifier": "f34c1668cebb3e9c",
+          "policy": "airlock/launch-proof-cas@1",
+          "result": "pass",
+          "evidence": "checks=pass"
+        },
+        "keyId": "f34c1668cebb3e9c",
+        "signature": "DcObd43Bxc4qYcG4JYTHpihGc+D1d9xIDfll1biuDpaGKNRqdGdMnmRfWuSlYfcWtTf/OABexfHA0a3eqeAaAQ=="
+      },
+      "initialAdvance": {
+        "ok": true,
+        "newHead": "sha256:9777d10b807f9697875a477d0494ffa0a376b7037e0dfa88a4740096cbe91cb8"
+      },
+      "staleAttempt": {
+        "ok": false,
+        "reason": "lease stale: baseline moved (compare-and-swap failed)"
+      },
+      "headAfterStale": "sha256:9777d10b807f9697875a477d0494ffa0a376b7037e0dfa88a4740096cbe91cb8"
+    }
+  }
+}

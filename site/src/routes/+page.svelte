@@ -4,17 +4,17 @@
   import { terminalSession, site } from '$lib/site';
   import { receipt } from '$lib/receipt';
 
-  // Until prod is promoted, canonicalize to the slot that actually serves this
-  // page (the dark URL) so shared links and crawlers never hit an unresolved host.
-  const canonicalBase = (receipt.promotedToProd ? site.url : receipt.darkUrl) ?? site.url;
+  // Until prod is promoted, canonicalize to the preview URL that actually serves
+  // this page so shared links and crawlers never hit an unresolved host.
+  const canonicalBase = (receipt.promotedToProd ? site.url : receipt.previewUrl) ?? site.url;
 </script>
 
 <svelte:head>
   <title>{site.title}</title>
   <meta name="description" content={site.description} />
-  <!-- Canonical/social point at the slot actually serving this page: the dark
-       slot while non-serving (so shared links + crawlers resolve), prod only
-       once promoted. (candidate-* identity meta lives in +layout.svelte.) -->
+  <!-- Canonical/social point at the URL actually serving this page: the preview
+       URL before promotion, prod only once promoted. (candidate-* identity meta
+       lives in +layout.svelte.) -->
   <link rel="canonical" href={canonicalBase} />
   <meta property="og:type" content="website" />
   <meta property="og:title" content={site.title} />
@@ -45,8 +45,9 @@
         bound to the exact bytes it tested, checked on a URL nothing user-facing can reach.
       </p>
       <p class="lead lead-caveat">
-        This page is the proof: it was itself deployed dark, tested by two real <b>terrarium</b>
-        checks against that dark URL — terrarium on purpose, because it isolates each check in its
+        This page is the proof: it was deployed to a preview URL that received no live traffic,
+        then tested by two real <b>terrarium</b> checks against that URL — terrarium on purpose,
+        because it isolates each check in its
         own process, unlike the simpler <code>local</code> backend most projects start with —
         admitted by a real ed25519-signed proof, and promoted here by hand.
       </p>
@@ -144,7 +145,7 @@
           </span>
           <div>
             <h3>Workers or Pages</h3>
-            <p>The candidate deploys to a dark URL. Tests fetch it; live traffic does not.</p>
+            <p>The candidate deploys to a preview URL. Tests fetch it; live traffic does not.</p>
           </div>
         </li>
         <li>
@@ -161,7 +162,7 @@
           </span>
           <div>
             <h3>Workflows / DO / Queues <span class="target-inline">proven, narrower</span></h3>
-            <p>Checks fan out against the dark URL and join into one result. A real Durable-Object-per-check backend ships and is isolation-proven; on this page, terrarium did the fanout instead — both for real.</p>
+            <p>Checks fan out against the preview URL and join into one result. A real Durable-Object-per-check backend ships and is isolation-proven; on this page, terrarium did the fanout instead — both for real.</p>
           </div>
         </li>
         <li>

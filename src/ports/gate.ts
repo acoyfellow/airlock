@@ -12,7 +12,7 @@ import { join } from "node:path";
 
 export type GateConfig = {
   repoRoot: string;
-  darkUrl: () => string | undefined; // resolved slot URL for the request record
+  previewUrl: () => string | undefined; // resolved preview URL for the request record
   // Only an owner, out of band, would arm a real prod flip. Default: refuse.
   allowProdFlip?: boolean;
 };
@@ -24,7 +24,7 @@ export function makeHumanGate(cfg: GateConfig) {
     if (!cfg.allowProdFlip) {
       const request = {
         candidate,
-        darkUrl: cfg.darkUrl() ?? null,
+        previewUrl: cfg.previewUrl() ?? null,
         requestedAt: new Date().toISOString(),
         note: "keel admitted this candidate. Promotion to airlock.coey.dev is human-gated; prod route left unchanged.",
       };

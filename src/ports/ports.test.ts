@@ -7,7 +7,7 @@ import { verifySignedProof } from "keel";
 import { candidateDigest, sourceFiles } from "./digest.mjs";
 import { makeSigner } from "./sign.ts";
 import { loadVerifier } from "./keys.ts";
-import { darkWorkerName, parseWorkersDevUrl } from "./deploy.ts";
+import { candidateWorkerName, parseWorkersDevUrl } from "./deploy.ts";
 import { routeProbeTask, parseChild } from "./fanout.ts";
 import { makeHumanGate } from "./gate.ts";
 
@@ -57,8 +57,8 @@ describe("sign port (keel)", () => {
 });
 
 describe("deploy port naming", () => {
-  test("dark worker name is derived from the digest, dns-safe", () => {
-    const name = darkWorkerName("sha256:e8d9a768b85d11af23b0367d9868f5b80");
+  test("candidate worker name is derived from the digest and dns-safe", () => {
+    const name = candidateWorkerName("sha256:e8d9a768b85d11af23b0367d9868f5b80");
     expect(name).toBe("airlock-dark-e8d9a768b85d11af23b0367d");
     expect(name).toMatch(/^[a-z0-9][a-z0-9-]*$/);
     expect(name.length).toBeLessThanOrEqual(63);
@@ -75,8 +75,8 @@ describe("deploy port naming", () => {
 
 describe("terrarium fanout parsing", () => {
   test("routeProbeTask targets the slot URL + route", () => {
-    const task = routeProbeTask("https://dark.example/", "/docs");
-    expect(task).toContain("https://dark.example/docs");
+    const task = routeProbeTask("https://preview.example/", "/docs");
+    expect(task).toContain("https://preview.example/docs");
     expect(task).toContain("RESULT: PASS");
   });
 
@@ -108,26 +108,26 @@ describe("human-gated promote port", () => {
   test("records a promotion request and never flips prod", async () => {
     const dir = mkdtempSync(join(tmpdir(), "nsdlc-gate-"));
     mkdirSync(join(dir, "experiments/dogfood"), { recursive: true });
-    const gate = makeHumanGate({ repoRoot: dir, darkUrl: () => "https://dark.example/x" });
+    const gate = makeHumanGate({ repoRoot: dir, previewUrl: () => "https://preview.example/x" });
     await gate("sha256:" + "c".repeat(64), true);
     const reqPath = join(dir, "experiments/dogfood/PROMOTE_REQUEST.json");
     expect(existsSync(reqPath)).toBe(true);
     const req = JSON.parse(readFileSync(reqPath, "utf8"));
-    expect(req.darkUrl).toBe("https://dark.example/x");
+    expect(req.previewUrl).toBe("https://preview.example/x");
     rmSync(dir, { recursive: true, force: true });
   });
 
   test("turning the gate off is a no-op (no request written)", async () => {
     const dir = mkdtempSync(join(tmpdir(), "nsdlc-gate-"));
     mkdirSync(join(dir, "experiments/dogfood"), { recursive: true });
-    const gate = makeHumanGate({ repoRoot: dir, darkUrl: () => undefined });
+    const gate = makeHumanGate({ repoRoot: dir, previewUrl: () => undefined });
     await gate("sha256:" + "d".repeat(64), false);
     expect(existsSync(join(dir, "experiments/dogfood/PROMOTE_REQUEST.json"))).toBe(false);
     rmSync(dir, { recursive: true, force: true });
   });
 
   test("an armed prod flip fails closed (owner-held)", async () => {
-    const gate = makeHumanGate({ repoRoot: REPO_ROOT, darkUrl: () => "x", allowProdFlip: true });
+    const gate = makeHumanGate({ repoRoot: REPO_ROOT, previewUrl: () => "x", allowProdFlip: true });
     await expect(gate("sha256:" + "e".repeat(64), true)).rejects.toThrow(/owner-held/);
   });
 });

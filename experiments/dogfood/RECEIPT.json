@@ -1,6 +1,6 @@
 {
   "candidate": "sha256:e7ab3959eb089c63cbb0672077a23ea2f5dbc081c23458a4ecaf6852342f390f",
-  "darkUrl": "https://airlock-dark-e7ab3959eb089c63cbb06720.coy.workers.dev",
+  "previewUrl": "https://airlock-dark-e7ab3959eb089c63cbb06720.coy.workers.dev",
   "admitted": true,
   "promotedToProd": true,
   "promotion": {
@@ -37,7 +37,7 @@
     "2c0ef5ed13765683": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApQNzXYDHyqTKCK4NlhcvcZ+YrwytkyVlxCSHZCvOpyw=\n-----END PUBLIC KEY-----\n"
   },
   "coverage": {
-    "what-this-dogfood-proves": "source content-address (digest) + ed25519 signed admission proof bound to it + real dark-slot deploy + both routes served 200 carrying the digest. Verified by experiments/dogfood/gate.mjs against a pinned key.",
+    "what-this-dogfood-proves": "source content-address (digest) + ed25519 signed admission proof bound to it + real preview Worker deploy + both routes served 200 carrying the digest. Verified by experiments/dogfood/gate.mjs against a pinned key.",
     "served-ref-cas": "the promote/CAS feature-gate flip is exercised by src/napkin.test.ts (local file-backed), NOT end-to-end in this dogfood run; prod promotion is the owner-held keel step.",
     "digest-scope": "the digest is a content address of the SOURCE tree, not a hash of the deployed Worker bytes (the page embeds its own signed receipt and cannot hash itself)."
   },

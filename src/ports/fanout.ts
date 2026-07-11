@@ -1,5 +1,5 @@
 // The fanout^x port, terrarium backend. Each integration test is a bounded
-// terra child run that looks at the dark URL itself (HTTP status, key routes,
+// terra child run that looks at the preview URL itself (HTTP status, key routes,
 // page markers) and reports a single RESULT line. Children run in parallel and
 // join into TestResult[]. Unit tests (pure, in-process) fall back to localFanout.
 //
@@ -30,8 +30,8 @@ export function terraCommand(cliPath: string): { bin: string; pre: string[] } {
 }
 
 /** Build a terra task that probes one URL+route and ends in a RESULT line. */
-export function routeProbeTask(darkUrl: string, route: string, marker?: string): string {
-  const url = `${darkUrl.replace(/\/$/, "")}${route}`;
+export function routeProbeTask(previewUrl: string, route: string, marker?: string): string {
+  const url = `${previewUrl.replace(/\/$/, "")}${route}`;
   const markerClause = marker
     ? ` Also confirm the response body contains the exact text ${JSON.stringify(marker)}.`
     : "";
@@ -117,9 +117,9 @@ export function parseChild(name: string, stdout: string): TestResult {
 }
 
 /**
- * A fanout that runs `terra` route probes against the dark slot and `local`
+ * A fanout that runs `terra` route probes against the preview URL and `local`
  * unit jobs in-process. A job opts into terrarium with backend:"terra" and a
- * `route` (+ optional body `marker`); the probe task is built from the slot URL
+ * `route` (+ optional body `marker`); the probe task is built from the preview URL
  * at run time, so the child always tests the exact slot that was deployed.
  */
 export type FanoutJob = TestJob & {

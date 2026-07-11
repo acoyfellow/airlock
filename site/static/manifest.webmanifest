@@ -1,7 +1,7 @@
 {
   "name": "airlock",
   "short_name": "airlock",
-  "description": "A deploy gate for a web app, Worker, or site: test a candidate build on a dark URL and make it live only after a signed proof says it passed.",
+  "description": "A deploy gate for a web app, Worker, or site: test a candidate build on a preview URL with no live traffic and make it live only after a signed proof says it passed.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

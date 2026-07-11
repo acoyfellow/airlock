@@ -1,0 +1,43 @@
+{
+  "schema": "new-ai-sdlc/single-agent-seal@4",
+  "sealedAt": "2026-07-11T17:27:49Z",
+  "supersedesForFutureRuns": "SEAL.v3.json",
+  "reason": "The first checked candidate used 1,712,985 tokens. Raise the prospective ceiling to 2,000,000 and make the metered runner fail closed above either sealed resource limit.",
+  "preservesNonQualifyingRuns": [
+    "ter_20260711165723012_qi3ru8",
+    "ter_20260711171312620_mnsnzz",
+    "ter_20260711171514429_98cpx9",
+    "ter_20260711171916058_wefbw9"
+  ],
+  "startingCommit": "8daad83cbede1628a0acf35e6050bf99d86884fe",
+  "ideaSha256": "53f42ac2514c865ebd27537287f9d19ff2a3b39819f0b092a4e5f64362525f83",
+  "acceptanceSha256": "3426b78a5e93f03b117076f9baaab436ce1df83622c19adb103d7ad9f8dfa425",
+  "acceptanceCheckerSha256": "fd9d9a189878683005e7f3a0a9da3ae67c4ce8e16c54ac4fd217b5a93b617748",
+  "usageMeterSha256": "d4aed94b997aae87fa765036d04986060fc92b0cce1d1e8e9a0bc96b5e7b0b8d",
+  "provider": "opencode.cloudflare.dev",
+  "model": "gpt-5.6-terra",
+  "workerLimit": 1,
+  "workerRetryLimit": 0,
+  "providerContinuationLimit": 1,
+  "providerContinuationTrigger": "OpenAI Responses stream ended before a terminal response event",
+  "timeoutMs": 2700000,
+  "globalBudget": {
+    "maxTokens": 2000000,
+    "maxCostUsd": 10
+  },
+  "toolVersions": {
+    "bun": "1.3.12",
+    "node": "v24.18.0"
+  },
+  "checks": [
+    "bun run check",
+    "bun run site:build",
+    "bun experiments/new-ai-sdlc/001-single-agent/acceptance.ts <candidate-worktree>"
+  ],
+  "timer": {
+    "starts": "at accepted supervisor spawn before first model launch",
+    "stops": "after independent proof and preview verification",
+    "includes": "provider continuation wall time, tokens, and cost"
+  },
+  "releaseBoundary": "caller-owned preview URL with no live traffic"
+}

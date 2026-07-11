@@ -13,6 +13,8 @@ const flag = (name) => {
 const expectedProvider = flag("--provider");
 const expectedModel = flag("--model");
 const maxProviderRetries = Number(flag("--meter-retries") ?? 0);
+const maxTokens = Number(flag("--max-tokens"));
+const maxCostUsd = Number(flag("--max-cost-usd"));
 if (!expectedProvider || !expectedModel) {
   console.error("pi-meter: --provider and --model are both required");
   process.exit(64);
@@ -21,8 +23,13 @@ if (!Number.isInteger(maxProviderRetries) || maxProviderRetries < 0 || maxProvid
   console.error("pi-meter: --meter-retries must be an integer from 0 through 3");
   process.exit(64);
 }
+if (!Number.isInteger(maxTokens) || maxTokens <= 0 || !Number.isFinite(maxCostUsd) || maxCostUsd <= 0) {
+  console.error("pi-meter: positive --max-tokens and --max-cost-usd are required");
+  process.exit(64);
+}
 
-const piArgs = rawArgs.filter((_, index) => rawArgs[index - 1] !== "--meter-retries" && rawArgs[index] !== "--meter-retries");
+const meterFlags = new Set(["--meter-retries", "--max-tokens", "--max-cost-usd"]);
+const piArgs = rawArgs.filter((_, index) => !meterFlags.has(rawArgs[index - 1]) && !meterFlags.has(rawArgs[index]));
 const totals = {
   input: 0,
   output: 0,
@@ -112,10 +119,21 @@ const identityOk =
   identity.providers[0] === expectedProvider &&
   identity.models.length === 1 &&
   identity.models[0] === expectedModel;
+const budgetOk = totals.totalTokens <= maxTokens && totals.costUsd <= maxCostUsd;
 if (finalText) process.stdout.write(`${finalText.trimEnd()}\n`);
 process.stdout.write(
-  `TERRARIUM_USAGE ${JSON.stringify({ ...totals, ...identity, identityOk, providerRetries, terminalStreamError })}\n`,
+  `TERRARIUM_USAGE ${JSON.stringify({
+    ...totals,
+    ...identity,
+    identityOk,
+    providerRetries,
+    terminalStreamError,
+    maxTokens,
+    maxCostUsd,
+    budgetOk,
+  })}\n`,
 );
 if (!identityOk) console.error("pi-meter: resolved provider/model differs from sealed invocation");
 if (terminalStreamError) console.error("pi-meter: provider stream remained incomplete after bounded continuation");
-process.exitCode = childExitCode === 0 && identityOk && !terminalStreamError ? 0 : childExitCode || 65;
+if (!budgetOk) console.error("pi-meter: sealed token or cost budget exceeded");
+process.exitCode = childExitCode === 0 && identityOk && !terminalStreamError && budgetOk ? 0 : childExitCode || 65;

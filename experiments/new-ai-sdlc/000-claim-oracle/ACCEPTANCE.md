@@ -24,7 +24,8 @@ mutation for the named reason:
 16. elapsed time stops after proof but before preview verification;
 17. retry time or compute is omitted from totals;
 18. receipt claim differs from values derived from events;
-19. an unknown event type is inserted into an otherwise valid chain.
+19. an unknown event type is inserted into an otherwise valid chain;
+20. a worker uses a different provider under the same model name.
 
 Additional gates:
 

@@ -1,6 +1,6 @@
 {
   "schema": "new-ai-sdlc/claim-oracle-verification@1",
-  "generatedAt": "2026-07-11T15:38:22.554Z",
+  "generatedAt": "2026-07-11T17:11:17.806Z",
   "control": {
     "ok": true,
     "comparison": {
@@ -10,6 +10,8 @@
         "mode": "baseline",
         "acceptanceHash": "sha256:acceptance-v1",
         "startCommit": "0123456789abcdef0123456789abcdef01234567",
+        "provider": "opencode.cloudflare.dev",
+        "model": "gpt-5.6-terra",
         "advertisedWorkers": 1,
         "qualifyingWorkers": 1,
         "terminalWorkers": 1,
@@ -23,7 +25,7 @@
         "elapsedMs": 1000,
         "retryMs": 10,
         "computeMs": 100,
-        "finalEventDigest": "4e0eb5d5db2a8b6f5b08d68de186572f0bd76af3072e4562d491dab95b3d4b56",
+        "finalEventDigest": "baf2b60020f3ec69541fcff1b383af6c200b4325c7250efd2d1915be391b488f",
         "claim": "baseline reached verified preview in 1000ms with 1/1 qualifying workers"
       },
       "fleet": {
@@ -31,6 +33,8 @@
         "mode": "fleet",
         "acceptanceHash": "sha256:acceptance-v1",
         "startCommit": "0123456789abcdef0123456789abcdef01234567",
+        "provider": "opencode.cloudflare.dev",
+        "model": "gpt-5.6-terra",
         "advertisedWorkers": 2,
         "qualifyingWorkers": 2,
         "terminalWorkers": 2,
@@ -44,7 +48,7 @@
         "elapsedMs": 100,
         "retryMs": 20,
         "computeMs": 200,
-        "finalEventDigest": "3e5ae6e7175694ccc4516dc0446796f1ad1fa75b2ca4288b95554d855d2f97b7",
+        "finalEventDigest": "cb1c0fa6921c048b1ae924897732fc3a222bdab395f7d3baf2be5a3e7f2aaf81",
         "claim": "fleet reached verified preview in 100ms with 2/2 qualifying workers"
       },
       "speedup": 10,
@@ -105,6 +109,12 @@
       "ok": true,
       "expected": "initial commits differ",
       "observed": "comparison fairness: initial commits differ"
+    },
+    {
+      "name": "provider drift rejected even when model name matches",
+      "ok": true,
+      "expected": "provider or model differs from sealed invocation",
+      "observed": "worker qualification: provider or model differs from sealed invocation"
     },
     {
       "name": "hidden human product write rejected",

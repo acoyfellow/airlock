@@ -7,7 +7,7 @@
     "kind": "synthetic-control-and-mutation-corpus",
     "baselineWorkers": 1,
     "fleetWorkers": 2,
-    "mutations": 19
+    "mutations": 20
   },
   "runtimePreflight": {
     "provider": "opencode.cloudflare.dev",
@@ -25,7 +25,7 @@
   },
   "limits": [
     "The oracle streams are synthetic.",
-    "The runtime hotfix is local and not yet a clean public Terrarium commit.",
+    "The active local MCP process retains its heartbeat wrapper until reload of public Terrarium commit befd22c.",
     "Historical Terrarium doctor corruption remains outside the clean run-scoped evidence."
   ]
 }

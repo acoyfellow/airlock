@@ -2,7 +2,7 @@
   "schema": "new-ai-sdlc/findings@1",
   "experiment": "000-claim-oracle",
   "status": "proven-in-synthetic-control",
-  "finding": "The oracle accepts its complete control and rejects all 19 permanent fake-fleet or missing-evidence mutations.",
+  "finding": "The oracle accepts its complete control and rejects all 20 permanent fake-fleet or missing-evidence mutations.",
   "reviewers": [
     {
       "runId": "ter_20260711152703907_9w64ia",
@@ -17,6 +17,16 @@
     {
       "runId": "ter_20260711153734918_4zrwe9",
       "finding": "The fixed 19-mutation oracle supports its narrow claim.",
+      "status": "accepted"
+    },
+    {
+      "runId": "ter_20260711170903499_8yppu2",
+      "finding": "Provider/model mutation 20 passed, but findings.json still claimed 19 mutations.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711171029437_v4t82b",
+      "finding": "Mutation 20 is consistent, 20/20 turn red, and the failed 001 run remains non-qualifying.",
       "status": "accepted"
     }
   ],

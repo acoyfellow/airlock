@@ -1,6 +1,6 @@
 # 001 — single-agent baseline
 
-Status: **protocol frozen; held-out idea not yet deposited; no measured run started**.
+Status: **first measured run failed before inference; no candidate or preview exists**.
 
 This checkpoint measures the strongest fair serial path before introducing a fleet. One
 Terra worker receives one sealed idea and works in one isolated worktree. Deterministic
@@ -13,11 +13,14 @@ A fleet speedup has no meaning without a reproducible serial denominator. The fu
 `1 → 8` comparison inherits this experiment's idea digest, acceptance digest, initial
 commit, model, tools, budget accounting, timer boundaries, and release boundary.
 
-## Intake still required
+## First measured result
 
-- a genuinely held-out product idea in `IDEA.md`;
-- a clean public target-repository starting commit;
-- idea-specific black-box acceptance commands prepared without implementation leakage;
-- a declared global token/compute ceiling and cost source.
+Run `ter_20260711165723012_qi3ru8` launched one process from the sealed starting commit and
+failed in 2.655 seconds with zero model tokens. The wrapper pinned `gpt-5.6-terra` but not
+its provider, so Pi selected `azure-openai-responses` instead of the intended
+`opencode.cloudflare.dev` provider and found no credential.
 
-Until those values are sealed, there is nothing honest to time.
+This is a failed baseline, not a retryable setup anecdote: it remains in the denominator,
+produced no candidate, and cannot unlock the eight-agent tier. The counterexample also
+showed that experiment 000's comparison identity was incomplete. Mutation 20 now requires
+provider and model identity to match both the seal and every worker receipt.

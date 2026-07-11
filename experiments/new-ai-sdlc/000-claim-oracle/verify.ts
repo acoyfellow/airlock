@@ -12,6 +12,8 @@ import {
 
 const ACCEPTANCE_HASH = "sha256:acceptance-v1";
 const START_COMMIT = "0123456789abcdef0123456789abcdef01234567";
+const PROVIDER = "opencode.cloudflare.dev";
+const MODEL = "gpt-5.6-terra";
 const SOURCE_DIGEST = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
@@ -20,7 +22,14 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
   const add = (atMs: number, actor: string, type: UnsignedEvent["type"], payload: Record<string, unknown>) =>
     events.push({ runId, seq: events.length, atMs, actor, type, payload });
 
-  add(0, "root", "run.sealed", { mode, acceptanceHash: ACCEPTANCE_HASH, startCommit: START_COMMIT, advertisedWorkers: workers });
+  add(0, "root", "run.sealed", {
+    mode,
+    acceptanceHash: ACCEPTANCE_HASH,
+    startCommit: START_COMMIT,
+    provider: PROVIDER,
+    model: MODEL,
+    advertisedWorkers: workers,
+  });
   for (let index = 0; index < workers; index++) {
     const workerId = `${mode}-worker-${index}`;
     const commit = `${mode}-commit-${index}`;
@@ -30,6 +39,8 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
     add(40 + index, workerId, "worker.terminal", {
       workerId,
       kind: "model",
+      provider: PROVIDER,
+      model: MODEL,
       status: "success",
       receiptId: `receipt-${workerId}`,
       retryMs: 10,
@@ -112,6 +123,9 @@ cases.push({
   baseline: reseal(baseline, (draft) => { event(draft, "run.sealed").payload.startCommit = "different"; }),
   expected: "initial commits differ",
 });
+mutateFleet("provider drift rejected even when model name matches", (draft) => {
+  event(draft, "worker.terminal").payload.provider = "azure-openai-responses";
+}, "provider or model differs from sealed invocation");
 mutateFleet("hidden human product write rejected", (draft) => {
   draft.splice(-1, 0, { ...draft.at(-1)!, type: "human.product-write", actor: "human", payload: { file: "src/app.ts" } });
 }, "hidden human product write");

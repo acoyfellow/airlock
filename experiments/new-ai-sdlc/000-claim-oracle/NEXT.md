@@ -17,8 +17,9 @@ Completed intake:
   finish-before-subscribe, launcher exit, single callback, and callback linkage;
 - public Terrarium commit `befd22c` makes the startup watchdog configurable and defaults it
   to 60 seconds; 40/40 focused core tests passed;
-- public Airlock commit `61fa039` reproduced from a fresh clone: 19/19 mutations red and
-  the full Airlock check green.
+- public Airlock commit `61fa039` reproduced from a fresh clone: its original 19/19
+  mutations were red and the full Airlock check was green;
+- experiment 001 exposed a provider/model alias collision, appended as mutation 20.
 
 ## Hammer produced
 

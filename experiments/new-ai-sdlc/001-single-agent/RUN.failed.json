@@ -1,0 +1,29 @@
+{
+  "schema": "new-ai-sdlc/single-agent-run@1",
+  "status": "failed",
+  "runId": "ter_20260711165723012_qi3ru8",
+  "startingCommit": "8daad83cbede1628a0acf35e6050bf99d86884fe",
+  "startedAt": "2026-07-11T16:57:23.178Z",
+  "finishedAt": "2026-07-11T16:57:25.833Z",
+  "elapsedMs": 2655,
+  "sealedModel": "gpt-5.6-terra",
+  "resolvedProvider": "azure-openai-responses",
+  "intendedProvider": "opencode.cloudflare.dev",
+  "exitCode": 1,
+  "taskContractStatus": "missing",
+  "workerProcesses": 1,
+  "retryCount": 0,
+  "usage": {
+    "input": 0,
+    "output": 0,
+    "cacheRead": 0,
+    "cacheWrite": 0,
+    "totalTokens": 0,
+    "costUsd": 0,
+    "assistantMessages": 0
+  },
+  "failure": "The model name was pinned but the provider was not. Pi resolved the same model name to azure-openai-responses, for which the measured process had no API key.",
+  "candidateCommit": null,
+  "previewUrl": null,
+  "qualifies": false
+}

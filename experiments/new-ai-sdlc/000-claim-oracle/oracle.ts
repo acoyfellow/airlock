@@ -54,6 +54,8 @@ export type RunReceipt = {
   mode: RunMode;
   acceptanceHash: string;
   startCommit: string;
+  provider: string;
+  model: string;
   advertisedWorkers: number;
   qualifyingWorkers: number;
   terminalWorkers: number;
@@ -147,9 +149,16 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
   const mode = sealed.payload.mode;
   const acceptanceHash = sealed.payload.acceptanceHash;
   const startCommit = sealed.payload.startCommit;
+  const provider = sealed.payload.provider;
+  const model = sealed.payload.model;
   const advertisedWorkers = sealed.payload.advertisedWorkers;
   if (mode !== "baseline" && mode !== "fleet") fail("run.sealed.mode: unknown");
-  if (typeof acceptanceHash !== "string" || typeof startCommit !== "string") fail("run.sealed: missing comparison identity");
+  if (
+    typeof acceptanceHash !== "string" ||
+    typeof startCommit !== "string" ||
+    typeof provider !== "string" ||
+    typeof model !== "string"
+  ) fail("run.sealed: missing comparison identity");
   if (!Number.isInteger(advertisedWorkers) || (advertisedWorkers as number) < 1) fail("run.sealed.advertisedWorkers: invalid");
 
   const spawnedIds = strings(events, "worker.spawned", "workerId");
@@ -163,6 +172,9 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
   for (const event of terminalEvents) {
     if (!allowedTerminal.has(String(event.payload.status))) fail("worker.terminal.status: unknown");
     if (event.payload.kind !== "model") fail("worker qualification: deterministic script counted as model worker");
+    if (event.payload.provider !== provider || event.payload.model !== model) {
+      fail("worker qualification: provider or model differs from sealed invocation");
+    }
     if (typeof event.payload.receiptId !== "string") fail("worker qualification: durable task receipt missing");
   }
   const qualifyingStatuses = new Set(["success", "no_change", "blocked"]);
@@ -222,6 +234,8 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
     mode,
     acceptanceHash,
     startCommit,
+    provider,
+    model,
     advertisedWorkers,
     qualifyingWorkers,
     terminalWorkers: terminalEvents.length,
@@ -250,6 +264,9 @@ export function generateComparisonReceipt(baselineEvents: Event[], fleetEvents: 
   if (baseline.mode !== "baseline" || fleet.mode !== "fleet") fail("comparison fairness: baseline/fleet modes required");
   if (baseline.acceptanceHash !== fleet.acceptanceHash) fail("comparison fairness: acceptance contracts differ");
   if (baseline.startCommit !== fleet.startCommit) fail("comparison fairness: initial commits differ");
+  if (baseline.provider !== fleet.provider || baseline.model !== fleet.model) {
+    fail("comparison fairness: provider or model differs");
+  }
   const speedup = baseline.elapsedMs / fleet.elapsedMs;
   return {
     schema: "new-ai-sdlc/claim-oracle@1",

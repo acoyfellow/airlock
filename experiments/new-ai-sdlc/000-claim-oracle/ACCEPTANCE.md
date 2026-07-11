@@ -29,7 +29,19 @@ mutation for the named reason:
 21. a run exceeds its sealed token or cost budget while otherwise looking successful;
 22. a non-finite sealed budget or accounting value bypasses numeric comparisons;
 23. an unsafe integer is accepted as the advertised worker count;
-24. negative or non-monotonic event time makes negative elapsed time appear complete.
+24. negative or non-monotonic event time makes negative elapsed time appear complete;
+25. a workspace-only file contaminates the source digest so a clean checkout differs;
+26. post-hoc worker/check/deploy values have no content-addressed raw evidence;
+27. a proof trusts a receipt-supplied signer that was not sealed before the run;
+28. a reachable preview serves no marker for the claimed source digest and version;
+29. a caller-owned promotion request is mislabeled as production promotion;
+30. a `sha256:` prefix is accepted without a complete SHA-256 digest;
+31. a preview supplies an empty deployment version identifier;
+32. a syntactically valid evidence digest resolves to no artifact bytes;
+33. all event producers jointly substitute the same arbitrary source digest;
+34. an attacker changes both the event-level sealed signer and proof signer;
+35. a preview supplies an empty URL;
+36. the refusal boundary reports that production changed.
 
 Additional gates:
 

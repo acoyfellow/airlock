@@ -67,7 +67,8 @@ export function makeDeployer(cfg: DeployConfig) {
     if (!url) {
       throw new Error(`deploy(${name}): could not find a workers.dev URL in wrangler output`);
     }
-    return { url, detail: versionId ? `version ${versionId}` : name };
+    if (!versionId) throw new Error(`deploy(${name}): Wrangler output omitted Current Version ID`);
+    return { url, versionId, detail: `version ${versionId}` };
   };
 }
 

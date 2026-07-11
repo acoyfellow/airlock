@@ -1,0 +1,42 @@
+{
+  "candidate": "sha256:8e4a59f3b924e3efd427ae944b1d30214f534a8df764b1d7b77b4cb6639d78bf",
+  "slot": {
+    "url": "https://airlock-dark-8e4a59f3b924e3efd427ae94.cloudflare-support-chat.workers.dev",
+    "detail": "version 1b06cf5f-ba9a-4010-8698-1a82794671cf"
+  },
+  "results": [
+    {
+      "name": "frozen-acceptance",
+      "ok": true,
+      "detail": "external acceptance passed 6/6"
+    },
+    {
+      "name": "preview-http",
+      "ok": true,
+      "detail": "proof page and receipt returned expected markers"
+    }
+  ],
+  "evidence": "frozen-acceptance=pass,preview-http=pass",
+  "proof": {
+    "proof": {
+      "artifactDigest": "sha256:8e4a59f3b924e3efd427ae944b1d30214f534a8df764b1d7b77b4cb6639d78bf",
+      "verifier": "bc0488dc837459c1",
+      "policy": "airlock/self-deliver-fanout@1",
+      "result": "pass",
+      "evidence": "frozen-acceptance=pass,preview-http=pass"
+    },
+    "keyId": "bc0488dc837459c1",
+    "signature": "v8iGvUit5Ydf6UKzO9mfd0/9ruEJ8tZO7HKYsqYIi83FmmdWrAnMUFdInpPw2ypKLDEEOT1WVLfi8UR2/B/bAQ=="
+  },
+  "admitted": true,
+  "promoted": true,
+  "reason": "proof passed",
+  "sourceCommit": "5d3fa1b",
+  "sourceDigest": "sha256:8e4a59f3b924e3efd427ae944b1d30214f534a8df764b1d7b77b4cb6639d78bf",
+  "productionChanged": false,
+  "promotionRequestOnly": true,
+  "trusted": {
+    "bc0488dc837459c1": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAUU/QjlQSlacoyjtE9HNB4yb3LMTd5CPyLwZCHklQpos=\n-----END PUBLIC KEY-----\n"
+  },
+  "completedAt": "2026-07-11T17:47:05.856Z"
+}

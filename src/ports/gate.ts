@@ -18,8 +18,8 @@ export type GateConfig = {
 };
 
 export function makeHumanGate(cfg: GateConfig) {
-  return async (candidate: string, on: boolean): Promise<void> => {
-    if (!on) return; // leaving the gate off needs no effect
+  return async (candidate: string, on: boolean) => {
+    if (!on) return { productionChanged: false, requestRecorded: false }; // leaving the gate off needs no effect
 
     if (!cfg.allowProdFlip) {
       const request = {
@@ -32,7 +32,7 @@ export function makeHumanGate(cfg: GateConfig) {
         join(cfg.repoRoot, "experiments/dogfood/PROMOTE_REQUEST.json"),
         JSON.stringify(request, null, 2),
       );
-      return;
+      return { productionChanged: false, requestRecorded: true };
     }
 
     // Armed prod promotion is intentionally not automated here: pointing the

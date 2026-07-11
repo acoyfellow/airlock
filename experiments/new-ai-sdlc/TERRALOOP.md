@@ -405,10 +405,22 @@ the commit is nevertheless `rejected-budget-exceeded`, with no admitted proof or
 A correct artifact cannot launder a resource-policy violation.
 
 That counterexample became mutation 21. Its critic found that `Infinity` bypassed ordinary
-numeric comparisons; mutation 22 now requires safe integer token ceilings/counts and
-finite non-negative cost/timing accounting. `SEAL.v4.json` prospectively raises the
-baseline ceiling to 2,000,000 tokens, retains the $10 cost limit, and binds both limits to
-the metered runner. Prior runs remain non-qualifying; no seal change is retrospective.
+numeric comparisons; mutation 22 requires safe integer token ceilings/counts and finite
+non-negative cost/timing accounting. Mutations 23 and 24 reject unsafe worker counts and
+negative/non-monotonic clocks.
+
+`SEAL.v4.json` raised the prospective baseline ceiling to 2,000,000 tokens and retained
+the $10 cost limit. Run `ter_20260711173722542_aomkje` then produced a checked implementation
+within budget, but its proof digest included `.terrarium-workspace`; a clean detached
+worktree of the same commit produced a different digest. Exit review also found post-hoc
+ledger values without raw artifact references, an unsealed receipt-supplied proof key, a
+preview response exposing an old source marker, and a promotion request mislabeled as
+production promotion. The run is non-qualifying.
+
+Mutations 25 through 29 now require clean replay identity, content-addressed raw evidence,
+a pre-sealed signer, a preview response and deployment version bound to the source digest,
+and explicit request-versus-production semantics. Prior runs remain non-qualifying; no
+seal change is retrospective.
 
 A runtime preflight or failed baseline is evidence, not a speed experiment. Its wall time,
 zero-use or partial-use failure, cancellation, continuation, and fixes must not be hidden

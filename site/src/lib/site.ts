@@ -57,7 +57,7 @@ export type PortRow = {
 export const ports: readonly PortRow[] = [
   { port: 'runFanout', type: '(jobs, slot) => Promise<{ name, ok, detail }[]>', role: 'Runs the test jobs in parallel against the deployed slot; each result becomes one name=pass|fail term in the evidence string.' },
   { port: 'deploy', type: '(candidate) => Promise<DeploySlot>', role: 'Puts the candidate on a slot that serves no traffic; returns the URL it answers on.' },
-  { port: 'setFeatureGate', type: '(candidate, on) => Promise<void>', role: 'Receives the decision; caller-owned code moves traffic.' },
+  { port: 'setFeatureGate', type: '(candidate, on) => Promise<PromotionEffect>', role: 'Reports whether caller-owned code changed production or only recorded a request.' },
   { port: 'sign', type: '(candidate, evidence, pass) => SignedProof — sync, private key in-process', role: 'Signs the result. No async signer (KMS/HSM); the key must be resident here.' },
   { port: 'trusted', type: 'TrustedKeys', role: 'The set of keys a proof is checked against.' },
 ] as const;

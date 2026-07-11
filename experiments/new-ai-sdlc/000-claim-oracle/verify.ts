@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { makeProof, signProof } from "keel";
 import {
   generateComparisonReceipt,
   sealEvents,
@@ -8,6 +10,7 @@ import {
   type Event,
   type RunMode,
   type UnsignedEvent,
+  type VerificationContext,
 } from "./oracle.ts";
 
 const ACCEPTANCE_HASH = "sha256:acceptance-v1";
@@ -16,7 +19,36 @@ const PROVIDER = "opencode.cloudflare.dev";
 const MODEL = "gpt-5.6-terra";
 const MAX_TOKENS = 1_000_000;
 const MAX_COST_USD = 10;
+const TRUSTED_PROOF_KEY_ID = "d110158d54a51757";
+const TRUSTED_PROOF_PRIVATE_PEM = `-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIDnQrY4Hlg4IDfm7gFX0+6GeV1kWDLfMwhIXJvTk9VFF
+-----END PRIVATE KEY-----
+`;
+const TRUSTED_PROOF_PUBLIC_PEM = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAtD+3qcituSjeP3Pn4HBCN+CND01ryq88hHz30v5VLsU=
+-----END PUBLIC KEY-----
+`;
 const SOURCE_DIGEST = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+const artifactDigest = (bytes: string) => `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+const RAW_BYTES = "synthetic raw worker/check/deploy evidence\n";
+const RAW_DIGEST = artifactDigest(RAW_BYTES);
+const SIGNED_PROOF_BYTES = JSON.stringify(signProof(
+  makeProof({ artifactDigest: SOURCE_DIGEST, verifier: TRUSTED_PROOF_KEY_ID, policy: "oracle/control@1", result: "pass", evidence: "synthetic control" }),
+  TRUSTED_PROOF_KEY_ID,
+  TRUSTED_PROOF_PRIVATE_PEM,
+));
+const SIGNED_PROOF_DIGEST = artifactDigest(SIGNED_PROOF_BYTES);
+const context: VerificationContext = {
+  artifacts: { [RAW_DIGEST]: RAW_BYTES, [SIGNED_PROOF_DIGEST]: SIGNED_PROOF_BYTES },
+  externalSeal: {
+    expectedSourceDigest: SOURCE_DIGEST,
+    cleanReplaySourceDigest: SOURCE_DIGEST,
+    trustedProofKeyId: TRUSTED_PROOF_KEY_ID,
+    trustedProofPublicPem: TRUSTED_PROOF_PUBLIC_PEM,
+    productionChanged: false,
+  },
+};
 
 function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
   const runId = `oracle-${mode}`;
@@ -32,6 +64,7 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
     model: MODEL,
     maxTokens: MAX_TOKENS,
     maxCostUsd: MAX_COST_USD,
+    trustedProofKeyId: TRUSTED_PROOF_KEY_ID,
     advertisedWorkers: workers,
   });
   for (let index = 0; index < workers; index++) {
@@ -47,6 +80,8 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
       model: MODEL,
       status: "success",
       receiptId: `receipt-${workerId}`,
+      rawReceiptDigest: RAW_DIGEST,
+      usageDigest: RAW_DIGEST,
       retryMs: 10,
       computeMs: 100,
       totalTokens: 1_000,
@@ -59,16 +94,43 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
     add(57, "integrator", "collision.detected", { collisionId: "collision-1" });
     add(58, "integrator", "collision.resolved", { collisionId: "collision-1", resolution: "reconciled" });
   }
-  add(60, "checker", "check.result", { checkId: "acceptance", contractHash: ACCEPTANCE_HASH, ok: true });
+  add(60, "checker", "check.result", {
+    checkId: "acceptance",
+    contractHash: ACCEPTANCE_HASH,
+    ok: true,
+    exitCode: 0,
+    durationMs: 10,
+    outputDigest: RAW_DIGEST,
+  });
   add(70, "integrator", "candidate.integrated", { sourceDigest: SOURCE_DIGEST });
-  add(80, "keel", "proof.verified", { sourceDigest: SOURCE_DIGEST, admitted: true });
-  add(90, "airlock", "preview.verified", { sourceDigest: SOURCE_DIGEST, url: `local://preview/${mode}`, noLiveTraffic: true });
+  add(75, "clean-replay", "candidate.replayed", {
+    sourceDigest: SOURCE_DIGEST,
+    cleanCheckout: true,
+    replayTranscriptDigest: RAW_DIGEST,
+  });
+  add(80, "keel", "proof.verified", {
+    sourceDigest: SOURCE_DIGEST,
+    admitted: true,
+    keyId: TRUSTED_PROOF_KEY_ID,
+    proofArtifactDigest: SIGNED_PROOF_DIGEST,
+  });
+  add(90, "airlock", "preview.verified", {
+    sourceDigest: SOURCE_DIGEST,
+    servedSourceDigest: SOURCE_DIGEST,
+    url: `local://preview/${mode}`,
+    versionId: `version-${mode}`,
+    noLiveTraffic: true,
+    productionChanged: false,
+    responseDigest: RAW_DIGEST,
+    deployTranscriptDigest: RAW_DIGEST,
+  });
   add(elapsedMs, "root", "run.completed", {
     elapsedMs,
     retryMs: workers * 10,
     computeMs: workers * 100,
     totalTokens: workers * 1_000,
     totalCostUsd: workers * 0.1,
+    promotionState: "requested",
   });
   return sealEvents(events);
 }
@@ -85,8 +147,8 @@ function reseal(events: Event[], mutate: (draft: UnsignedEvent[]) => void): Even
 
 const baseline = makeRun("baseline", 1, 1_000);
 const fleet = makeRun("fleet", 2, 100);
-const receipt = generateComparisonReceipt(baseline, fleet);
-const control = verifyComparisonReceipt(receipt, baseline, fleet);
+const receipt = generateComparisonReceipt(baseline, fleet, context, context);
+const control = verifyComparisonReceipt(receipt, baseline, fleet, context, context);
 if (!control.ok) throw new Error(`control failed: ${control.reason}`);
 
 const cases: Array<{
@@ -94,6 +156,8 @@ const cases: Array<{
   baseline?: Event[];
   fleet?: Event[];
   receipt?: ComparisonReceipt;
+  baselineContext?: VerificationContext;
+  fleetContext?: VerificationContext;
   expected: string;
 }> = [];
 
@@ -114,6 +178,12 @@ mutateFleet("unsafe advertised worker count rejected directly", (draft) => {
   event(draft, "run.sealed").payload.advertisedWorkers = Number.MAX_SAFE_INTEGER + 1;
 }, "run.sealed.advertisedWorkers: invalid");
 mutateFleet("scripts cannot count as model workers", (draft) => { event(draft, "worker.terminal").payload.kind = "script"; }, "deterministic script");
+mutateFleet("post-hoc worker values without raw evidence rejected", (draft) => {
+  delete event(draft, "worker.terminal").payload.rawReceiptDigest;
+}, "content-addressed raw receipt or usage evidence missing");
+mutateFleet("syntactically valid ghost artifact digest rejected", (draft) => {
+  event(draft, "worker.terminal").payload.rawReceiptDigest = `sha256:${"f".repeat(64)}`;
+}, "referenced artifact missing");
 mutateFleet("duplicate worker receipt rejected", (draft) => {
   const terminals = draft.filter((item) => item.type === "worker.terminal");
   terminals[1].payload.workerId = terminals[0].payload.workerId;
@@ -169,11 +239,44 @@ mutateFleet("unresolved collision rejected", (draft) => {
   const index = draft.findIndex((item) => item.type === "collision.resolved");
   draft.splice(index, 1);
 }, "collision has no resolution");
+mutateFleet("clean replay digest mismatch rejected", (draft) => {
+  event(draft, "candidate.replayed").payload.sourceDigest = "sha256:workspace-marker-contaminated";
+}, "clean checkout digest differs");
+mutateFleet("malformed integrated source digest rejected", (draft) => {
+  const malformed = "sha256:not-a-digest";
+  for (const type of ["candidate.integrated", "candidate.replayed", "proof.verified", "preview.verified"]) {
+    event(draft, type).payload.sourceDigest = malformed;
+  }
+  event(draft, "preview.verified").payload.servedSourceDigest = malformed;
+}, "valid source-tree SHA-256 digest missing");
+mutateFleet("jointly substituted source assertions rejected by external recomputation", (draft) => {
+  const substituted = `sha256:${"c".repeat(64)}`;
+  for (const type of ["candidate.integrated", "candidate.replayed", "proof.verified", "preview.verified"]) {
+    event(draft, type).payload.sourceDigest = substituted;
+  }
+  event(draft, "preview.verified").payload.servedSourceDigest = substituted;
+}, "integrated source differs from recomputed source tree");
 mutateFleet("proof digest mismatch rejected", (draft) => { event(draft, "proof.verified").payload.sourceDigest = "sha256:wrong"; }, "proof does not admit");
+mutateFleet("receipt-supplied unsealed proof signer rejected", (draft) => {
+  event(draft, "proof.verified").payload.keyId = "self-supplied-key";
+}, "sealed signer");
+mutateFleet("self-sealed signer substitution rejected by external seal", (draft) => {
+  event(draft, "run.sealed").payload.trustedProofKeyId = "attacker-key";
+  event(draft, "proof.verified").payload.keyId = "attacker-key";
+}, "source replay or trusted signer differs");
 mutateFleet("missing preview rejected", (draft) => {
   const index = draft.findIndex((item) => item.type === "preview.verified");
   draft.splice(index, 1);
 }, "preview.verified: expected exactly one");
+mutateFleet("preview without matching served source marker rejected", (draft) => {
+  event(draft, "preview.verified").payload.servedSourceDigest = "sha256:old-deployment";
+}, "source marker, version, evidence");
+mutateFleet("preview without a non-empty URL rejected", (draft) => {
+  event(draft, "preview.verified").payload.url = "";
+}, "source marker, version, evidence");
+mutateFleet("preview without a non-empty deployment version rejected", (draft) => {
+  event(draft, "preview.verified").payload.versionId = "";
+}, "source marker, version, evidence");
 mutateFleet("negative event clock rejected", (draft) => {
   event(draft, "proof.verified").atMs = -3;
   event(draft, "preview.verified").atMs = -2;
@@ -195,6 +298,12 @@ mutateFleet("completion after proof but before preview rejected", (draft) => {
   draft.splice(previewIndex, 0, completed);
 }, "clock stopped before proof and preview");
 mutateFleet("omitted retry accounting rejected", (draft) => { event(draft, "run.completed").payload.retryMs = 0; }, "retry, compute, token, or cost totals omitted");
+mutateFleet("promotion request cannot be called production promotion", (draft) => {
+  event(draft, "run.completed").payload.promotionState = "promoted";
+}, "baseline cannot claim production promotion");
+mutateFleet("observed refusal boundary cannot report production change", (draft) => {
+  event(draft, "preview.verified").payload.productionChanged = true;
+}, "no-live-traffic boundary missing");
 cases.push({
   name: "receipt prose cannot drift from events",
   receipt: { ...structuredClone(receipt), claim: "1000 agents made software instantly" },
@@ -202,7 +311,13 @@ cases.push({
 });
 
 const outcomes = cases.map((testCase) => {
-  const verdict = verifyComparisonReceipt(testCase.receipt ?? receipt, testCase.baseline ?? baseline, testCase.fleet ?? fleet);
+  const verdict = verifyComparisonReceipt(
+    testCase.receipt ?? receipt,
+    testCase.baseline ?? baseline,
+    testCase.fleet ?? fleet,
+    testCase.baselineContext ?? context,
+    testCase.fleetContext ?? context,
+  );
   const ok = !verdict.ok && verdict.reason.includes(testCase.expected);
   console.log(`${ok ? "PASS" : "FAIL"} ${testCase.name}${verdict.ok ? " — mutation was accepted" : ` — ${verdict.reason}`}`);
   return { name: testCase.name, ok, expected: testCase.expected, observed: verdict.ok ? "accepted" : verdict.reason };

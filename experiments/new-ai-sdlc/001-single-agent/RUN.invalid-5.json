@@ -1,0 +1,53 @@
+{
+  "schema": "new-ai-sdlc/single-agent-run@1",
+  "status": "clean-replay-digest-mismatch",
+  "runId": "ter_20260711173722542_aomkje",
+  "seal": "SEAL.v4.json",
+  "startingCommit": "8daad83cbede1628a0acf35e6050bf99d86884fe",
+  "startedAt": "2026-07-11T17:37:22.757Z",
+  "completedAt": "2026-07-11T17:47:05.856Z",
+  "elapsedMs": 583099,
+  "provider": "opencode.cloudflare.dev",
+  "model": "gpt-5.6-terra",
+  "providerModelIdentityOk": true,
+  "taskContractStatus": "verified",
+  "workerProcesses": 1,
+  "workerRetryCount": 0,
+  "providerContinuationCount": 0,
+  "usage": {
+    "input": 102,
+    "output": 21559,
+    "cacheRead": 1875407,
+    "cacheWrite": 83020,
+    "totalTokens": 1980088,
+    "costUsd": 1.05192925,
+    "assistantMessages": 34
+  },
+  "sealedBudget": {
+    "maxTokens": 2000000,
+    "maxCostUsd": 10
+  },
+  "candidateCommit": "5d3fa1bbb2db07d4a0972d96818dde46bbedc361",
+  "candidateParent": "8daad83cbede1628a0acf35e6050bf99d86884fe",
+  "sourceDigest": "sha256:8e4a59f3b924e3efd427ae944b1d30214f534a8df764b1d7b77b4cb6639d78bf",
+  "cleanReplayDigest": "sha256:1b7951b9d8e2eafa250fd4aa7325a6d61c87f71a34b6bca3c7ee455a124ba82d",
+  "independentChecks": {
+    "acceptance": "pass 6/6",
+    "repository": "pass 38/38",
+    "siteBuild": "pass",
+    "previewHttp": "pass",
+    "signedProof": "admitted"
+  },
+  "previewUrl": "https://airlock-dark-8e4a59f3b924e3efd427ae94.cloudflare-support-chat.workers.dev",
+  "noLiveTraffic": true,
+  "productionChanged": false,
+  "promotionRequestOnly": true,
+  "qualifies": false,
+  "disposition": "rejected-clean-replay-digest-mismatch",
+  "failure": "The source digest included the untracked `.terrarium-workspace` marker. A clean worktree of the same commit produced a different digest, so the admitted proof is not reproducible.",
+  "limits": [
+    "Model-provider cost is measured; incremental Cloudflare preview infrastructure cost is not separately metered.",
+    "The successful run is one exploratory baseline case, not a median or speedup claim.",
+    "The pipeline's promoted boolean records a caller-owned promotion request; production routing did not change."
+  ]
+}

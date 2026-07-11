@@ -15,11 +15,12 @@ const ports: Ports = {
   runFanout: localFanout, // swap for terrarium / Cloudflare Facets in production
   deploy: async (c) => {
     console.log(`  deploy   -> candidate ${c} to a non-serving slot`);
-    return { url: `https://preview.example/${c}` };
+    return { url: `https://preview.example/${c}`, versionId: `hello-${c.slice(-8)}` };
   },
   setFeatureGate: async (c, on) => {
     if (on) liveCandidate = c;
     console.log(`  gate     -> ${on ? `ON for ${c}` : "left OFF"}`);
+    return { productionChanged: on, requestRecorded: false };
   },
   sign: (candidate, evidence, pass) =>
     signProof(

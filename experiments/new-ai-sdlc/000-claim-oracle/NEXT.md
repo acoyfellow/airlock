@@ -25,7 +25,18 @@ Completed intake:
 - mutation-21 review found that `Infinity` bypassed ordinary numeric comparisons, appended
   as mutation 22;
 - mutation-22 re-review found unsafe worker counts and negative event clocks, appended as
-  mutations 23 and 24.
+  mutations 23 and 24;
+- clean replay of `aomkje` found `.terrarium-workspace` contaminated the candidate digest,
+  appended as mutation 25;
+- exit review found post-hoc evidence, an unsealed signer, an unbound preview response, and
+  misleading promotion wording, appended as mutations 26 through 29;
+- adversarial review then bypassed source and preview identity with a malformed digest
+  and empty deployment version, appended as mutations 30 and 31;
+- final review bypassed digest references with ghost artifacts, jointly substituted all
+  source assertions, self-sealed a signer, supplied an empty URL, and allowed production
+  change on refusal. The oracle now resolves and hashes artifacts, consumes an external
+  source/replay/signer/effect seal, cryptographically verifies the proof, and refuses
+  mutations 32 through 36.
 
 ## Hammer produced
 

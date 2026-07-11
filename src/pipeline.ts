@@ -43,13 +43,15 @@ export const localFanout: RunFanout = (jobs) =>
 export type PushEvent = { repo: string; candidate: string };
 
 // The URL where the candidate is served without receiving production traffic.
-export type DeploySlot = { url: string; detail?: string };
+export type DeploySlot = { url: string; versionId: string; detail?: string };
+
+export type PromotionEffect = { productionChanged: boolean; requestRecorded: boolean };
 
 export type Ports = {
   runFanout: RunFanout;
   // deploy without production traffic; returns the preview URL
   deploy: (candidate: string) => Promise<DeploySlot>;
-  setFeatureGate: (candidate: string, on: boolean) => Promise<void>;
+  setFeatureGate: (candidate: string, on: boolean) => Promise<PromotionEffect>;
   // the owner/verifier signs what the fanout observed, bound to the candidate
   sign: (candidate: string, evidence: string, pass: boolean) => SignedProof;
   trusted: TrustedKeys;
@@ -63,12 +65,18 @@ export type PipelineReceipt = {
   proof: SignedProof;
   admitted: boolean;
   promoted: boolean;
+  promotionRequested: boolean;
   reason: string;
 };
 
 export async function runPipeline(event: PushEvent, jobs: TestJob[], ports: Ports): Promise<PipelineReceipt> {
+  if (!/^sha256:[a-f0-9]{64}$/.test(event.candidate)) {
+    throw new Error("pipeline: candidate must be a lowercase SHA-256 digest");
+  }
+
   // 1. deploy the candidate to a slot that serves no traffic yet
   const slot = await ports.deploy(event.candidate);
+  if (!slot.url || !slot.versionId) throw new Error("pipeline: deploy slot URL and version are required");
 
   // 2. fanout^x tests (run against the preview URL)
   const results = await ports.runFanout(jobs, slot);
@@ -80,13 +88,34 @@ export async function runPipeline(event: PushEvent, jobs: TestJob[], ports: Port
   const decision = verifySignedProof(proof, event.candidate, ports.trusted);
 
   if (!decision.admitted) {
-    await ports.setFeatureGate(event.candidate, false);
-    return { candidate: event.candidate, slot, results, evidence, proof, admitted: false, promoted: false, reason: decision.reason };
+    const effect = await ports.setFeatureGate(event.candidate, false);
+    if (effect.productionChanged) throw new Error("pipeline: refusal path changed production");
+    return {
+      candidate: event.candidate,
+      slot,
+      results,
+      evidence,
+      proof,
+      admitted: false,
+      promoted: effect.productionChanged,
+      promotionRequested: effect.requestRecorded,
+      reason: decision.reason,
+    };
   }
 
   // 4. promote the feature gate (the only promote effect; human-gated for prod)
-  await ports.setFeatureGate(event.candidate, true);
-  return { candidate: event.candidate, slot, results, evidence, proof, admitted: true, promoted: true, reason: "proof passed" };
+  const effect = await ports.setFeatureGate(event.candidate, true);
+  return {
+    candidate: event.candidate,
+    slot,
+    results,
+    evidence,
+    proof,
+    admitted: true,
+    promoted: effect.productionChanged,
+    promotionRequested: effect.requestRecorded,
+    reason: effect.productionChanged ? "proof passed; production changed" : "proof passed; production unchanged",
+  };
 }
 
 // Re-exported so a caller can sign without importing keel directly.

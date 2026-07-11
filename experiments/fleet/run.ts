@@ -149,11 +149,14 @@ async function main() {
     }),
   });
   const ports: Ports = {
-    deploy: async () => ({ url: `file://${integration}`, detail: "local preview with no live traffic" }),
+    deploy: async () => ({ url: `file://${integration}`, versionId: `fleet-${candidate.slice(-12)}`, detail: "local preview with no live traffic" }),
     runFanout: localFanout,
     sign: (artifactDigest, evidence, pass) => signProof(makeProof({ artifactDigest, verifier: owner.keyId, policy: "airlock/fleet-spike@1", result: pass ? "pass" : "fail", evidence }), owner.keyId, owner.privatePem),
     trusted: { [owner.keyId]: owner.publicPem },
-    setFeatureGate: async (subject, on) => { if (on) served = subject; },
+    setFeatureGate: async (subject, on) => {
+      if (on) served = subject;
+      return { productionChanged: on, requestRecorded: false };
+    },
   };
   const pipeline = await runPipeline({ repo: "fleet-fixture", candidate }, jobs, ports);
   if (!pipeline.promoted || served !== candidate) throw new Error("reconciled candidate did not pass the airlock gate");

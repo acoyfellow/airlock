@@ -1,6 +1,6 @@
 # 001 — single-agent baseline
 
-Status: **four measured runs are non-qualifying; no admitted candidate or preview exists**.
+Status: **five measured runs are non-qualifying; no reproducible admitted candidate exists**.
 
 This checkpoint measures the strongest fair serial path before introducing a fleet. One
 Terra worker receives one sealed idea and works in one isolated worktree. Deterministic
@@ -44,3 +44,14 @@ commit `aa2c7bd`. Independent checks passed: frozen acceptance 6/6, repository t
 sealed one-million-token ceiling. The commit is dispositioned `rejected-budget-exceeded`;
 no proof or preview was admitted. This exposed missing budget enforcement in experiment
 000 and became mutation 21.
+
+A fifth run, `ter_20260711173722542_aomkje`, produced commit `5d3fa1b` within its
+resource budget. Independent acceptance 6/6, repository tests 38/38, site build, preview
+HTTP, and cryptographic admission passed. Clean replay then found the proof was bound to
+`sha256:8e4a…`, whose source set included the untracked `.terrarium-workspace` marker. A
+clean worktree of the exact same commit produced `sha256:1b7951…`. The run is therefore
+`rejected-clean-replay-digest-mismatch`, despite its working preview and valid signature.
+This became mutation 25: a qualifying candidate now requires a clean-checkout replay event
+whose digest exactly matches the integrated candidate and proof.
+
+The eight-agent tier remains locked.

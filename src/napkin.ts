@@ -104,6 +104,7 @@ export function makeNapkin(opts: {
           slots.serve(c);
           webapp.setServed(c, lastResults);
         }
+        return { productionChanged: outcome.promoted, requestRecorded: false };
       },
     };
 

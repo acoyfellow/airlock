@@ -42,6 +42,7 @@ async function main() {
   const ports: Ports = {
     deploy: async (candidate) => ({
       url: `local://preview/${candidate.replace(/^sha256:/, "")}`,
+      versionId: `launch-proof-${candidate.slice(-12)}`,
       detail: "file-backed preview; no live traffic",
     }),
     runFanout: localFanout,
@@ -60,6 +61,7 @@ async function main() {
     trusted,
     setFeatureGate: async (candidate, on) => {
       if (on) selected = candidate;
+      return { productionChanged: on, requestRecorded: false };
     },
   };
 

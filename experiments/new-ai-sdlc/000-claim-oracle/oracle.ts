@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { verifySignedProof, type SignedProof } from "keel";
 
 export type RunMode = "baseline" | "fleet";
 export type EventType =
@@ -13,6 +14,7 @@ export type EventType =
   | "behavior.integrated"
   | "check.result"
   | "candidate.integrated"
+  | "candidate.replayed"
   | "proof.verified"
   | "preview.verified"
   | "human.product-write"
@@ -43,6 +45,7 @@ const EVENT_TYPES = new Set<EventType>([
   "behavior.integrated",
   "check.result",
   "candidate.integrated",
+  "candidate.replayed",
   "proof.verified",
   "preview.verified",
   "human.product-write",
@@ -58,6 +61,7 @@ export type RunReceipt = {
   model: string;
   maxTokens: number;
   maxCostUsd: number;
+  trustedProofKeyId: string;
   advertisedWorkers: number;
   qualifyingWorkers: number;
   terminalWorkers: number;
@@ -83,6 +87,17 @@ export type ComparisonReceipt = {
   fleet: RunReceipt;
   speedup: number;
   claim: string;
+};
+
+export type VerificationContext = {
+  artifacts: Record<string, string>;
+  externalSeal: {
+    expectedSourceDigest: string;
+    cleanReplaySourceDigest: string;
+    trustedProofKeyId: string;
+    trustedProofPublicPem: string;
+    productionChanged: boolean;
+  };
 };
 
 export type Verdict = { ok: true } | { ok: false; reason: string };
@@ -115,6 +130,19 @@ function fail(reason: string): never {
   throw new Error(reason);
 }
 
+function isSha256(value: unknown): value is string {
+  return typeof value === "string" && /^sha256:[a-f0-9]{64}$/.test(value);
+}
+
+function artifact(context: VerificationContext, digest: unknown, label: string): string {
+  if (!isSha256(digest)) fail(`${label}: invalid artifact digest`);
+  const bytes = context.artifacts[digest];
+  if (typeof bytes !== "string") fail(`${label}: referenced artifact missing`);
+  const actual = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+  if (actual !== digest) fail(`${label}: artifact hash mismatch`);
+  return bytes;
+}
+
 function one(events: Event[], type: EventType): Event {
   const found = events.filter((event) => event.type === type);
   if (found.length !== 1) fail(`${type}: expected exactly one event, got ${found.length}`);
@@ -135,7 +163,7 @@ function unique(values: string[], label: string): Set<string> {
   return result;
 }
 
-export function deriveRunReceipt(events: Event[]): RunReceipt {
+export function deriveRunReceipt(events: Event[], context: VerificationContext): RunReceipt {
   if (events.length === 0) fail("event chain: empty");
   const runId = events[0].runId;
   let previous: string | null = null;
@@ -160,18 +188,26 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
   const model = sealed.payload.model;
   const maxTokens = sealed.payload.maxTokens;
   const maxCostUsd = sealed.payload.maxCostUsd;
+  const trustedProofKeyId = sealed.payload.trustedProofKeyId;
   const advertisedWorkers = sealed.payload.advertisedWorkers;
   if (mode !== "baseline" && mode !== "fleet") fail("run.sealed.mode: unknown");
   if (
     typeof acceptanceHash !== "string" ||
     typeof startCommit !== "string" ||
     typeof provider !== "string" ||
-    typeof model !== "string"
+    typeof model !== "string" ||
+    typeof trustedProofKeyId !== "string" || trustedProofKeyId.length === 0
   ) fail("run.sealed: missing comparison identity");
   if (!Number.isSafeInteger(maxTokens) || (maxTokens as number) <= 0 || !Number.isFinite(maxCostUsd) || (maxCostUsd as number) <= 0) {
     fail("run.sealed: invalid resource budget");
   }
   if (!Number.isSafeInteger(advertisedWorkers) || (advertisedWorkers as number) < 1) fail("run.sealed.advertisedWorkers: invalid");
+  if (
+    trustedProofKeyId !== context.externalSeal.trustedProofKeyId ||
+    context.externalSeal.productionChanged !== false ||
+    !isSha256(context.externalSeal.expectedSourceDigest) ||
+    context.externalSeal.cleanReplaySourceDigest !== context.externalSeal.expectedSourceDigest
+  ) fail("external seal: source replay or trusted signer differs");
 
   const spawnedIds = strings(events, "worker.spawned", "workerId");
   const terminalEvents = events.filter((event) => event.type === "worker.terminal");
@@ -188,6 +224,11 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
       fail("worker qualification: provider or model differs from sealed invocation");
     }
     if (typeof event.payload.receiptId !== "string") fail("worker qualification: durable task receipt missing");
+    if (!isSha256(event.payload.rawReceiptDigest) || !isSha256(event.payload.usageDigest)) {
+      fail("worker qualification: content-addressed raw receipt or usage evidence missing");
+    }
+    artifact(context, event.payload.rawReceiptDigest, "worker receipt");
+    artifact(context, event.payload.usageDigest, "worker usage");
     if (
       !Number.isSafeInteger(event.payload.totalTokens) || (event.payload.totalTokens as number) < 0 ||
       !Number.isFinite(event.payload.costUsd) || (event.payload.costUsd as number) < 0 ||
@@ -225,20 +266,55 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
   if (checks.length === 0) fail("checks: no declared results");
   for (const event of checks) {
     if (event.payload.contractHash !== acceptanceHash) fail("comparison fairness: check used different acceptance contract");
-    if (event.payload.ok !== true) fail("checks: acceptance failed");
+    if (event.payload.ok !== true || event.payload.exitCode !== 0) fail("checks: acceptance failed");
+    if (!isSha256(event.payload.outputDigest) || !Number.isFinite(event.payload.durationMs) || (event.payload.durationMs as number) < 0) {
+      fail("checks: content-addressed output or duration evidence missing");
+    }
+    artifact(context, event.payload.outputDigest, "check output");
   }
 
   const candidate = one(events, "candidate.integrated");
   const sourceDigest = candidate.payload.sourceDigest;
-  if (typeof sourceDigest !== "string" || !sourceDigest.startsWith("sha256:")) fail("candidate: source-tree digest missing");
+  if (!isSha256(sourceDigest)) fail("candidate: valid source-tree SHA-256 digest missing");
+  if (sourceDigest !== context.externalSeal.expectedSourceDigest) fail("external seal: integrated source differs from recomputed source tree");
+  const replay = one(events, "candidate.replayed");
+  if (
+    replay.payload.sourceDigest !== sourceDigest || replay.payload.cleanCheckout !== true ||
+    !isSha256(replay.payload.replayTranscriptDigest)
+  ) fail("candidate replay: clean checkout digest differs from integrated candidate");
+  artifact(context, replay.payload.replayTranscriptDigest, "clean replay transcript");
   const proof = one(events, "proof.verified");
-  if (proof.payload.admitted !== true || proof.payload.sourceDigest !== sourceDigest) fail("proof binding: proof does not admit candidate source-tree digest");
+  if (
+    proof.payload.admitted !== true || proof.payload.sourceDigest !== sourceDigest ||
+    proof.payload.keyId !== trustedProofKeyId || !isSha256(proof.payload.proofArtifactDigest)
+  ) fail("proof binding: proof does not admit candidate source-tree digest with sealed signer");
+  const proofBytes = artifact(context, proof.payload.proofArtifactDigest, "signed proof");
+  let signedProof: SignedProof;
+  try { signedProof = JSON.parse(proofBytes) as SignedProof; } catch { fail("proof binding: signed proof artifact is not JSON"); }
+  const proofDecision = verifySignedProof(
+    signedProof!,
+    sourceDigest,
+    { [context.externalSeal.trustedProofKeyId]: context.externalSeal.trustedProofPublicPem },
+  );
+  if (!proofDecision.admitted) fail(`proof binding: cryptographic verification failed: ${proofDecision.reason}`);
   const preview = one(events, "preview.verified");
-  if (preview.payload.sourceDigest !== sourceDigest || preview.payload.noLiveTraffic !== true || typeof preview.payload.url !== "string") fail("preview: unverifiable candidate or live-traffic boundary missing");
+  if (
+    preview.payload.sourceDigest !== sourceDigest || preview.payload.servedSourceDigest !== sourceDigest ||
+    preview.payload.noLiveTraffic !== true ||
+    preview.payload.productionChanged !== context.externalSeal.productionChanged ||
+    typeof preview.payload.url !== "string" || preview.payload.url.length === 0 ||
+    typeof preview.payload.versionId !== "string" || preview.payload.versionId.length === 0 ||
+    !isSha256(preview.payload.responseDigest) || !isSha256(preview.payload.deployTranscriptDigest)
+  ) fail("preview: source marker, version, evidence, or no-live-traffic boundary missing");
+  artifact(context, preview.payload.responseDigest, "preview response");
+  artifact(context, preview.payload.deployTranscriptDigest, "deploy transcript");
 
   const completed = one(events, "run.completed");
   const completionIndex = events.indexOf(completed);
   if (completionIndex < events.indexOf(proof) || completionIndex < events.indexOf(preview)) fail("completion time: clock stopped before proof and preview verification");
+  if (completed.payload.promotionState !== "requested" && completed.payload.promotionState !== "none") {
+    fail("promotion boundary: baseline cannot claim production promotion");
+  }
   const elapsedMs = completed.payload.elapsedMs;
   const retryMs = completed.payload.retryMs;
   const computeMs = completed.payload.computeMs;
@@ -270,6 +346,7 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
     model,
     maxTokens,
     maxCostUsd,
+    trustedProofKeyId,
     advertisedWorkers,
     qualifyingWorkers,
     terminalWorkers: terminalEvents.length,
@@ -294,9 +371,14 @@ function runClaim(receipt: Omit<RunReceipt, "claim">): string {
   return `${receipt.mode} reached verified preview in ${receipt.elapsedMs}ms with ${receipt.qualifyingWorkers}/${receipt.advertisedWorkers} qualifying workers`;
 }
 
-export function generateComparisonReceipt(baselineEvents: Event[], fleetEvents: Event[]): ComparisonReceipt {
-  const baseline = deriveRunReceipt(baselineEvents);
-  const fleet = deriveRunReceipt(fleetEvents);
+export function generateComparisonReceipt(
+  baselineEvents: Event[],
+  fleetEvents: Event[],
+  baselineContext: VerificationContext,
+  fleetContext: VerificationContext,
+): ComparisonReceipt {
+  const baseline = deriveRunReceipt(baselineEvents, baselineContext);
+  const fleet = deriveRunReceipt(fleetEvents, fleetContext);
   if (baseline.mode !== "baseline" || fleet.mode !== "fleet") fail("comparison fairness: baseline/fleet modes required");
   if (baseline.acceptanceHash !== fleet.acceptanceHash) fail("comparison fairness: acceptance contracts differ");
   if (baseline.startCommit !== fleet.startCommit) fail("comparison fairness: initial commits differ");
@@ -306,6 +388,7 @@ export function generateComparisonReceipt(baselineEvents: Event[], fleetEvents: 
   if (baseline.maxTokens !== fleet.maxTokens || baseline.maxCostUsd !== fleet.maxCostUsd) {
     fail("comparison fairness: resource budgets differ");
   }
+  if (baseline.trustedProofKeyId !== fleet.trustedProofKeyId) fail("comparison fairness: proof signer differs");
   const speedup = baseline.elapsedMs / fleet.elapsedMs;
   return {
     schema: "new-ai-sdlc/claim-oracle@1",
@@ -316,9 +399,15 @@ export function generateComparisonReceipt(baselineEvents: Event[], fleetEvents: 
   };
 }
 
-export function verifyComparisonReceipt(receipt: ComparisonReceipt, baselineEvents: Event[], fleetEvents: Event[]): Verdict {
+export function verifyComparisonReceipt(
+  receipt: ComparisonReceipt,
+  baselineEvents: Event[],
+  fleetEvents: Event[],
+  baselineContext: VerificationContext,
+  fleetContext: VerificationContext,
+): Verdict {
   try {
-    const expected = generateComparisonReceipt(baselineEvents, fleetEvents);
+    const expected = generateComparisonReceipt(baselineEvents, fleetEvents, baselineContext, fleetContext);
     if (JSON.stringify(receipt) !== JSON.stringify(expected)) return { ok: false, reason: "receipt integrity: claim or derived values differ from events" };
     return { ok: true };
   } catch (error) {

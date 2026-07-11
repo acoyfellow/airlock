@@ -1,6 +1,6 @@
 {
   "schema": "new-ai-sdlc/claim-oracle-verification@1",
-  "generatedAt": "2026-07-11T17:36:40.569Z",
+  "generatedAt": "2026-07-11T20:45:10.786Z",
   "control": {
     "ok": true,
     "comparison": {
@@ -14,6 +14,7 @@
         "model": "gpt-5.6-terra",
         "maxTokens": 1000000,
         "maxCostUsd": 10,
+        "trustedProofKeyId": "d110158d54a51757",
         "advertisedWorkers": 1,
         "qualifyingWorkers": 1,
         "terminalWorkers": 1,
@@ -29,7 +30,7 @@
         "computeMs": 100,
         "totalTokens": 1000,
         "totalCostUsd": 0.1,
-        "finalEventDigest": "d9298ba741906636163eaf885d101507caf82e2f1d5e9190a170b41b0e9b4f1e",
+        "finalEventDigest": "70d6379eccc1e957fe9377ade2540685649082c52dfa8da0299b428a1c1f478d",
         "claim": "baseline reached verified preview in 1000ms with 1/1 qualifying workers"
       },
       "fleet": {
@@ -41,6 +42,7 @@
         "model": "gpt-5.6-terra",
         "maxTokens": 1000000,
         "maxCostUsd": 10,
+        "trustedProofKeyId": "d110158d54a51757",
         "advertisedWorkers": 2,
         "qualifyingWorkers": 2,
         "terminalWorkers": 2,
@@ -56,7 +58,7 @@
         "computeMs": 200,
         "totalTokens": 2000,
         "totalCostUsd": 0.2,
-        "finalEventDigest": "500662e3faf63d837adc261627dcbf3356d091419870db84cdeaa02d43add83d",
+        "finalEventDigest": "888d35b87ee0c752482244ac77fa2cef8f01512dbd323da18d1f244ab632f652",
         "claim": "fleet reached verified preview in 100ms with 2/2 qualifying workers"
       },
       "speedup": 10,
@@ -93,6 +95,18 @@
       "ok": true,
       "expected": "deterministic script",
       "observed": "worker qualification: deterministic script counted as model worker"
+    },
+    {
+      "name": "post-hoc worker values without raw evidence rejected",
+      "ok": true,
+      "expected": "content-addressed raw receipt or usage evidence missing",
+      "observed": "worker qualification: content-addressed raw receipt or usage evidence missing"
+    },
+    {
+      "name": "syntactically valid ghost artifact digest rejected",
+      "ok": true,
+      "expected": "referenced artifact missing",
+      "observed": "worker receipt: referenced artifact missing"
     },
     {
       "name": "duplicate worker receipt rejected",
@@ -167,16 +181,64 @@
       "observed": "collision conservation: collision has no resolution"
     },
     {
+      "name": "clean replay digest mismatch rejected",
+      "ok": true,
+      "expected": "clean checkout digest differs",
+      "observed": "candidate replay: clean checkout digest differs from integrated candidate"
+    },
+    {
+      "name": "malformed integrated source digest rejected",
+      "ok": true,
+      "expected": "valid source-tree SHA-256 digest missing",
+      "observed": "candidate: valid source-tree SHA-256 digest missing"
+    },
+    {
+      "name": "jointly substituted source assertions rejected by external recomputation",
+      "ok": true,
+      "expected": "integrated source differs from recomputed source tree",
+      "observed": "external seal: integrated source differs from recomputed source tree"
+    },
+    {
       "name": "proof digest mismatch rejected",
       "ok": true,
       "expected": "proof does not admit",
-      "observed": "proof binding: proof does not admit candidate source-tree digest"
+      "observed": "proof binding: proof does not admit candidate source-tree digest with sealed signer"
+    },
+    {
+      "name": "receipt-supplied unsealed proof signer rejected",
+      "ok": true,
+      "expected": "sealed signer",
+      "observed": "proof binding: proof does not admit candidate source-tree digest with sealed signer"
+    },
+    {
+      "name": "self-sealed signer substitution rejected by external seal",
+      "ok": true,
+      "expected": "source replay or trusted signer differs",
+      "observed": "external seal: source replay or trusted signer differs"
     },
     {
       "name": "missing preview rejected",
       "ok": true,
       "expected": "preview.verified: expected exactly one",
       "observed": "preview.verified: expected exactly one event, got 0"
+    },
+    {
+      "name": "preview without matching served source marker rejected",
+      "ok": true,
+      "expected": "source marker, version, evidence",
+      "observed": "preview: source marker, version, evidence, or no-live-traffic boundary missing"
+    },
+    {
+      "name": "preview without a non-empty URL rejected",
+      "ok": true,
+      "expected": "source marker, version, evidence",
+      "observed": "preview: source marker, version, evidence, or no-live-traffic boundary missing"
+    },
+    {
+      "name": "preview without a non-empty deployment version rejected",
+      "ok": true,
+      "expected": "source marker, version, evidence",
+      "observed": "preview: source marker, version, evidence, or no-live-traffic boundary missing"
     },
     {
       "name": "negative event clock rejected",
@@ -201,6 +263,18 @@
       "ok": true,
       "expected": "retry, compute, token, or cost totals omitted",
       "observed": "resource accounting: retry, compute, token, or cost totals omitted"
+    },
+    {
+      "name": "promotion request cannot be called production promotion",
+      "ok": true,
+      "expected": "baseline cannot claim production promotion",
+      "observed": "promotion boundary: baseline cannot claim production promotion"
+    },
+    {
+      "name": "observed refusal boundary cannot report production change",
+      "ok": true,
+      "expected": "no-live-traffic boundary missing",
+      "observed": "preview: source marker, version, evidence, or no-live-traffic boundary missing"
     },
     {
       "name": "receipt prose cannot drift from events",

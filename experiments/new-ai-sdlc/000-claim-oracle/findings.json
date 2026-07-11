@@ -2,7 +2,7 @@
   "schema": "new-ai-sdlc/findings@1",
   "experiment": "000-claim-oracle",
   "status": "proven-in-synthetic-control",
-  "finding": "The oracle accepts its complete control and rejects all 24 permanent fake-fleet or missing-evidence mutations.",
+  "finding": "The oracle accepts its complete control and rejects all 36 permanent fake-fleet or missing-evidence mutations.",
   "reviewers": [
     {
       "runId": "ter_20260711152703907_9w64ia",
@@ -47,6 +47,31 @@
     {
       "runId": "ter_20260711173518867_0zp3t3",
       "finding": "The isolated-loop oracle rejects all 24 mutations and keeps wefbw9 non-qualifying.",
+      "status": "accepted"
+    },
+    {
+      "runId": "ter_20260711173722542_aomkje",
+      "finding": "The source digest included `.terrarium-workspace`; a clean checkout of the same commit produced a different digest.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711174838134_yo3ibh",
+      "finding": "Run evidence was post-hoc, its proof signer was unsealed, its preview exposed no matching source marker, and a request was labeled promoted.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711175623049_l2g97u",
+      "finding": "The oracle accepted a malformed source digest and an empty preview deployment version.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711175831124_x1q39h",
+      "finding": "The oracle trusted ghost artifacts, jointly substituted source assertions, an event-self-sealed signer, and receipt-supplied release effects; the core pipeline also accepted malformed candidate and preview identity.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711204252555_5qklfn",
+      "finding": "The prior oracle and core pipeline bypasses are closed; control passed with all 36 mutations refused.",
       "status": "accepted"
     }
   ],

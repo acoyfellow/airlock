@@ -63,6 +63,10 @@ export class SlotStore {
 export function makeLocalDeployer(slots: SlotStore, baseUrl = "local://preview") {
   return async (candidate: string): Promise<DeploySlot> => {
     slots.stage(candidate);
-    return { url: `${baseUrl}/${candidate.replace(/^sha256:/, "")}`, detail: "staged (non-serving)" };
+    return {
+      url: `${baseUrl}/${candidate.replace(/^sha256:/, "")}`,
+      versionId: `local-${candidate.slice(-12)}`,
+      detail: "staged (non-serving)",
+    };
   };
 }

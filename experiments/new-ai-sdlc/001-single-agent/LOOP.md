@@ -1,6 +1,8 @@
 # 001 loop
 
-Read `.context/TERRALOOP.md`, `.context/BUILD-BACKWARDS.md`, and experiment 000.
+Read `experiments/new-ai-sdlc/TERRALOOP.md`, the workspace's
+`.context/BUILD-BACKWARDS.md`, and experiment 000. Do not use or edit the canonical
+`.context/TERRALOOP.md` for this experiment.
 
 ## Before measurement
 

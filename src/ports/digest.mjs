@@ -73,3 +73,58 @@ export function candidateDigest(repoRoot) {
   }
   return `sha256:${top.digest("hex")}`;
 }
+
+function treeEntries(repoRoot, commit) {
+  const out = execFileSync("git", ["ls-tree", "-r", "-z", "--full-tree", commit], {
+    cwd: repoRoot,
+    encoding: "buffer",
+    maxBuffer: 64 * 1024 * 1024,
+  });
+
+  return out
+    .subarray(0, -1)
+    .toString("binary")
+    .split("\0")
+    .filter(Boolean)
+    .map((record) => {
+      const tab = record.indexOf("\t");
+      const [mode, type, object] = record.slice(0, tab).split(" ");
+      // `binary` is a one-byte encoding, preserving Git's path bytes exactly.
+      return { mode, type, object, path: Buffer.from(record.slice(tab + 1), "binary") };
+    })
+    .filter((entry) => !isExcluded(entry.path.toString("utf8")))
+    .sort((a, b) => Buffer.compare(a.path, b.path));
+}
+
+function updateField(hash, value) {
+  const bytes = Buffer.isBuffer(value) ? value : Buffer.from(value);
+  // Length-prefix fields so neither a filename nor a blob can make an ambiguous stream.
+  hash.update(String(bytes.length));
+  hash.update("\0");
+  hash.update(bytes);
+  hash.update("\0");
+}
+
+/**
+ * Digest the immutable Git tree at `commit`, never the worktree. Each retained tree
+ * entry contributes its canonical path, Git object type, mode, and raw blob bytes.
+ * Symlinks are Git blobs, so their link text is hashed without resolving the link.
+ */
+export function candidateDigestAtCommit(repoRoot, commit) {
+  const top = createHash("sha256");
+  for (const entry of treeEntries(repoRoot, commit)) {
+    if (entry.type !== "blob") {
+      throw new Error(`candidateDigestAtCommit: unsupported Git tree entry type ${entry.type} at ${entry.path}`);
+    }
+    const bytes = execFileSync("git", ["cat-file", "blob", entry.object], {
+      cwd: repoRoot,
+      encoding: "buffer",
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    updateField(top, entry.path);
+    updateField(top, entry.type);
+    updateField(top, entry.mode);
+    updateField(top, bytes);
+  }
+  return `sha256:${top.digest("hex")}`;
+}

@@ -62,19 +62,27 @@ export function makeDeployer(cfg: DeployConfig) {
       },
     );
 
-    const url = parseWorkersDevUrl(out, name);
-    const versionId = /Current Version ID:\s*([0-9a-f-]+)/i.exec(out)?.[1];
-    if (!url) {
-      throw new Error(`deploy(${name}): could not find a workers.dev URL in wrangler output`);
-    }
-    if (!versionId) throw new Error(`deploy(${name}): Wrangler output omitted Current Version ID`);
-    return { url, versionId, detail: `version ${versionId}` };
+    const slot = parseWranglerDeploy(out, name);
+    return { ...slot, detail: `version ${slot.versionId}` };
   };
 }
 
 export function parseWorkersDevUrl(stdout: string, name: string): string | null {
   const matches = stdout.match(/https:\/\/[^\s]+\.workers\.dev/g) ?? [];
-  // prefer the URL that carries this worker's name
-  const exact = matches.find((u) => u.includes(name));
-  return exact ?? matches[0] ?? null;
+  return matches.find((url) => {
+    const hostname = new URL(url).hostname.toLowerCase();
+    // Wrangler may include an account subdomain, but never accept another Worker.
+    return hostname.startsWith(`${name.toLowerCase()}.`) && hostname.endsWith(".workers.dev");
+  }) ?? null;
+}
+
+/** Parse the two pieces of deploy evidence required before checks may run. */
+export function parseWranglerDeploy(stdout: string, name: string): Pick<DeploySlot, "url" | "versionId"> {
+  const url = parseWorkersDevUrl(stdout, name);
+  if (!url) {
+    throw new Error(`deploy(${name}): Wrangler output omitted the expected workers.dev URL`);
+  }
+  const versionId = /Current Version ID:\s*([0-9a-f-]+)/i.exec(stdout)?.[1];
+  if (!versionId) throw new Error(`deploy(${name}): Wrangler output omitted Current Version ID`);
+  return { url, versionId };
 }

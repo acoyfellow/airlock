@@ -1,13 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, writeFileSync, rmSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, readFileSync, existsSync, mkdirSync, chmodSync, symlinkSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { verifySignedProof } from "keel";
 
-import { candidateDigest, sourceFiles } from "./digest.mjs";
+import { candidateDigest, candidateDigestAtCommit, sourceFiles } from "./digest.mjs";
 import { makeSigner } from "./sign.ts";
 import { loadVerifier } from "./keys.ts";
-import { candidateWorkerName, parseWorkersDevUrl } from "./deploy.ts";
+import { candidateWorkerName, parseWorkersDevUrl, parseWranglerDeploy } from "./deploy.ts";
 import { routeProbeTask, parseChild } from "./fanout.ts";
 import { makeHumanGate } from "./gate.ts";
 
@@ -25,6 +26,45 @@ describe("candidate digest", () => {
     const files = sourceFiles(REPO_ROOT);
     expect(files).not.toContain("site/src/lib/receipt.ts");
     expect(files.some((f) => f.startsWith("experiments/"))).toBe(false);
+  });
+
+  test("commit digest ignores the worktree and binds content, modes, and symlink targets", () => {
+    const dir = mkdtempSync(join(tmpdir(), "airlock-digest-"));
+    const git = (...args: string[]) => execFileSync("git", args, { cwd: dir, encoding: "utf8" }).trim();
+    const commit = (message: string) => {
+      git("add", "source.txt", "link");
+      git("commit", "-m", message);
+      return git("rev-parse", "HEAD");
+    };
+
+    try {
+      git("init");
+      git("config", "user.email", "digest@example.test");
+      git("config", "user.name", "Digest Test");
+      writeFileSync(join(dir, "source.txt"), "one\n");
+      symlinkSync("one", join(dir, "link"));
+      const initial = commit("initial");
+      const stable = candidateDigestAtCommit(dir, initial);
+
+      writeFileSync(join(dir, ".terrarium-workspace"), "workspace metadata\n");
+      writeFileSync(join(dir, "untracked.txt"), "untracked\n");
+      expect(candidateDigestAtCommit(dir, initial)).toBe(stable);
+
+      writeFileSync(join(dir, "source.txt"), "two\n");
+      const content = commit("content");
+      expect(candidateDigestAtCommit(dir, content)).not.toBe(stable);
+
+      chmodSync(join(dir, "source.txt"), 0o755);
+      const executable = commit("executable");
+      expect(candidateDigestAtCommit(dir, executable)).not.toBe(candidateDigestAtCommit(dir, content));
+
+      rmSync(join(dir, "link"));
+      symlinkSync("two", join(dir, "link"));
+      const symlinkTarget = commit("symlink target");
+      expect(candidateDigestAtCommit(dir, symlinkTarget)).not.toBe(candidateDigestAtCommit(dir, executable));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
@@ -64,12 +104,23 @@ describe("deploy port naming", () => {
     expect(name.length).toBeLessThanOrEqual(63);
   });
 
-  test("parses the workers.dev URL from wrangler output, preferring the named one", () => {
-    const out = `Deployed airlock-dark-abc triggers\n  https://airlock-dark-abc.sub.workers.dev\nCurrent Version ID: 123`;
+  test("parses only the expected digest-derived workers.dev URL", () => {
+    const out = `Deployed airlock-dark-abc triggers\n  https://other-worker.sub.workers.dev\n  https://airlock-dark-abc.sub.workers.dev\nCurrent Version ID: 123`;
     expect(parseWorkersDevUrl(out, "airlock-dark-abc")).toBe(
       "https://airlock-dark-abc.sub.workers.dev",
     );
+    expect(parseWorkersDevUrl("https://other-worker.sub.workers.dev", "airlock-dark-abc")).toBeNull();
     expect(parseWorkersDevUrl("no url here", "x")).toBeNull();
+  });
+
+  test("requires both the expected worker URL and Wrangler version evidence", () => {
+    const name = "airlock-dark-abc";
+    expect(() => parseWranglerDeploy("https://other-worker.sub.workers.dev\nCurrent Version ID: 123", name)).toThrow("expected workers.dev URL");
+    expect(() => parseWranglerDeploy(`https://${name}.sub.workers.dev`, name)).toThrow("Current Version ID");
+    expect(parseWranglerDeploy(`https://${name}.sub.workers.dev\nCurrent Version ID: 123`, name)).toEqual({
+      url: `https://${name}.sub.workers.dev`,
+      versionId: "123",
+    });
   });
 });
 

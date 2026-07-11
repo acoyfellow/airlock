@@ -4,3 +4,4 @@ export const DIGEST_EXCLUDES: string[];
 export function sourceFiles(repoRoot: string): string[];
 export function fileDigests(repoRoot: string): Record<string, string>;
 export function candidateDigest(repoRoot: string): string;
+export function candidateDigestAtCommit(repoRoot: string, commit: string): string;

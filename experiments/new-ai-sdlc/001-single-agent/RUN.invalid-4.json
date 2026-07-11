@@ -1,0 +1,42 @@
+{
+  "schema": "new-ai-sdlc/single-agent-run@1",
+  "status": "budget-exceeded",
+  "runId": "ter_20260711171916058_wefbw9",
+  "seal": "SEAL.v3.json",
+  "startingCommit": "8daad83cbede1628a0acf35e6050bf99d86884fe",
+  "startedAt": "2026-07-11T17:19:16.240Z",
+  "finishedAt": "2026-07-11T17:22:14.512Z",
+  "workerElapsedMs": 178272,
+  "provider": "opencode.cloudflare.dev",
+  "model": "gpt-5.6-terra",
+  "providerModelIdentityOk": true,
+  "exitCode": 0,
+  "taskContractStatus": "verified",
+  "workerProcesses": 1,
+  "workerRetryCount": 0,
+  "providerContinuationCount": 0,
+  "usage": {
+    "input": 69,
+    "output": 13446,
+    "cacheRead": 1602985,
+    "cacheWrite": 96485,
+    "totalTokens": 1712985,
+    "costUsd": 0.904124375,
+    "assistantMessages": 23
+  },
+  "sealedBudget": {
+    "maxTokens": 1000000,
+    "maxCostUsd": 10
+  },
+  "candidateCommit": "aa2c7bdbce2e35b06887395b05636b83fe126cd0",
+  "candidateParent": "8daad83cbede1628a0acf35e6050bf99d86884fe",
+  "independentChecks": {
+    "acceptance": "pass 6/6",
+    "repository": "pass 37/37",
+    "siteBuild": "pass"
+  },
+  "disposition": "rejected-budget-exceeded",
+  "previewUrl": null,
+  "qualifies": false,
+  "failure": "The worker produced a checked commit but consumed 1,712,985 tokens, exceeding the sealed one-million-token ceiling. No proof or preview was admitted."
+}

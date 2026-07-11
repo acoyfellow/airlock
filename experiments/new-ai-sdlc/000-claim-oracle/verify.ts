@@ -14,6 +14,8 @@ const ACCEPTANCE_HASH = "sha256:acceptance-v1";
 const START_COMMIT = "0123456789abcdef0123456789abcdef01234567";
 const PROVIDER = "opencode.cloudflare.dev";
 const MODEL = "gpt-5.6-terra";
+const MAX_TOKENS = 1_000_000;
+const MAX_COST_USD = 10;
 const SOURCE_DIGEST = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
@@ -28,15 +30,17 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
     startCommit: START_COMMIT,
     provider: PROVIDER,
     model: MODEL,
+    maxTokens: MAX_TOKENS,
+    maxCostUsd: MAX_COST_USD,
     advertisedWorkers: workers,
   });
   for (let index = 0; index < workers; index++) {
     const workerId = `${mode}-worker-${index}`;
     const commit = `${mode}-commit-${index}`;
-    add(10 + index, "root", "worker.spawned", { workerId, role: index === 0 ? "builder" : "critic" });
-    add(20 + index, workerId, "commit.produced", { workerId, commit });
-    add(30 + index, "integrator", "commit.dispositioned", { commit, disposition: index === 0 ? "accepted" : "rejected" });
-    add(40 + index, workerId, "worker.terminal", {
+    add(10 + events.length, "root", "worker.spawned", { workerId, role: index === 0 ? "builder" : "critic" });
+    add(10 + events.length, workerId, "commit.produced", { workerId, commit });
+    add(10 + events.length, "integrator", "commit.dispositioned", { commit, disposition: index === 0 ? "accepted" : "rejected" });
+    add(10 + events.length, workerId, "worker.terminal", {
       workerId,
       kind: "model",
       provider: PROVIDER,
@@ -45,6 +49,8 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
       receiptId: `receipt-${workerId}`,
       retryMs: 10,
       computeMs: 100,
+      totalTokens: 1_000,
+      costUsd: 0.1,
     });
   }
   add(55, "oracle", "behavior.accepted", { behaviorId: "visible-feature" });
@@ -57,7 +63,13 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
   add(70, "integrator", "candidate.integrated", { sourceDigest: SOURCE_DIGEST });
   add(80, "keel", "proof.verified", { sourceDigest: SOURCE_DIGEST, admitted: true });
   add(90, "airlock", "preview.verified", { sourceDigest: SOURCE_DIGEST, url: `local://preview/${mode}`, noLiveTraffic: true });
-  add(elapsedMs, "root", "run.completed", { elapsedMs, retryMs: workers * 10, computeMs: workers * 100 });
+  add(elapsedMs, "root", "run.completed", {
+    elapsedMs,
+    retryMs: workers * 10,
+    computeMs: workers * 100,
+    totalTokens: workers * 1_000,
+    totalCostUsd: workers * 0.1,
+  });
   return sealEvents(events);
 }
 
@@ -98,6 +110,9 @@ mutateFleet("unknown event type fails closed", (draft) => {
   event(draft, "behavior.integrated").type = "unknown.event" as never;
 }, "event type: unknown unknown.event");
 mutateFleet("advertised workers must match receipts", (draft) => { event(draft, "run.sealed").payload.advertisedWorkers = 3; }, "advertised count differs");
+mutateFleet("unsafe advertised worker count rejected directly", (draft) => {
+  event(draft, "run.sealed").payload.advertisedWorkers = Number.MAX_SAFE_INTEGER + 1;
+}, "run.sealed.advertisedWorkers: invalid");
 mutateFleet("scripts cannot count as model workers", (draft) => { event(draft, "worker.terminal").payload.kind = "script"; }, "deterministic script");
 mutateFleet("duplicate worker receipt rejected", (draft) => {
   const terminals = draft.filter((item) => item.type === "worker.terminal");
@@ -126,6 +141,19 @@ cases.push({
 mutateFleet("provider drift rejected even when model name matches", (draft) => {
   event(draft, "worker.terminal").payload.provider = "azure-openai-responses";
 }, "provider or model differs from sealed invocation");
+mutateFleet("sealed token budget overrun rejected", (draft) => {
+  const terminal = event(draft, "worker.terminal");
+  const completed = event(draft, "run.completed");
+  const increase = MAX_TOKENS;
+  terminal.payload.totalTokens = Number(terminal.payload.totalTokens) + increase;
+  completed.payload.totalTokens = Number(completed.payload.totalTokens) + increase;
+}, "sealed token or cost ceiling exceeded");
+cases.push({
+  name: "non-finite sealed budget rejected",
+  baseline: reseal(baseline, (draft) => { event(draft, "run.sealed").payload.maxTokens = Number.POSITIVE_INFINITY; }),
+  fleet: reseal(fleet, (draft) => { event(draft, "run.sealed").payload.maxTokens = Number.POSITIVE_INFINITY; }),
+  expected: "invalid resource budget",
+});
 mutateFleet("hidden human product write rejected", (draft) => {
   draft.splice(-1, 0, { ...draft.at(-1)!, type: "human.product-write", actor: "human", payload: { file: "src/app.ts" } });
 }, "hidden human product write");
@@ -146,19 +174,27 @@ mutateFleet("missing preview rejected", (draft) => {
   const index = draft.findIndex((item) => item.type === "preview.verified");
   draft.splice(index, 1);
 }, "preview.verified: expected exactly one");
+mutateFleet("negative event clock rejected", (draft) => {
+  event(draft, "proof.verified").atMs = -3;
+  event(draft, "preview.verified").atMs = -2;
+  event(draft, "run.completed").atMs = -1;
+  event(draft, "run.completed").payload.elapsedMs = -1;
+}, "timestamp must be finite, non-negative, and monotonic");
 mutateFleet("completion before proof rejected", (draft) => {
   const index = draft.findIndex((item) => item.type === "run.completed");
   const [completed] = draft.splice(index, 1);
+  completed.atMs = 75;
   const proofIndex = draft.findIndex((item) => item.type === "proof.verified");
   draft.splice(proofIndex, 0, completed);
 }, "clock stopped before proof");
 mutateFleet("completion after proof but before preview rejected", (draft) => {
   const index = draft.findIndex((item) => item.type === "run.completed");
   const [completed] = draft.splice(index, 1);
+  completed.atMs = 85;
   const previewIndex = draft.findIndex((item) => item.type === "preview.verified");
   draft.splice(previewIndex, 0, completed);
 }, "clock stopped before proof and preview");
-mutateFleet("omitted retry accounting rejected", (draft) => { event(draft, "run.completed").payload.retryMs = 0; }, "retry or compute totals omitted");
+mutateFleet("omitted retry accounting rejected", (draft) => { event(draft, "run.completed").payload.retryMs = 0; }, "retry, compute, token, or cost totals omitted");
 cases.push({
   name: "receipt prose cannot drift from events",
   receipt: { ...structuredClone(receipt), claim: "1000 agents made software instantly" },

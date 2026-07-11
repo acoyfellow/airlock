@@ -1,6 +1,6 @@
 {
   "schema": "new-ai-sdlc/claim-oracle-verification@1",
-  "generatedAt": "2026-07-11T17:11:17.806Z",
+  "generatedAt": "2026-07-11T17:36:40.569Z",
   "control": {
     "ok": true,
     "comparison": {
@@ -12,6 +12,8 @@
         "startCommit": "0123456789abcdef0123456789abcdef01234567",
         "provider": "opencode.cloudflare.dev",
         "model": "gpt-5.6-terra",
+        "maxTokens": 1000000,
+        "maxCostUsd": 10,
         "advertisedWorkers": 1,
         "qualifyingWorkers": 1,
         "terminalWorkers": 1,
@@ -25,7 +27,9 @@
         "elapsedMs": 1000,
         "retryMs": 10,
         "computeMs": 100,
-        "finalEventDigest": "baf2b60020f3ec69541fcff1b383af6c200b4325c7250efd2d1915be391b488f",
+        "totalTokens": 1000,
+        "totalCostUsd": 0.1,
+        "finalEventDigest": "d9298ba741906636163eaf885d101507caf82e2f1d5e9190a170b41b0e9b4f1e",
         "claim": "baseline reached verified preview in 1000ms with 1/1 qualifying workers"
       },
       "fleet": {
@@ -35,6 +39,8 @@
         "startCommit": "0123456789abcdef0123456789abcdef01234567",
         "provider": "opencode.cloudflare.dev",
         "model": "gpt-5.6-terra",
+        "maxTokens": 1000000,
+        "maxCostUsd": 10,
         "advertisedWorkers": 2,
         "qualifyingWorkers": 2,
         "terminalWorkers": 2,
@@ -48,7 +54,9 @@
         "elapsedMs": 100,
         "retryMs": 20,
         "computeMs": 200,
-        "finalEventDigest": "cb1c0fa6921c048b1ae924897732fc3a222bdab395f7d3baf2be5a3e7f2aaf81",
+        "totalTokens": 2000,
+        "totalCostUsd": 0.2,
+        "finalEventDigest": "500662e3faf63d837adc261627dcbf3356d091419870db84cdeaa02d43add83d",
         "claim": "fleet reached verified preview in 100ms with 2/2 qualifying workers"
       },
       "speedup": 10,
@@ -73,6 +81,12 @@
       "ok": true,
       "expected": "advertised count differs",
       "observed": "worker conservation: advertised count differs from spawned receipts"
+    },
+    {
+      "name": "unsafe advertised worker count rejected directly",
+      "ok": true,
+      "expected": "run.sealed.advertisedWorkers: invalid",
+      "observed": "run.sealed.advertisedWorkers: invalid"
     },
     {
       "name": "scripts cannot count as model workers",
@@ -117,6 +131,18 @@
       "observed": "worker qualification: provider or model differs from sealed invocation"
     },
     {
+      "name": "sealed token budget overrun rejected",
+      "ok": true,
+      "expected": "sealed token or cost ceiling exceeded",
+      "observed": "resource budget: sealed token or cost ceiling exceeded"
+    },
+    {
+      "name": "non-finite sealed budget rejected",
+      "ok": true,
+      "expected": "invalid resource budget",
+      "observed": "run.sealed: invalid resource budget"
+    },
+    {
       "name": "hidden human product write rejected",
       "ok": true,
       "expected": "hidden human product write",
@@ -153,6 +179,12 @@
       "observed": "preview.verified: expected exactly one event, got 0"
     },
     {
+      "name": "negative event clock rejected",
+      "ok": true,
+      "expected": "timestamp must be finite, non-negative, and monotonic",
+      "observed": "event time: timestamp must be finite, non-negative, and monotonic"
+    },
+    {
       "name": "completion before proof rejected",
       "ok": true,
       "expected": "clock stopped before proof",
@@ -167,8 +199,8 @@
     {
       "name": "omitted retry accounting rejected",
       "ok": true,
-      "expected": "retry or compute totals omitted",
-      "observed": "resource accounting: retry or compute totals omitted"
+      "expected": "retry, compute, token, or cost totals omitted",
+      "observed": "resource accounting: retry, compute, token, or cost totals omitted"
     },
     {
       "name": "receipt prose cannot drift from events",

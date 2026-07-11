@@ -19,7 +19,13 @@ Completed intake:
   to 60 seconds; 40/40 focused core tests passed;
 - public Airlock commit `61fa039` reproduced from a fresh clone: its original 19/19
   mutations were red and the full Airlock check was green;
-- experiment 001 exposed a provider/model alias collision, appended as mutation 20.
+- experiment 001 exposed a provider/model alias collision, appended as mutation 20;
+- a later baseline produced a valid commit but exceeded its sealed token ceiling, appended
+  as mutation 21;
+- mutation-21 review found that `Infinity` bypassed ordinary numeric comparisons, appended
+  as mutation 22;
+- mutation-22 re-review found unsafe worker counts and negative event clocks, appended as
+  mutations 23 and 24.
 
 ## Hammer produced
 

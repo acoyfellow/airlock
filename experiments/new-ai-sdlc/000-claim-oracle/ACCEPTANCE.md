@@ -25,7 +25,11 @@ mutation for the named reason:
 17. retry time or compute is omitted from totals;
 18. receipt claim differs from values derived from events;
 19. an unknown event type is inserted into an otherwise valid chain;
-20. a worker uses a different provider under the same model name.
+20. a worker uses a different provider under the same model name;
+21. a run exceeds its sealed token or cost budget while otherwise looking successful;
+22. a non-finite sealed budget or accounting value bypasses numeric comparisons;
+23. an unsafe integer is accepted as the advertised worker count;
+24. negative or non-monotonic event time makes negative elapsed time appear complete.
 
 Additional gates:
 

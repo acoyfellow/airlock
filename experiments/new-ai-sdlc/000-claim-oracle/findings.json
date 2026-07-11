@@ -2,7 +2,7 @@
   "schema": "new-ai-sdlc/findings@1",
   "experiment": "000-claim-oracle",
   "status": "proven-in-synthetic-control",
-  "finding": "The oracle accepts its complete control and rejects all 20 permanent fake-fleet or missing-evidence mutations.",
+  "finding": "The oracle accepts its complete control and rejects all 24 permanent fake-fleet or missing-evidence mutations.",
   "reviewers": [
     {
       "runId": "ter_20260711152703907_9w64ia",
@@ -27,6 +27,26 @@
     {
       "runId": "ter_20260711171029437_v4t82b",
       "finding": "Mutation 20 is consistent, 20/20 turn red, and the failed 001 run remains non-qualifying.",
+      "status": "accepted"
+    },
+    {
+      "runId": "ter_20260711171916058_wefbw9",
+      "finding": "A checked candidate exceeded its sealed one-million-token ceiling; budget enforcement was missing from the oracle.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711172719518_zhvpj4",
+      "finding": "Infinity bypassed sealed budget comparisons because numeric fields were not required to be finite.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711173115149_xn01ku",
+      "finding": "Unsafe worker counts were not rejected directly and negative event clocks could admit negative elapsed time.",
+      "status": "fixed"
+    },
+    {
+      "runId": "ter_20260711173518867_0zp3t3",
+      "finding": "The isolated-loop oracle rejects all 24 mutations and keeps wefbw9 non-qualifying.",
       "status": "accepted"
     }
   ],

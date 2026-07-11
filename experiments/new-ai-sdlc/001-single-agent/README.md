@@ -1,6 +1,6 @@
 # 001 — single-agent baseline
 
-Status: **three measured runs failed; no candidate or preview exists**.
+Status: **four measured runs are non-qualifying; no admitted candidate or preview exists**.
 
 This checkpoint measures the strongest fair serial path before introducing a fleet. One
 Terra worker receives one sealed idea and works in one isolated worktree. Deterministic
@@ -37,3 +37,10 @@ failure during a write tool call after 90.306 seconds, 311,803 tokens, and $0.29
 It produced neither a completed file nor a commit. Repeated independent failures make
 provider-stream recovery a stop blocker; the loop will not burn further full baseline
 runs until a bounded, metered continuation mechanism is sealed and preflighted.
+
+A fourth run, `ter_20260711171916058_wefbw9`, completed without continuation and produced
+commit `aa2c7bd`. Independent checks passed: frozen acceptance 6/6, repository tests
+37/37, and the site build. It nevertheless consumed 1,712,985 tokens, exceeding the
+sealed one-million-token ceiling. The commit is dispositioned `rejected-budget-exceeded`;
+no proof or preview was admitted. This exposed missing budget enforcement in experiment
+000 and became mutation 21.

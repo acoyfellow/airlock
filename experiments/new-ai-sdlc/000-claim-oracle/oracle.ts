@@ -56,6 +56,8 @@ export type RunReceipt = {
   startCommit: string;
   provider: string;
   model: string;
+  maxTokens: number;
+  maxCostUsd: number;
   advertisedWorkers: number;
   qualifyingWorkers: number;
   terminalWorkers: number;
@@ -69,6 +71,8 @@ export type RunReceipt = {
   elapsedMs: number;
   retryMs: number;
   computeMs: number;
+  totalTokens: number;
+  totalCostUsd: number;
   finalEventDigest: string;
   claim: string;
 };
@@ -138,6 +142,9 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
   for (let index = 0; index < events.length; index++) {
     const event = events[index];
     if (!EVENT_TYPES.has(event.type)) fail(`event type: unknown ${String(event.type)}`);
+    if (!Number.isFinite(event.atMs) || event.atMs < 0 || (index > 0 && event.atMs < events[index - 1].atMs)) {
+      fail("event time: timestamp must be finite, non-negative, and monotonic");
+    }
     if (event.runId !== runId) fail("event chain: cross-run replay");
     if (event.seq !== index) fail("event chain: sequence mismatch");
     if (event.prevDigest !== previous) fail("event chain: previous digest mismatch");
@@ -151,6 +158,8 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
   const startCommit = sealed.payload.startCommit;
   const provider = sealed.payload.provider;
   const model = sealed.payload.model;
+  const maxTokens = sealed.payload.maxTokens;
+  const maxCostUsd = sealed.payload.maxCostUsd;
   const advertisedWorkers = sealed.payload.advertisedWorkers;
   if (mode !== "baseline" && mode !== "fleet") fail("run.sealed.mode: unknown");
   if (
@@ -159,7 +168,10 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
     typeof provider !== "string" ||
     typeof model !== "string"
   ) fail("run.sealed: missing comparison identity");
-  if (!Number.isInteger(advertisedWorkers) || (advertisedWorkers as number) < 1) fail("run.sealed.advertisedWorkers: invalid");
+  if (!Number.isSafeInteger(maxTokens) || (maxTokens as number) <= 0 || !Number.isFinite(maxCostUsd) || (maxCostUsd as number) <= 0) {
+    fail("run.sealed: invalid resource budget");
+  }
+  if (!Number.isSafeInteger(advertisedWorkers) || (advertisedWorkers as number) < 1) fail("run.sealed.advertisedWorkers: invalid");
 
   const spawnedIds = strings(events, "worker.spawned", "workerId");
   const terminalEvents = events.filter((event) => event.type === "worker.terminal");
@@ -176,6 +188,12 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
       fail("worker qualification: provider or model differs from sealed invocation");
     }
     if (typeof event.payload.receiptId !== "string") fail("worker qualification: durable task receipt missing");
+    if (
+      !Number.isSafeInteger(event.payload.totalTokens) || (event.payload.totalTokens as number) < 0 ||
+      !Number.isFinite(event.payload.costUsd) || (event.payload.costUsd as number) < 0 ||
+      !Number.isFinite(event.payload.retryMs) || (event.payload.retryMs as number) < 0 ||
+      !Number.isFinite(event.payload.computeMs) || (event.payload.computeMs as number) < 0
+    ) fail("resource accounting: worker usage is missing, negative, or non-finite");
   }
   const qualifyingStatuses = new Set(["success", "no_change", "blocked"]);
   const qualifyingWorkers = terminalEvents.filter(
@@ -224,10 +242,24 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
   const elapsedMs = completed.payload.elapsedMs;
   const retryMs = completed.payload.retryMs;
   const computeMs = completed.payload.computeMs;
-  if (typeof elapsedMs !== "number" || elapsedMs < Math.max(proof.atMs, preview.atMs)) fail("completion time: elapsed time excludes verified completion");
+  const totalTokens = completed.payload.totalTokens;
+  const totalCostUsd = completed.payload.totalCostUsd;
+  if (!Number.isFinite(elapsedMs) || (elapsedMs as number) < 0 || (elapsedMs as number) < Math.max(proof.atMs, preview.atMs)) fail("completion time: elapsed time excludes verified completion");
+  if (
+    !Number.isFinite(retryMs) || (retryMs as number) < 0 ||
+    !Number.isFinite(computeMs) || (computeMs as number) < 0 ||
+    !Number.isSafeInteger(totalTokens) || (totalTokens as number) < 0 ||
+    !Number.isFinite(totalCostUsd) || (totalCostUsd as number) < 0
+  ) fail("resource accounting: completed usage is missing, negative, or non-finite");
   const derivedRetryMs = terminalEvents.reduce((sum, event) => sum + Number(event.payload.retryMs ?? 0), 0);
   const derivedComputeMs = terminalEvents.reduce((sum, event) => sum + Number(event.payload.computeMs ?? 0), 0);
-  if (retryMs !== derivedRetryMs || computeMs !== derivedComputeMs) fail("resource accounting: retry or compute totals omitted");
+  const derivedTotalTokens = terminalEvents.reduce((sum, event) => sum + Number(event.payload.totalTokens), 0);
+  const derivedTotalCostUsd = terminalEvents.reduce((sum, event) => sum + Number(event.payload.costUsd), 0);
+  if (
+    retryMs !== derivedRetryMs || computeMs !== derivedComputeMs ||
+    totalTokens !== derivedTotalTokens || totalCostUsd !== derivedTotalCostUsd
+  ) fail("resource accounting: retry, compute, token, or cost totals omitted");
+  if (totalTokens > maxTokens || totalCostUsd > maxCostUsd) fail("resource budget: sealed token or cost ceiling exceeded");
 
   const receiptWithoutClaim = {
     runId,
@@ -236,6 +268,8 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
     startCommit,
     provider,
     model,
+    maxTokens,
+    maxCostUsd,
     advertisedWorkers,
     qualifyingWorkers,
     terminalWorkers: terminalEvents.length,
@@ -249,6 +283,8 @@ export function deriveRunReceipt(events: Event[]): RunReceipt {
     elapsedMs,
     retryMs,
     computeMs,
+    totalTokens,
+    totalCostUsd,
     finalEventDigest: events.at(-1)!.digest,
   } as Omit<RunReceipt, "claim">;
   return { ...receiptWithoutClaim, claim: runClaim(receiptWithoutClaim) };
@@ -266,6 +302,9 @@ export function generateComparisonReceipt(baselineEvents: Event[], fleetEvents: 
   if (baseline.startCommit !== fleet.startCommit) fail("comparison fairness: initial commits differ");
   if (baseline.provider !== fleet.provider || baseline.model !== fleet.model) {
     fail("comparison fairness: provider or model differs");
+  }
+  if (baseline.maxTokens !== fleet.maxTokens || baseline.maxCostUsd !== fleet.maxCostUsd) {
+    fail("comparison fairness: resource budgets differ");
   }
   const speedup = baseline.elapsedMs / fleet.elapsedMs;
   return {

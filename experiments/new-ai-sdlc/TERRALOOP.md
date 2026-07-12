@@ -422,6 +422,23 @@ a pre-sealed signer, a preview response and deployment version bound to the sour
 and explicit request-versus-production semantics. Prior runs remain non-qualifying; no
 seal change is retrospective.
 
+Later oracle review found malformed and ghost digest references, jointly substituted source
+assertions, a self-sealed signer, an empty preview URL/version, and a claimed refusal that
+changed production. Mutations 30 through 36 reject those cases. A follow-up then found
+that content-addressed worker evidence could be borrowed across receipts (mutations 37 and
+38), and that a hash-correct usage artifact with the correct run id could still contradict
+`worker.terminal` and `run.completed` accounting (mutation 39). The earlier claim that a
+content hash plus run-id equality was sufficient is invalid.
+
+The oracle now requires usage artifacts to name injected `TERRARIUM_RUN_ID` authority,
+match worker-terminal token/cost totals, and contribute exactly to completed-run totals;
+provider, model, and status are bound when present. `pi-meter.mjs` requires the injected
+run id, derives the output run id from it, and treats a CLI `--run-id` only as an
+exact-equality assertion. A clean detached replay accepted the control and rejected all
+39/39 permanent mutations; deterministic meter tests and TypeScript checks passed. This is
+oracle hardening only: no SEAL.v5, baseline attempt 6, fleet, preview deployment, or
+production change occurred.
+
 A runtime preflight or failed baseline is evidence, not a speed experiment. Its wall time,
 zero-use or partial-use failure, cancellation, continuation, and fixes must not be hidden
 from the eventual report.

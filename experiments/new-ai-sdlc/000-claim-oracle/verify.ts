@@ -70,6 +70,15 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
   for (let index = 0; index < workers; index++) {
     const workerId = `${mode}-worker-${index}`;
     const commit = `${mode}-commit-${index}`;
+    const receiptId = `receipt-${workerId}`;
+    // Receipt and usage artifacts are content-addressed AND their content binds the
+    // worker's Terrarium run id, so the oracle can reject a borrowed evidence blob.
+    const receiptBytes = JSON.stringify({ runId: receiptId, kind: "terrarium-receipt", workerId });
+    const usageBytes = JSON.stringify({ runId: receiptId, kind: "terrarium-usage", totalTokens: 1_000, costUsd: 0.1 });
+    const receiptDigest = artifactDigest(receiptBytes);
+    const usageDigest = artifactDigest(usageBytes);
+    context.artifacts[receiptDigest] = receiptBytes;
+    context.artifacts[usageDigest] = usageBytes;
     add(10 + events.length, "root", "worker.spawned", { workerId, role: index === 0 ? "builder" : "critic" });
     add(10 + events.length, workerId, "commit.produced", { workerId, commit });
     add(10 + events.length, "integrator", "commit.dispositioned", { commit, disposition: index === 0 ? "accepted" : "rejected" });
@@ -79,9 +88,9 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
       provider: PROVIDER,
       model: MODEL,
       status: "success",
-      receiptId: `receipt-${workerId}`,
-      rawReceiptDigest: RAW_DIGEST,
-      usageDigest: RAW_DIGEST,
+      receiptId,
+      rawReceiptDigest: receiptDigest,
+      usageDigest,
       retryMs: 10,
       computeMs: 100,
       totalTokens: 1_000,
@@ -184,6 +193,20 @@ mutateFleet("post-hoc worker values without raw evidence rejected", (draft) => {
 mutateFleet("syntactically valid ghost artifact digest rejected", (draft) => {
   event(draft, "worker.terminal").payload.rawReceiptDigest = `sha256:${"f".repeat(64)}`;
 }, "referenced artifact missing");
+// Borrowed-evidence mutations: a real, content-addressed artifact whose bound runId
+// belongs to a DIFFERENT run cannot launder qualifying work onto this worker.
+const BORROWED_USAGE_BYTES = JSON.stringify({ runId: "receipt-some-other-run", kind: "terrarium-usage", totalTokens: 1_000, costUsd: 0.1 });
+const BORROWED_USAGE_DIGEST = artifactDigest(BORROWED_USAGE_BYTES);
+const BORROWED_RECEIPT_BYTES = JSON.stringify({ runId: "receipt-some-other-run", kind: "terrarium-receipt", workerId: "fleet-worker-0" });
+const BORROWED_RECEIPT_DIGEST = artifactDigest(BORROWED_RECEIPT_BYTES);
+context.artifacts[BORROWED_USAGE_DIGEST] = BORROWED_USAGE_BYTES;
+context.artifacts[BORROWED_RECEIPT_DIGEST] = BORROWED_RECEIPT_BYTES;
+mutateFleet("borrowed usage evidence not bound to worker rejected", (draft) => {
+  event(draft, "worker.terminal").payload.usageDigest = BORROWED_USAGE_DIGEST;
+}, "usage run id not bound to worker receipt");
+mutateFleet("borrowed receipt evidence not bound to worker rejected", (draft) => {
+  event(draft, "worker.terminal").payload.rawReceiptDigest = BORROWED_RECEIPT_DIGEST;
+}, "receipt run id not bound to worker receipt");
 mutateFleet("duplicate worker receipt rejected", (draft) => {
   const terminals = draft.filter((item) => item.type === "worker.terminal");
   terminals[1].payload.workerId = terminals[0].payload.workerId;

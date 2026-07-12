@@ -1,6 +1,6 @@
 {
   "schema": "new-ai-sdlc/claim-oracle-verification@1",
-  "generatedAt": "2026-07-11T20:45:10.786Z",
+  "generatedAt": "2026-07-12T11:55:43.563Z",
   "control": {
     "ok": true,
     "comparison": {
@@ -30,7 +30,7 @@
         "computeMs": 100,
         "totalTokens": 1000,
         "totalCostUsd": 0.1,
-        "finalEventDigest": "70d6379eccc1e957fe9377ade2540685649082c52dfa8da0299b428a1c1f478d",
+        "finalEventDigest": "ad5de5eebce38031612959c98eb333ba953ab66592ffdfdf9cb7a08a5ea7e424",
         "claim": "baseline reached verified preview in 1000ms with 1/1 qualifying workers"
       },
       "fleet": {
@@ -58,7 +58,7 @@
         "computeMs": 200,
         "totalTokens": 2000,
         "totalCostUsd": 0.2,
-        "finalEventDigest": "888d35b87ee0c752482244ac77fa2cef8f01512dbd323da18d1f244ab632f652",
+        "finalEventDigest": "96ac130237a44b587a7886df14833ee6da9a7edf0d7aee333e00b5f4623b07ea",
         "claim": "fleet reached verified preview in 100ms with 2/2 qualifying workers"
       },
       "speedup": 10,
@@ -107,6 +107,18 @@
       "ok": true,
       "expected": "referenced artifact missing",
       "observed": "worker receipt: referenced artifact missing"
+    },
+    {
+      "name": "borrowed usage evidence not bound to worker rejected",
+      "ok": true,
+      "expected": "usage run id not bound to worker receipt",
+      "observed": "worker qualification: usage run id not bound to worker receipt"
+    },
+    {
+      "name": "borrowed receipt evidence not bound to worker rejected",
+      "ok": true,
+      "expected": "receipt run id not bound to worker receipt",
+      "observed": "worker qualification: receipt run id not bound to worker receipt"
     },
     {
       "name": "duplicate worker receipt rejected",

@@ -227,8 +227,18 @@ export function deriveRunReceipt(events: Event[], context: VerificationContext):
     if (!isSha256(event.payload.rawReceiptDigest) || !isSha256(event.payload.usageDigest)) {
       fail("worker qualification: content-addressed raw receipt or usage evidence missing");
     }
-    artifact(context, event.payload.rawReceiptDigest, "worker receipt");
-    artifact(context, event.payload.usageDigest, "worker usage");
+    const receiptId = event.payload.receiptId;
+    const rawReceiptBytes = artifact(context, event.payload.rawReceiptDigest, "worker receipt");
+    const usageBytes = artifact(context, event.payload.usageDigest, "worker usage");
+    // Bind the CONTENT of the content-addressed receipt and usage artifacts to this
+    // worker's Terrarium run id. A syntactically valid artifact is not enough: a fake
+    // cannot attach another run's receipt or usage blob to inflate qualifying work.
+    let boundReceipt: { runId?: unknown };
+    let boundUsage: { runId?: unknown };
+    try { boundReceipt = JSON.parse(rawReceiptBytes); } catch { fail("worker qualification: receipt artifact is not JSON"); }
+    try { boundUsage = JSON.parse(usageBytes); } catch { fail("worker qualification: usage artifact is not JSON"); }
+    if (boundReceipt!.runId !== receiptId) fail("worker qualification: receipt run id not bound to worker receipt");
+    if (boundUsage!.runId !== receiptId) fail("worker qualification: usage run id not bound to worker receipt");
     if (
       !Number.isSafeInteger(event.payload.totalTokens) || (event.payload.totalTokens as number) < 0 ||
       !Number.isFinite(event.payload.costUsd) || (event.payload.costUsd as number) < 0 ||

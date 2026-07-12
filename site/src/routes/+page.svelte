@@ -35,9 +35,10 @@
       <p class="eyebrow">v0.0.1</p>
       <h1 id="hero-title">Ship only the build of your app that passed.</h1>
       <p class="lead">
-        airlock is a deploy gate for a web app, Worker, or site. It puts your candidate build on a
-        URL nobody is on yet, runs its tests there, and makes that build live only if they pass. If
-        a test fails, everyone stays on the current build.
+        airlock starts local: run the gate with Bun in your own process, inspect the receipt, and
+        keep a failed candidate from replacing the current build. When local is no longer enough,
+        its Cloudflare backend is designed to be self-hosted in your account so bounded checks can
+        run at the edge against a preview URL.
       </p>
       <p class="lead lead-secondary">
         Written for a world where the push is as likely to come from an agent as from you: a green
@@ -45,11 +46,10 @@
         bound to the exact bytes it tested, checked on a URL nothing user-facing can reach.
       </p>
       <p class="lead lead-caveat">
-        This page is the proof: it was deployed to a preview URL that received no live traffic,
-        then tested by two real <b>terrarium</b> checks against that URL — terrarium on purpose,
-        because it isolates each check in its
-        own process, unlike the simpler <code>local</code> backend most projects start with —
-        admitted by a real ed25519-signed proof, and promoted here by hand.
+        This page is evidence for the Cloudflare path, not a claim that every local run gets edge
+        isolation: it was deployed to a no-traffic preview URL, tested by two real
+        <b>terrarium</b> checks in separate processes, admitted by an ed25519-signed proof, and
+        promoted by hand. The default <code>local</code> backend remains in-process and unisolated.
       </p>
       <p class="lead lead-caveat">
         <a class="receipt-link" href="https://github.com/acoyfellow/airlock/blob/main/experiments/dogfood/RECEIPT.json">
@@ -83,10 +83,10 @@
       <p class="eyebrow">a small adjustment for agent-written code</p>
       <h2 id="flow-title">One candidate build, from source to live traffic.</h2>
       <p>
-        A human SDLC trusts a green check because a human is accountable for writing it. An agentic
-        one cannot: the same agent can write the test and the code it tests. This is that
-        adjustment — verify a signed proof bound to the exact bytes, not a claim that CI passed.
-        Nothing reaches user traffic until the proof verifies.
+        Start with the local gate and its explicit limits. When a project needs edge-hosted,
+        bounded checks, self-host the Cloudflare backend in the same account as the preview. In
+        either mode, a green check is only a claim: verify a signed proof bound to exact bytes
+        before anything reaches user traffic.
       </p>
     </div>
 

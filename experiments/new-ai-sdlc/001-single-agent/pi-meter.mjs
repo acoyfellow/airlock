@@ -30,7 +30,8 @@ const option = (name) => {
 };
 const preflight = rawArgs.includes("--preflight");
 if (rawArgs.filter((argument) => argument === "--preflight").length > 1) failUsage("--preflight may be supplied only once");
-const runId = option("--run-id");
+const requestedRunId = option("--run-id");
+const injectedRunId = process.env.TERRARIUM_RUN_ID;
 const usageOutput = option("--usage-output");
 const expectedProvider = option("--provider");
 const expectedModel = option("--model");
@@ -39,15 +40,17 @@ const maxTokens = Number(option("--max-tokens"));
 const maxCostUsd = Number(option("--max-cost-usd"));
 
 if (!expectedProvider || !expectedModel) failUsage("--provider and --model are both required");
+if (typeof injectedRunId !== "string" || injectedRunId.length === 0) failUsage("injected TERRARIUM_RUN_ID is required");
+if (requestedRunId && requestedRunId !== injectedRunId) failUsage("--run-id must exactly match injected TERRARIUM_RUN_ID");
+const runId = injectedRunId;
 if (!Number.isInteger(maxProviderRetries) || maxProviderRetries < 0 || maxProviderRetries > 3) {
   failUsage("--meter-retries must be an integer from 0 through 3");
 }
 if (!Number.isSafeInteger(maxTokens) || maxTokens <= 0 || !Number.isFinite(maxCostUsd) || maxCostUsd <= 0) {
   failUsage("positive safe-integer --max-tokens and finite --max-cost-usd are required");
 }
-if (!preflight && !runId) failUsage("--run-id is required for a measured run");
 if (!preflight && !usageOutput) failUsage("--usage-output is required for a measured run");
-if (preflight && (runId || usageOutput)) failUsage("--preflight does not accept --run-id or --usage-output");
+if (preflight && (requestedRunId || usageOutput)) failUsage("--preflight does not accept --run-id or --usage-output");
 
 const piArgs = rawArgs.filter((argument, index) => {
   if (argument === "--preflight" || optionNames.has(argument)) return false;
@@ -175,8 +178,8 @@ try {
 }
 
 const identity = { expectedProvider, expectedModel, providers: [...providers].sort(), models: [...models].sort() };
-// A child-supplied run id is only a consistency check. The supervisor argument remains
-// the sole authority for the record's runId, and absent child ids are permitted.
+// The injected Terrarium run id is the sole record authority. Child output can only
+// corroborate it; absent child ids are permitted because they cannot relabel the record.
 const runIdOk = ![...observedRunIds].some((observedRunId) => observedRunId !== runId);
 const identityOk = totals.assistantMessages > 0 && identity.providers.length === 1 && identity.providers[0] === expectedProvider && identity.models.length === 1 && identity.models[0] === expectedModel;
 const terminalStreamError = attempts.at(-1)?.terminalStreamError ?? false;
@@ -191,6 +194,7 @@ const terminalStatus = accountingInvalid ? "malformed_usage"
 const record = {
   schemaVersion: 1,
   runId,
+  authority: { source: "TERRARIUM_RUN_ID", terrariumRunId: runId },
   startedAt,
   completedAt: new Date().toISOString(),
   identity,

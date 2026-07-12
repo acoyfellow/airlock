@@ -71,10 +71,20 @@ function makeRun(mode: RunMode, workers: number, elapsedMs: number): Event[] {
     const workerId = `${mode}-worker-${index}`;
     const commit = `${mode}-commit-${index}`;
     const receiptId = `receipt-${workerId}`;
-    // Receipt and usage artifacts are content-addressed AND their content binds the
-    // worker's Terrarium run id, so the oracle can reject a borrowed evidence blob.
+    // Receipt and usage artifacts are content-addressed. The usage artifact records the
+    // injected Terrarium authority and exactly mirrors the terminal accounting and
+    // identity, so the oracle can reject borrowed or contradictory evidence.
     const receiptBytes = JSON.stringify({ runId: receiptId, kind: "terrarium-receipt", workerId });
-    const usageBytes = JSON.stringify({ runId: receiptId, kind: "terrarium-usage", totalTokens: 1_000, costUsd: 0.1 });
+    const usageBytes = JSON.stringify({
+      runId: receiptId,
+      authority: { source: "TERRARIUM_RUN_ID", terrariumRunId: receiptId },
+      kind: "terrarium-usage",
+      totalTokens: 1_000,
+      costUsd: 0.1,
+      provider: PROVIDER,
+      model: MODEL,
+      status: "success",
+    });
     const receiptDigest = artifactDigest(receiptBytes);
     const usageDigest = artifactDigest(usageBytes);
     context.artifacts[receiptDigest] = receiptBytes;
@@ -195,7 +205,13 @@ mutateFleet("syntactically valid ghost artifact digest rejected", (draft) => {
 }, "referenced artifact missing");
 // Borrowed-evidence mutations: a real, content-addressed artifact whose bound runId
 // belongs to a DIFFERENT run cannot launder qualifying work onto this worker.
-const BORROWED_USAGE_BYTES = JSON.stringify({ runId: "receipt-some-other-run", kind: "terrarium-usage", totalTokens: 1_000, costUsd: 0.1 });
+const BORROWED_USAGE_BYTES = JSON.stringify({
+  runId: "receipt-some-other-run",
+  authority: { source: "TERRARIUM_RUN_ID", terrariumRunId: "receipt-some-other-run" },
+  kind: "terrarium-usage",
+  totalTokens: 1_000,
+  costUsd: 0.1,
+});
 const BORROWED_USAGE_DIGEST = artifactDigest(BORROWED_USAGE_BYTES);
 const BORROWED_RECEIPT_BYTES = JSON.stringify({ runId: "receipt-some-other-run", kind: "terrarium-receipt", workerId: "fleet-worker-0" });
 const BORROWED_RECEIPT_DIGEST = artifactDigest(BORROWED_RECEIPT_BYTES);
@@ -207,6 +223,47 @@ mutateFleet("borrowed usage evidence not bound to worker rejected", (draft) => {
 mutateFleet("borrowed receipt evidence not bound to worker rejected", (draft) => {
   event(draft, "worker.terminal").payload.rawReceiptDigest = BORROWED_RECEIPT_DIGEST;
 }, "receipt run id not bound to worker receipt");
+// Mutation 39: a correct runId and content hash cannot launder accounting that disagrees
+// with the terminal event and therefore with the completed-run aggregate.
+const CONTRADICTORY_USAGE_BYTES = JSON.stringify({
+  runId: "receipt-fleet-worker-0",
+  authority: { source: "TERRARIUM_RUN_ID", terrariumRunId: "receipt-fleet-worker-0" },
+  kind: "terrarium-usage",
+  totalTokens: 9_999_999,
+  costUsd: 999,
+  provider: "attacker-provider",
+  model: "attacker-model",
+  status: "failed",
+});
+const CONTRADICTORY_USAGE_DIGEST = artifactDigest(CONTRADICTORY_USAGE_BYTES);
+context.artifacts[CONTRADICTORY_USAGE_DIGEST] = CONTRADICTORY_USAGE_BYTES;
+mutateFleet("usage artifact totals and identity must bind to terminal and completed run", (draft) => {
+  event(draft, "worker.terminal").payload.usageDigest = CONTRADICTORY_USAGE_DIGEST;
+}, "usage totalTokens not bound to worker terminal");
+const TIMED_OUT_USAGE_BYTES = JSON.stringify({
+  runId: "receipt-fleet-worker-0",
+  authority: { source: "TERRARIUM_RUN_ID", terrariumRunId: "receipt-fleet-worker-0" },
+  kind: "terrarium-usage",
+  totalTokens: 1_000,
+  costUsd: 0.1,
+  provider: PROVIDER,
+  model: MODEL,
+  status: "timed_out",
+});
+const TIMED_OUT_USAGE_DIGEST = artifactDigest(TIMED_OUT_USAGE_BYTES);
+const OVER_BUDGET_USAGE_BYTES = JSON.stringify({
+  runId: "receipt-fleet-worker-0",
+  authority: { source: "TERRARIUM_RUN_ID", terrariumRunId: "receipt-fleet-worker-0" },
+  kind: "terrarium-usage",
+  totalTokens: MAX_TOKENS + 1_000,
+  costUsd: 0.1,
+  provider: PROVIDER,
+  model: MODEL,
+  status: "success",
+});
+const OVER_BUDGET_USAGE_DIGEST = artifactDigest(OVER_BUDGET_USAGE_BYTES);
+context.artifacts[TIMED_OUT_USAGE_DIGEST] = TIMED_OUT_USAGE_BYTES;
+context.artifacts[OVER_BUDGET_USAGE_DIGEST] = OVER_BUDGET_USAGE_BYTES;
 mutateFleet("duplicate worker receipt rejected", (draft) => {
   const terminals = draft.filter((item) => item.type === "worker.terminal");
   terminals[1].payload.workerId = terminals[0].payload.workerId;
@@ -216,7 +273,9 @@ mutateFleet("omitted terminal worker rejected", (draft) => {
   draft.splice(index, 1);
 }, "every spawn needs one terminal receipt");
 mutateFleet("timed-out worker cannot count as qualifying", (draft) => {
-  event(draft, "worker.terminal").payload.status = "timed_out";
+  const terminal = event(draft, "worker.terminal");
+  terminal.payload.status = "timed_out";
+  terminal.payload.usageDigest = TIMED_OUT_USAGE_DIGEST;
 }, "advertised count differs from qualifying receipts");
 cases.push({
   name: "acceptance contract drift rejected",
@@ -239,6 +298,7 @@ mutateFleet("sealed token budget overrun rejected", (draft) => {
   const completed = event(draft, "run.completed");
   const increase = MAX_TOKENS;
   terminal.payload.totalTokens = Number(terminal.payload.totalTokens) + increase;
+  terminal.payload.usageDigest = OVER_BUDGET_USAGE_DIGEST;
   completed.payload.totalTokens = Number(completed.payload.totalTokens) + increase;
 }, "sealed token or cost ceiling exceeded");
 cases.push({
@@ -267,14 +327,14 @@ mutateFleet("clean replay digest mismatch rejected", (draft) => {
 }, "clean checkout digest differs");
 mutateFleet("malformed integrated source digest rejected", (draft) => {
   const malformed = "sha256:not-a-digest";
-  for (const type of ["candidate.integrated", "candidate.replayed", "proof.verified", "preview.verified"]) {
+  for (const type of ["candidate.integrated", "candidate.replayed", "proof.verified", "preview.verified"] as const) {
     event(draft, type).payload.sourceDigest = malformed;
   }
   event(draft, "preview.verified").payload.servedSourceDigest = malformed;
 }, "valid source-tree SHA-256 digest missing");
 mutateFleet("jointly substituted source assertions rejected by external recomputation", (draft) => {
   const substituted = `sha256:${"c".repeat(64)}`;
-  for (const type of ["candidate.integrated", "candidate.replayed", "proof.verified", "preview.verified"]) {
+  for (const type of ["candidate.integrated", "candidate.replayed", "proof.verified", "preview.verified"] as const) {
     event(draft, type).payload.sourceDigest = substituted;
   }
   event(draft, "preview.verified").payload.servedSourceDigest = substituted;

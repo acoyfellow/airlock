@@ -41,7 +41,11 @@ mutation for the named reason:
 33. all event producers jointly substitute the same arbitrary source digest;
 34. an attacker changes both the event-level sealed signer and proof signer;
 35. a preview supplies an empty URL;
-36. the refusal boundary reports that production changed.
+36. the refusal boundary reports that production changed;
+37. a hash-correct usage artifact is bound to a different worker/run id;
+38. a hash-correct raw worker receipt is bound to a different worker/run id;
+39. a hash-correct usage artifact with the correct injected run id contradicts the worker
+    terminal's token/cost totals, provider, model, or status.
 
 Additional gates:
 

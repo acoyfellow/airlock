@@ -36,7 +36,13 @@ Completed intake:
   source assertions, self-sealed a signer, supplied an empty URL, and allowed production
   change on refusal. The oracle now resolves and hashes artifacts, consumes an external
   source/replay/signer/effect seal, cryptographically verifies the proof, and refuses
-  mutations 32 through 36.
+  mutations 32 through 36;
+- the usage-artifact follow-up now refuses hash-correct borrowed usage/receipt evidence
+  (mutations 37 and 38), and mutation 39 refuses a hash-correct, correctly run-bound usage
+  artifact whose token/cost totals or declared provider/model/status contradict the worker
+  terminal and derived completed-run totals. pi-meter records the injected
+  `TERRARIUM_RUN_ID` as the sole usage-record authority; optional `--run-id` is exact-match
+  only.
 
 ## Hammer produced
 

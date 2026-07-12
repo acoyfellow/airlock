@@ -23,7 +23,7 @@ Generated evidence:
 ## Current result
 
 - control comparison: accepted;
-- challenge mutations: 36/36 refused;
+- challenge mutations: 39/39 refused.
 - Airlock TypeScript check: passed.
 
 ## Limits

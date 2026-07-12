@@ -7,7 +7,7 @@
     "kind": "synthetic-control-and-mutation-corpus",
     "baselineWorkers": 1,
     "fleetWorkers": 2,
-    "mutations": 36
+    "mutations": 39
   },
   "runtimePreflight": {
     "provider": "opencode.cloudflare.dev",

@@ -1,6 +1,6 @@
 {
   "schema": "new-ai-sdlc/claim-oracle-verification@1",
-  "generatedAt": "2026-07-12T11:55:43.563Z",
+  "generatedAt": "2026-07-12T12:40:17.332Z",
   "control": {
     "ok": true,
     "comparison": {
@@ -30,7 +30,7 @@
         "computeMs": 100,
         "totalTokens": 1000,
         "totalCostUsd": 0.1,
-        "finalEventDigest": "ad5de5eebce38031612959c98eb333ba953ab66592ffdfdf9cb7a08a5ea7e424",
+        "finalEventDigest": "196babcea0eef4234ca0b1a8682287d301168341ae795920a1a973ea2c2bdc10",
         "claim": "baseline reached verified preview in 1000ms with 1/1 qualifying workers"
       },
       "fleet": {
@@ -58,7 +58,7 @@
         "computeMs": 200,
         "totalTokens": 2000,
         "totalCostUsd": 0.2,
-        "finalEventDigest": "96ac130237a44b587a7886df14833ee6da9a7edf0d7aee333e00b5f4623b07ea",
+        "finalEventDigest": "6722ad999194791414391bb06611a8423a9d1144357ec89cf70b753050568854",
         "claim": "fleet reached verified preview in 100ms with 2/2 qualifying workers"
       },
       "speedup": 10,
@@ -119,6 +119,12 @@
       "ok": true,
       "expected": "receipt run id not bound to worker receipt",
       "observed": "worker qualification: receipt run id not bound to worker receipt"
+    },
+    {
+      "name": "usage artifact totals and identity must bind to terminal and completed run",
+      "ok": true,
+      "expected": "usage totalTokens not bound to worker terminal",
+      "observed": "worker qualification: usage totalTokens not bound to worker terminal"
     },
     {
       "name": "duplicate worker receipt rejected",

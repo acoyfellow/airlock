@@ -2,7 +2,7 @@
   "schema": "new-ai-sdlc/findings@1",
   "experiment": "000-claim-oracle",
   "status": "proven-in-synthetic-control",
-  "finding": "The oracle accepts its complete control and rejects all 36 permanent fake-fleet or missing-evidence mutations.",
+  "finding": "The oracle accepts its complete control and rejects all 39 permanent fake-fleet or missing-evidence mutations, including content-addressed usage artifacts that contradict terminal accounting or identity.",
   "reviewers": [
     {
       "runId": "ter_20260711152703907_9w64ia",

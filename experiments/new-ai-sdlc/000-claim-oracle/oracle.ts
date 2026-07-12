@@ -134,6 +134,14 @@ function isSha256(value: unknown): value is string {
   return typeof value === "string" && /^sha256:[a-f0-9]{64}$/.test(value);
 }
 
+function isSafeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value);
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
 function artifact(context: VerificationContext, digest: unknown, label: string): string {
   if (!isSha256(digest)) fail(`${label}: invalid artifact digest`);
   const bytes = context.artifacts[digest];
@@ -161,6 +169,80 @@ function unique(values: string[], label: string): Set<string> {
   const result = new Set(values);
   if (result.size !== values.length) fail(`${label}: duplicate identity`);
   return result;
+}
+
+type ArtifactObject = Record<string, unknown>;
+
+function isArtifactObject(value: unknown): value is ArtifactObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseArtifact(bytes: string, label: string): ArtifactObject {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(bytes);
+  } catch {
+    fail(`worker qualification: ${label} artifact is not JSON`);
+  }
+  if (!isArtifactObject(parsed)) fail(`worker qualification: ${label} artifact is not an object`);
+  return parsed;
+}
+
+function usageAccounting(usage: ArtifactObject): ArtifactObject {
+  if (usage.accounting === undefined) return usage;
+  if (!isArtifactObject(usage.accounting)) fail("worker qualification: usage accounting is not an object");
+  return usage.accounting;
+}
+
+function normalizedUsageStatus(status: string): string {
+  // pi-meter's terminal vocabulary is more specific than the event ledger's terminal
+  // vocabulary. Its terminal output remains authoritative after this one-way mapping.
+  if (status === "succeeded") return "success";
+  if (["malformed_usage", "run_id_mismatch", "identity_mismatch", "stream_incomplete", "budget_exceeded", "child_failed"].includes(status)) {
+    return "failed";
+  }
+  return status;
+}
+
+function bindUsageString(value: unknown, expected: unknown, label: string, normalize = (input: string) => input): void {
+  if (value === undefined) return;
+  if (typeof value !== "string" || value.length === 0 || normalize(value) !== expected) {
+    fail(`worker qualification: usage ${label} not bound to worker terminal`);
+  }
+}
+
+function bindUsageTotals(accounting: ArtifactObject, payload: Record<string, unknown>): { totalTokens: number; costUsd: number } {
+  const totalTokens = accounting.totalTokens;
+  const costUsd = accounting.costUsd;
+  if (!isSafeInteger(totalTokens) || totalTokens < 0 || !isFiniteNumber(costUsd) || costUsd < 0) {
+    fail("worker qualification: usage artifact totals are missing, negative, or non-finite");
+  }
+  if (totalTokens !== payload.totalTokens) fail("worker qualification: usage totalTokens not bound to worker terminal");
+  if (costUsd !== payload.costUsd) fail("worker qualification: usage costUsd not bound to worker terminal");
+  return { totalTokens, costUsd };
+}
+
+function bindUsageIdentity(usage: ArtifactObject, payload: Record<string, unknown>): void {
+  bindUsageString(usage.provider, payload.provider, "provider");
+  bindUsageString(usage.model, payload.model, "model");
+  bindUsageString(usage.status, payload.status, "status", normalizedUsageStatus);
+
+  if (usage.identity !== undefined) {
+    if (!isArtifactObject(usage.identity)) fail("worker qualification: usage identity is not an object");
+    bindUsageString(usage.identity.expectedProvider, payload.provider, "provider");
+    bindUsageString(usage.identity.expectedModel, payload.model, "model");
+    for (const [field, expected] of [["providers", payload.provider], ["models", payload.model]] as const) {
+      const values = usage.identity[field];
+      if (values === undefined) continue;
+      if (!Array.isArray(values) || values.length === 0) fail(`worker qualification: usage ${field} is not a non-empty array`);
+      for (const value of values) bindUsageString(value, expected, field.slice(0, -1));
+    }
+  }
+
+  if (usage.terminal !== undefined) {
+    if (!isArtifactObject(usage.terminal)) fail("worker qualification: usage terminal is not an object");
+    bindUsageString(usage.terminal.status, payload.status, "status", normalizedUsageStatus);
+  }
 }
 
 export function deriveRunReceipt(events: Event[], context: VerificationContext): RunReceipt {
@@ -198,7 +280,7 @@ export function deriveRunReceipt(events: Event[], context: VerificationContext):
     typeof model !== "string" ||
     typeof trustedProofKeyId !== "string" || trustedProofKeyId.length === 0
   ) fail("run.sealed: missing comparison identity");
-  if (!Number.isSafeInteger(maxTokens) || (maxTokens as number) <= 0 || !Number.isFinite(maxCostUsd) || (maxCostUsd as number) <= 0) {
+  if (!isSafeInteger(maxTokens) || maxTokens <= 0 || !isFiniteNumber(maxCostUsd) || maxCostUsd <= 0) {
     fail("run.sealed: invalid resource budget");
   }
   if (!Number.isSafeInteger(advertisedWorkers) || (advertisedWorkers as number) < 1) fail("run.sealed.advertisedWorkers: invalid");
@@ -217,6 +299,7 @@ export function deriveRunReceipt(events: Event[], context: VerificationContext):
   if (spawned.size !== advertisedWorkers) fail("worker conservation: advertised count differs from spawned receipts");
   if (terminalIds.length !== spawned.size || terminalIds.some((id) => !spawned.has(id))) fail("worker conservation: every spawn needs one terminal receipt");
   const allowedTerminal = new Set(["success", "no_change", "blocked", "failed", "timed_out", "cancelled"]);
+  const parsedUsageTotals: Array<{ totalTokens: number; costUsd: number }> = [];
   for (const event of terminalEvents) {
     if (!allowedTerminal.has(String(event.payload.status))) fail("worker.terminal.status: unknown");
     if (event.payload.kind !== "model") fail("worker qualification: deterministic script counted as model worker");
@@ -228,17 +311,26 @@ export function deriveRunReceipt(events: Event[], context: VerificationContext):
       fail("worker qualification: content-addressed raw receipt or usage evidence missing");
     }
     const receiptId = event.payload.receiptId;
-    const rawReceiptBytes = artifact(context, event.payload.rawReceiptDigest, "worker receipt");
-    const usageBytes = artifact(context, event.payload.usageDigest, "worker usage");
-    // Bind the CONTENT of the content-addressed receipt and usage artifacts to this
-    // worker's Terrarium run id. A syntactically valid artifact is not enough: a fake
-    // cannot attach another run's receipt or usage blob to inflate qualifying work.
-    let boundReceipt: { runId?: unknown };
-    let boundUsage: { runId?: unknown };
-    try { boundReceipt = JSON.parse(rawReceiptBytes); } catch { fail("worker qualification: receipt artifact is not JSON"); }
-    try { boundUsage = JSON.parse(usageBytes); } catch { fail("worker qualification: usage artifact is not JSON"); }
-    if (boundReceipt!.runId !== receiptId) fail("worker qualification: receipt run id not bound to worker receipt");
-    if (boundUsage!.runId !== receiptId) fail("worker qualification: usage run id not bound to worker receipt");
+    const boundReceipt = parseArtifact(artifact(context, event.payload.rawReceiptDigest, "worker receipt"), "receipt");
+    const boundUsage = parseArtifact(artifact(context, event.payload.usageDigest, "worker usage"), "usage");
+    // The usage record is emitted by pi-meter under the injected TERRARIUM_RUN_ID.
+    // Its run id and authority evidence must name this terminal receipt, not a caller
+    // argument, and all parsed accounting/identity assertions must agree with the
+    // terminal event that feeds the run aggregate.
+    if (boundReceipt.runId !== receiptId) fail("worker qualification: receipt run id not bound to worker receipt");
+    if (boundUsage.runId !== receiptId) fail("worker qualification: usage run id not bound to worker receipt");
+    if (!isArtifactObject(boundUsage.authority) || boundUsage.authority.source !== "TERRARIUM_RUN_ID" || boundUsage.authority.terrariumRunId !== receiptId) {
+      fail("worker qualification: usage run id is not bound to injected Terrarium authority");
+    }
+    const boundAccounting = usageAccounting(boundUsage);
+    const usageTotals = bindUsageTotals(boundAccounting, event.payload);
+    // A meter-shaped artifact carries totals in accounting; if it also makes direct
+    // root-level total assertions, they are independently bound rather than ignored.
+    if (boundUsage.accounting !== undefined && (boundUsage.totalTokens !== undefined || boundUsage.costUsd !== undefined)) {
+      bindUsageTotals(boundUsage, event.payload);
+    }
+    bindUsageIdentity(boundUsage, event.payload);
+    parsedUsageTotals.push(usageTotals);
     if (
       !Number.isSafeInteger(event.payload.totalTokens) || (event.payload.totalTokens as number) < 0 ||
       !Number.isFinite(event.payload.costUsd) || (event.payload.costUsd as number) < 0 ||
@@ -341,10 +433,15 @@ export function deriveRunReceipt(events: Event[], context: VerificationContext):
   const derivedComputeMs = terminalEvents.reduce((sum, event) => sum + Number(event.payload.computeMs ?? 0), 0);
   const derivedTotalTokens = terminalEvents.reduce((sum, event) => sum + Number(event.payload.totalTokens), 0);
   const derivedTotalCostUsd = terminalEvents.reduce((sum, event) => sum + Number(event.payload.costUsd), 0);
+  const derivedUsageTotalTokens = parsedUsageTotals.reduce((sum, usage) => sum + usage.totalTokens, 0);
+  const derivedUsageCostUsd = parsedUsageTotals.reduce((sum, usage) => sum + usage.costUsd, 0);
   if (
     retryMs !== derivedRetryMs || computeMs !== derivedComputeMs ||
     totalTokens !== derivedTotalTokens || totalCostUsd !== derivedTotalCostUsd
   ) fail("resource accounting: retry, compute, token, or cost totals omitted");
+  if (totalTokens !== derivedUsageTotalTokens || totalCostUsd !== derivedUsageCostUsd) {
+    fail("resource accounting: usage artifact totals not bound to completed run");
+  }
   if (totalTokens > maxTokens || totalCostUsd > maxCostUsd) fail("resource budget: sealed token or cost ceiling exceeded");
 
   const receiptWithoutClaim = {

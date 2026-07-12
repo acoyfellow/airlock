@@ -33,23 +33,36 @@ switch (process.env.FAKE_PI_SCENARIO) {
   return { dir, fakePi, calls, scenario };
 }
 
-function invoke({ fakePi, calls, scenario }, output, extra = []) {
-  return spawnSync(process.execPath, [meter, "--run-id", "supervisor-run", "--usage-output", output, "--provider", "sealed", "--model", "model", "--max-tokens", "10", "--max-cost-usd", "1", ...extra], {
+const INJECTED_RUN_ID = "terrarium-run";
+
+function invoke({ fakePi, calls, scenario }, output, { runId = INJECTED_RUN_ID, extra = [], env = {} } = {}) {
+  const childEnv = {
+    ...process.env,
+    PI_BIN: fakePi,
+    FAKE_PI_SCENARIO: scenario,
+    FAKE_PI_CALLS: calls,
+    TERRARIUM_RUN_ID: INJECTED_RUN_ID,
+    ...env,
+  };
+  if (Object.hasOwn(env, "TERRARIUM_RUN_ID") && env.TERRARIUM_RUN_ID === undefined) delete childEnv.TERRARIUM_RUN_ID;
+  const runIdArgs = runId === null ? [] : ["--run-id", runId];
+  return spawnSync(process.execPath, [meter, ...runIdArgs, "--usage-output", output, "--provider", "sealed", "--model", "model", "--max-tokens", "10", "--max-cost-usd", "1", ...extra], {
     encoding: "utf8",
-    env: { ...process.env, PI_BIN: fakePi, FAKE_PI_SCENARIO: scenario, FAKE_PI_CALLS: calls },
+    env: childEnv,
   });
 }
 
 async function readRecord(path) { return JSON.parse(await readFile(path, "utf8")); }
 
-test("writes one supervisor-bound, finite raw usage record for a successful child", async () => {
+test("accepts a CLI run id only when it exactly matches the injected Terrarium id", async () => {
   const f = await fixture("success");
   const output = join(f.dir, "supervisor", "usage.json");
   await (await import("node:fs/promises")).mkdir(join(f.dir, "supervisor"));
-  const result = invoke(f, output);
+  const result = invoke(f, output, { runId: INJECTED_RUN_ID });
   assert.equal(result.status, 0, result.stderr);
   const record = await readRecord(output);
-  assert.equal(record.runId, "supervisor-run");
+  assert.equal(record.runId, INJECTED_RUN_ID);
+  assert.deepEqual(record.authority, { source: "TERRARIUM_RUN_ID", terrariumRunId: INJECTED_RUN_ID });
   assert.equal(record.terminal.status, "succeeded");
   assert.equal(record.accounting.totalTokens, 5);
   assert.equal(record.attempts.count, 1);
@@ -60,7 +73,7 @@ test("writes one supervisor-bound, finite raw usage record for a successful chil
 test("accounts for the one allowed stream continuation in the same record", async () => {
   const f = await fixture("continuation");
   const output = join(f.dir, "usage.json");
-  const result = invoke(f, output, ["--meter-retries", "1"]);
+  const result = invoke(f, output, { extra: ["--meter-retries", "1"] });
   assert.equal(result.status, 0, result.stderr);
   const record = await readRecord(output);
   assert.equal(record.attempts.count, 2);
@@ -88,14 +101,42 @@ test("rejects malformed or non-finite-compatible usage values and records the re
   assert.equal(record.accounting.valid, false);
 });
 
-test("requires a supervisor run id and refuses conflicting child run ids", async () => {
+test("fails closed when TERRARIUM_RUN_ID is missing", async () => {
+  const f = await fixture("success");
+  const output = join(f.dir, "missing-env.json");
+  const result = invoke(f, output, { env: { TERRARIUM_RUN_ID: undefined } });
+  assert.equal(result.status, 64);
+  assert.match(result.stderr, /injected TERRARIUM_RUN_ID is required/);
+  await assert.rejects(readFile(output, "utf8"));
+});
+
+test("fails closed when CLI and injected Terrarium run ids conflict", async () => {
+  const f = await fixture("success");
+  const output = join(f.dir, "conflicting-id.json");
+  const result = invoke(f, output, { runId: "another-real-run" });
+  assert.equal(result.status, 64);
+  assert.match(result.stderr, /must exactly match injected TERRARIUM_RUN_ID/);
+  await assert.rejects(readFile(output, "utf8"));
+});
+
+test("derives the record run id from TERRARIUM_RUN_ID when CLI --run-id is omitted", async () => {
+  const f = await fixture("success");
+  const output = join(f.dir, "derived-id.json");
+  const result = invoke(f, output, { runId: null });
+  assert.equal(result.status, 0, result.stderr);
+  const record = await readRecord(output);
+  assert.equal(record.runId, INJECTED_RUN_ID);
+  assert.equal(record.authority.terrariumRunId, INJECTED_RUN_ID);
+});
+
+test("refuses conflicting child-reported run ids without changing injected authority", async () => {
   const f = await fixture("run-id-mismatch");
-  const missing = spawnSync(process.execPath, [meter, "--provider", "sealed", "--model", "model", "--max-tokens", "10", "--max-cost-usd", "1"], { encoding: "utf8" });
-  assert.equal(missing.status, 64);
   const output = join(f.dir, "usage.json");
   const result = invoke(f, output);
   assert.notEqual(result.status, 0);
-  assert.equal((await readRecord(output)).terminal.status, "run_id_mismatch");
+  const record = await readRecord(output);
+  assert.equal(record.runId, INJECTED_RUN_ID);
+  assert.equal(record.terminal.status, "run_id_mismatch");
 });
 
 test("refuses output collisions and symlinks before a candidate starts", async () => {
@@ -112,8 +153,11 @@ test("refuses output collisions and symlinks before a candidate starts", async (
   assert.equal(linkResult.status, 64);
 });
 
-test("documents a no-worker preflight mode", () => {
-  const result = spawnSync(process.execPath, [meter, "--preflight", "--provider", "sealed", "--model", "model", "--max-tokens", "10", "--max-cost-usd", "1"], { encoding: "utf8" });
+test("documents a no-worker preflight mode under injected Terrarium authority", () => {
+  const result = spawnSync(process.execPath, [meter, "--preflight", "--provider", "sealed", "--model", "model", "--max-tokens", "10", "--max-cost-usd", "1"], {
+    encoding: "utf8",
+    env: { ...process.env, TERRARIUM_RUN_ID: INJECTED_RUN_ID },
+  });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /no worker was started/);
 });
